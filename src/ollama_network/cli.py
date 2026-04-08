@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from typing import Iterable, TextIO
 from urllib import error, request
@@ -14,12 +15,16 @@ def _http_request(
     path: str,
     method: str,
     payload: dict[str, object] | None = None,
+    firebase_id_token: str | None = None,
 ) -> dict[str, object]:
     body = None if payload is None else json.dumps(payload).encode("utf-8")
+    headers = {"Content-Type": "application/json"}
+    if firebase_id_token:
+        headers["Authorization"] = f"Bearer {firebase_id_token}"
     req = request.Request(
         url=f"{server_url.rstrip('/')}{path}",
         data=body,
-        headers={"Content-Type": "application/json"},
+        headers=headers,
         method=method,
     )
     try:
@@ -38,20 +43,28 @@ def build_parser() -> argparse.ArgumentParser:
         default="http://127.0.0.1:8000",
         help="Coordinator API base URL.",
     )
+    parser.add_argument(
+        "--firebase-id-token",
+        default=os.environ.get("OLLAMA_NETWORK_FIREBASE_ID_TOKEN", ""),
+        help="Optional Firebase ID token for protected servers.",
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    issue_user = subparsers.add_parser("issue-user", help="Issue a new opaque user identifier.")
-    issue_user.add_argument("--starting-credits", type=float, default=0.0)
+    subparsers.add_parser("issue-user", help="Issue or sync the authenticated network identifier.")
 
     register_user = subparsers.add_parser("register-user", help="Register a user.")
     register_user.add_argument("--user-id", required=True)
-    register_user.add_argument("--starting-credits", type=float, default=0.0)
 
     user = subparsers.add_parser("user", help="Fetch a user balance.")
     user.add_argument("--user-id", required=True)
 
     subparsers.add_parser("models", help="List approved Ollama models.")
     subparsers.add_parser("network", help="Fetch the network snapshot.")
+    subparsers.add_parser("wallet", help="Fetch the current authenticated wallet.")
+    subparsers.add_parser("ledger", help="Fetch the current authenticated ledger.")
+
+    purchase_credits = subparsers.add_parser("purchase-credits", help="Add credits to the authenticated wallet.")
+    purchase_credits.add_argument("--usd-amount", type=float, required=True)
 
     job = subparsers.add_parser("job", help="Fetch a single job.")
     job.add_argument("--job-id", required=True)
@@ -103,9 +116,8 @@ def run_cli(argv: Iterable[str] | None = None, stdout: TextIO | None = None) -> 
             args.server_url,
             "/users/issue",
             "POST",
-            {
-                "starting_credits": args.starting_credits,
-            },
+            {},
+            firebase_id_token=args.firebase_id_token,
         )
     elif args.command == "register-user":
         result = _http_request(
@@ -114,17 +126,39 @@ def run_cli(argv: Iterable[str] | None = None, stdout: TextIO | None = None) -> 
             "POST",
             {
                 "user_id": args.user_id,
-                "starting_credits": args.starting_credits,
             },
+            firebase_id_token=args.firebase_id_token,
         )
     elif args.command == "user":
-        result = _http_request(args.server_url, f"/users/{args.user_id}", "GET")
+        result = _http_request(
+            args.server_url,
+            f"/users/{args.user_id}",
+            "GET",
+            firebase_id_token=args.firebase_id_token,
+        )
     elif args.command == "models":
-        result = _http_request(args.server_url, "/models", "GET")
+        result = _http_request(args.server_url, "/models", "GET", firebase_id_token=args.firebase_id_token)
     elif args.command == "network":
-        result = _http_request(args.server_url, "/network", "GET")
+        result = _http_request(args.server_url, "/network", "GET", firebase_id_token=args.firebase_id_token)
+    elif args.command == "wallet":
+        result = _http_request(args.server_url, "/wallet", "GET", firebase_id_token=args.firebase_id_token)
+    elif args.command == "ledger":
+        result = _http_request(args.server_url, "/ledger", "GET", firebase_id_token=args.firebase_id_token)
+    elif args.command == "purchase-credits":
+        result = _http_request(
+            args.server_url,
+            "/credits/purchase",
+            "POST",
+            {"usd_amount": args.usd_amount},
+            firebase_id_token=args.firebase_id_token,
+        )
     elif args.command == "job":
-        result = _http_request(args.server_url, f"/jobs/{args.job_id}", "GET")
+        result = _http_request(
+            args.server_url,
+            f"/jobs/{args.job_id}",
+            "GET",
+            firebase_id_token=args.firebase_id_token,
+        )
     elif args.command == "submit-job":
         payload = {
             "requester_user_id": args.requester_user_id,
@@ -134,7 +168,13 @@ def run_cli(argv: Iterable[str] | None = None, stdout: TextIO | None = None) -> 
         }
         if args.prompt_tokens is not None:
             payload["prompt_tokens"] = args.prompt_tokens
-        result = _http_request(args.server_url, "/jobs", "POST", payload)
+        result = _http_request(
+            args.server_url,
+            "/jobs",
+            "POST",
+            payload,
+            firebase_id_token=args.firebase_id_token,
+        )
     elif args.command == "register-worker":
         payload = {
             "worker_id": args.worker_id,
@@ -149,13 +189,20 @@ def run_cli(argv: Iterable[str] | None = None, stdout: TextIO | None = None) -> 
             "runtime": "ollama",
             "allows_cloud_fallback": False,
         }
-        result = _http_request(args.server_url, "/workers/register", "POST", payload)
+        result = _http_request(
+            args.server_url,
+            "/workers/register",
+            "POST",
+            payload,
+            firebase_id_token=args.firebase_id_token,
+        )
     elif args.command == "claim-job":
         result = _http_request(
             args.server_url,
             f"/workers/{args.worker_id}/claim",
             "POST",
             {},
+            firebase_id_token=args.firebase_id_token,
         )
     elif args.command == "run-worker-once":
         result = _http_request(
@@ -163,6 +210,7 @@ def run_cli(argv: Iterable[str] | None = None, stdout: TextIO | None = None) -> 
             f"/workers/{args.worker_id}/run-once",
             "POST",
             {},
+            firebase_id_token=args.firebase_id_token,
         )
     else:
         raise RuntimeError(f"Unsupported command: {args.command}")

@@ -4,6 +4,7 @@ import time
 from urllib import request
 
 from ollama_network.api import NetworkHTTPServer
+from ollama_network.auth import AuthenticationError
 from ollama_network.local_hardware import LocalGPUDevice, LocalHardwareDetection
 from ollama_network.ollama_local import LocalModelDetection
 from ollama_network.models import ExecutorResult
@@ -44,31 +45,63 @@ class FakeHardwareDetector:
             detected=True,
             primary_gpu_name="RTX 4090",
             primary_vram_gb=24.0,
+            system_ram_gb=32.0,
             gpus=[LocalGPUDevice(name="RTX 4090", vram_gb=24.0, source="fake")],
             error="",
         )
 
 
-def api_post(base_url: str, path: str, payload: dict[str, object]) -> dict[str, object]:
+def api_post(
+    base_url: str,
+    path: str,
+    payload: dict[str, object],
+    headers: dict[str, str] | None = None,
+) -> dict[str, object]:
     body = json.dumps(payload).encode("utf-8")
     req = request.Request(
         url=f"{base_url}{path}",
         data=body,
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json", **(headers or {})},
         method="POST",
     )
     with request.urlopen(req, timeout=10) as response:
         return json.loads(response.read().decode("utf-8"))
 
 
-def api_get(base_url: str, path: str) -> dict[str, object]:
-    with request.urlopen(f"{base_url}{path}", timeout=10) as response:
+def api_get(
+    base_url: str,
+    path: str,
+    headers: dict[str, str] | None = None,
+) -> dict[str, object]:
+    req = request.Request(
+        url=f"{base_url}{path}",
+        headers=headers or {},
+        method="GET",
+    )
+    with request.urlopen(req, timeout=10) as response:
         return json.loads(response.read().decode("utf-8"))
 
 
 def text_get(base_url: str, path: str) -> str:
     with request.urlopen(f"{base_url}{path}", timeout=10) as response:
         return response.read().decode("utf-8")
+
+
+class FakeAuthVerifier:
+    def verify(self, token: str) -> dict[str, object]:
+        if token == "valid-token":
+            return {
+                "uid": "firebase-user-1",
+                "email": "tester@example.com",
+                "name": "Test User",
+            }
+        if token == "admin-token":
+            return {
+                "uid": "firebase-admin-1",
+                "email": "admin@example.com",
+                "name": "Admin User",
+            }
+        raise AuthenticationError("bad token")
 
 
 def test_worker_daemon_executes_claimed_job_end_to_end(tmp_path) -> None:
@@ -82,8 +115,9 @@ def test_worker_daemon_executes_claimed_job_end_to_end(tmp_path) -> None:
     base_url = f"http://127.0.0.1:{server.server_address[1]}"
 
     try:
-        api_post(base_url, "/users/register", {"user_id": "alice", "starting_credits": 5.0})
-        issued = api_post(base_url, "/users/issue", {"starting_credits": 1.5})
+        service.coordinator.register_user("alice", starting_credits=5.0)
+        service.coordinator.register_user("bob", starting_credits=0.0)
+        issued = api_post(base_url, "/users/issue", {})
         assert issued["user_id"].startswith("usr_")
         worker = WorkerDaemon(
             config=WorkerConfig(
@@ -144,6 +178,9 @@ def test_dashboard_and_local_worker_cycle_routes(tmp_path) -> None:
     base_url = f"http://127.0.0.1:{server.server_address[1]}"
 
     try:
+        landing = text_get(base_url, "/")
+        assert "Run the network from one front door." in landing
+        assert "Operator Credits" in landing
         html = text_get(base_url, "/dashboard")
         assert "LLM Network Control Room" in html
         models = api_get(base_url, "/models")
@@ -156,8 +193,10 @@ def test_dashboard_and_local_worker_cycle_routes(tmp_path) -> None:
         assert worker_context["suggested_installed_models"] == ["llama3.1:8b", "qwen3:4b"]
         assert worker_context["suggested_benchmark_tokens_per_second"]["llama3.1:8b"] > 0
 
-        issued = api_post(base_url, "/users/issue", {"starting_credits": 6.0})
+        service.coordinator.ledger.adjust("bob", amount=50, source="test_setup")
+        issued = api_post(base_url, "/users/issue", {})
         assert issued["user_id"].startswith("usr_")
+        service.coordinator.ledger.adjust(issued["user_id"], amount=50, source="test_setup")
 
         started = api_post(
             base_url,
@@ -196,6 +235,10 @@ def test_dashboard_and_local_worker_cycle_routes(tmp_path) -> None:
                 break
             time.sleep(0.05)
         assert completed_job is not None
+        stats = api_get(base_url, "/workers/worker-bob/stats")
+        assert stats["summary"]["completed_jobs"] >= 1
+        assert stats["summary"]["billed_tokens"] > 0
+        assert any(job["job_id"] for job in stats["recent_jobs"])
 
         user = api_get(base_url, "/users/bob")
         assert user["balance"] > 0
@@ -213,3 +256,186 @@ def test_dashboard_and_local_worker_cycle_routes(tmp_path) -> None:
         server.shutdown()
         server.server_close()
         thread.join(timeout=5)
+
+
+def test_protected_api_requires_auth_and_binds_stable_user(tmp_path) -> None:
+    service = NetworkService(
+        executor_factory=lambda _worker_id: FakeExecutor(),
+        state_store=LocalStateStore(tmp_path / "private_state.json"),
+        admin_emails={"admin@example.com"},
+    )
+    server = NetworkHTTPServer(
+        ("127.0.0.1", 0),
+        service=service,
+        auth_verifier=FakeAuthVerifier(),
+        firebase_client_config={"projectId": "llm-network"},
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base_url = f"http://127.0.0.1:{server.server_address[1]}"
+
+    try:
+        unauthorized = None
+        try:
+            api_get(base_url, "/models")
+        except Exception as error:
+            unauthorized = error
+        assert unauthorized is not None
+
+        headers = {"Authorization": "Bearer valid-token"}
+        session = api_get(base_url, "/auth/session", headers=headers)
+        assert session["user_id"].startswith("usr_")
+        assert session["issued"] is True
+        assert session["is_admin"] is False
+
+        second_session = api_get(base_url, "/auth/session", headers=headers)
+        assert second_session["user_id"] == session["user_id"]
+        assert second_session["issued"] is False
+
+        wallet = api_get(base_url, "/wallet", headers=headers)
+        assert wallet["available_credits"] == session["wallet"]["available_credits"]
+
+        purchased = api_post(
+            base_url,
+            "/credits/purchase",
+            {"usd_amount": 2},
+            headers=headers,
+        )
+        assert purchased["credits_added"] == 200
+
+        ledger = api_get(base_url, "/ledger", headers=headers)
+        assert any(entry["entry_type"] == "purchase" for entry in ledger["entries"])
+
+        balance = api_get(base_url, f"/users/{session['user_id']}", headers=headers)
+        assert balance["balance"] == session["balance"] + 200
+
+        admin_headers = {"Authorization": "Bearer admin-token"}
+        admin_session = api_get(base_url, "/auth/session", headers=admin_headers)
+        assert admin_session["is_admin"] is True
+
+        api_post(
+            base_url,
+            "/workers/start-local",
+            {
+                "worker_id": "worker-admin",
+                "owner_user_id": admin_session["user_id"],
+                "gpu_name": "RTX 4090",
+                "vram_gb": 24,
+                "installed_models": ["llama3.1:8b"],
+                "benchmark_tokens_per_second": {"llama3.1:8b": 72},
+                "poll_interval_seconds": 0.05,
+                "runtime": "ollama",
+                "allows_cloud_fallback": False,
+                "allow_admin_self_serve": True,
+            },
+            headers=admin_headers,
+        )
+        own_job = api_post(
+            base_url,
+            "/jobs",
+            {
+                "requester_user_id": admin_session["user_id"],
+                "model_tag": "llama3.1:8b",
+                "prompt": "Let my admin worker preview this prompt.",
+                "max_output_tokens": 120,
+                "prompt_tokens": 18,
+            },
+            headers=admin_headers,
+        )
+        forced = api_post(
+            base_url,
+            "/workers/worker-admin/run-once",
+            {"allow_admin_self_serve": True},
+            headers=admin_headers,
+        )
+        assert forced["job"]["job_id"] == own_job["job_id"]
+        assert forced["job"]["status"] == "completed"
+        assert forced["job"]["assigned_worker_id"] == "worker-admin"
+        assert forced["job"]["result"]["output_text"].startswith("completed from fake executor")
+
+        overview = api_get(base_url, "/admin/overview", headers=admin_headers)
+        assert overview["summary"]["known_firebase_accounts"] >= 2
+        assert any(user["user_id"] == session["user_id"] for user in overview["users"])
+
+        adjusted = api_post(
+            base_url,
+            f"/admin/users/{session['user_id']}/credits",
+            {"amount": 75, "note": "support_grant"},
+            headers=admin_headers,
+        )
+        assert adjusted["wallet"]["available_credits"] == balance["balance"] + 75
+
+        admin_error = None
+        try:
+            api_get(base_url, "/admin/overview", headers=headers)
+        except Exception as error:
+            admin_error = error
+        assert admin_error is not None
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
+
+def test_conversation_history_persists_and_supports_archive_restore(tmp_path) -> None:
+    store = LocalStateStore(tmp_path / "private_state.json")
+    service = NetworkService(
+        executor_factory=lambda _worker_id: FakeExecutor("history executor"),
+        state_store=store,
+    )
+    service.coordinator.register_user("alice", starting_credits=25.0)
+    service.coordinator.register_user("bob", starting_credits=0.0)
+    service.register_worker(
+        {
+            "worker_id": "worker-bob",
+            "owner_user_id": "bob",
+            "gpu_name": "RTX 4090",
+            "vram_gb": 24.0,
+            "installed_models": ["llama3.1:8b"],
+            "benchmark_tokens_per_second": {"llama3.1:8b": 72.0},
+            "runtime": "ollama",
+            "allows_cloud_fallback": False,
+        },
+        actor_user_id="bob",
+    )
+    created = service.submit_job(
+        {
+            "requester_user_id": "alice",
+            "model_tag": "llama3.1:8b",
+            "prompt": "Build an index.html and explain the structure.",
+            "max_output_tokens": 180,
+            "prompt_tokens": 24,
+        },
+        actor_user_id="alice",
+    )
+    completed = service.run_worker_cycle("worker-bob", executor=FakeExecutor("history executor"))
+
+    assert completed is not None
+    assert completed["conversation_id"] == created["conversation_id"]
+
+    conversations = service.list_conversations("alice")
+    assert len(conversations["conversations"]) == 1
+    assert len(conversations["archived_conversations"]) == 0
+    assert conversations["conversations"][0]["message_count"] == 2
+
+    reloaded = NetworkService(
+        executor_factory=lambda _worker_id: FakeExecutor("history executor"),
+        state_store=store,
+    )
+    detail = reloaded.get_conversation(created["conversation_id"], actor_user_id="alice")
+    assert len(detail["messages"]) == 2
+    assert "history executor" in detail["messages"][1]["content"]
+
+    archived = reloaded.archive_conversation(created["conversation_id"], actor_user_id="alice")
+    assert archived["is_archived"] is True
+
+    after_archive = reloaded.list_conversations("alice")
+    assert len(after_archive["conversations"]) == 0
+    assert len(after_archive["archived_conversations"]) == 1
+
+    restored = reloaded.restore_conversation(created["conversation_id"], actor_user_id="alice")
+    assert restored["is_archived"] is False
+
+    after_restore = reloaded.list_conversations("alice")
+    assert len(after_restore["conversations"]) == 1
+    assert len(after_restore["archived_conversations"]) == 0

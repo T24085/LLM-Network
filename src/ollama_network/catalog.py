@@ -5,84 +5,93 @@ from dataclasses import dataclass
 from .models import ModelDefinition, PolicyError
 
 QUALITY_SELECTORS = ("auto", "good", "better", "best")
-QUALITY_MULTIPLIERS = {
-    "auto": 1.0,
-    "good": 1.0,
-    "better": 1.1,
-    "best": 1.2,
+MODEL_TIER_MULTIPLIERS = {
+    "tier_1_small": 1.0,
+    "tier_2_standard": 1.5,
+    "tier_3_large": 2.5,
+    "tier_4_reasoning": 3.0,
 }
 
 DEFAULT_OLLAMA_MODELS: tuple[ModelDefinition, ...] = (
     ModelDefinition(
+        tag="gemma4:26b",
+        family="gemma",
+        min_vram_gb=17.0,
+        quality_tier="best",
+        pricing_tier="tier_3_large",
+        credit_multiplier=MODEL_TIER_MULTIPLIERS["tier_3_large"],
+        strength_score=94.0,
+    ),
+    ModelDefinition(
         tag="qwen3:4b",
         family="qwen",
         min_vram_gb=4.0,
-        input_credit_rate=0.28,
-        output_credit_rate=0.62,
         quality_tier="good",
+        pricing_tier="tier_1_small",
+        credit_multiplier=MODEL_TIER_MULTIPLIERS["tier_1_small"],
         strength_score=42.0,
     ),
     ModelDefinition(
         tag="glm4:9b",
         family="glm",
         min_vram_gb=8.0,
-        input_credit_rate=0.42,
-        output_credit_rate=0.88,
         quality_tier="better",
+        pricing_tier="tier_2_standard",
+        credit_multiplier=MODEL_TIER_MULTIPLIERS["tier_2_standard"],
         strength_score=74.0,
     ),
     ModelDefinition(
         tag="deepseek-r1:8b",
         family="deepseek",
         min_vram_gb=8.0,
-        input_credit_rate=0.46,
-        output_credit_rate=0.96,
-        quality_tier="better",
+        quality_tier="best",
+        pricing_tier="tier_4_reasoning",
+        credit_multiplier=MODEL_TIER_MULTIPLIERS["tier_4_reasoning"],
         strength_score=76.0,
     ),
     ModelDefinition(
         tag="gpt-oss:20b",
         family="gpt-oss",
         min_vram_gb=16.0,
-        input_credit_rate=0.78,
-        output_credit_rate=1.38,
         quality_tier="best",
+        pricing_tier="tier_3_large",
+        credit_multiplier=MODEL_TIER_MULTIPLIERS["tier_3_large"],
         strength_score=96.0,
     ),
     ModelDefinition(
         tag="llama3.1:8b",
         family="llama",
         min_vram_gb=8.0,
-        input_credit_rate=0.5,
-        output_credit_rate=1.0,
         quality_tier="better",
+        pricing_tier="tier_2_standard",
+        credit_multiplier=MODEL_TIER_MULTIPLIERS["tier_2_standard"],
         strength_score=71.0,
     ),
     ModelDefinition(
         tag="mistral:7b",
         family="mistral",
         min_vram_gb=8.0,
-        input_credit_rate=0.45,
-        output_credit_rate=0.95,
         quality_tier="better",
+        pricing_tier="tier_2_standard",
+        credit_multiplier=MODEL_TIER_MULTIPLIERS["tier_2_standard"],
         strength_score=64.0,
     ),
     ModelDefinition(
         tag="qwen2.5:7b",
         family="qwen",
         min_vram_gb=8.0,
-        input_credit_rate=0.4,
-        output_credit_rate=0.9,
         quality_tier="better",
+        pricing_tier="tier_2_standard",
+        credit_multiplier=MODEL_TIER_MULTIPLIERS["tier_2_standard"],
         strength_score=66.0,
     ),
     ModelDefinition(
         tag="phi4:14b",
         family="phi",
         min_vram_gb=16.0,
-        input_credit_rate=0.7,
-        output_credit_rate=1.25,
         quality_tier="best",
+        pricing_tier="tier_3_large",
+        credit_multiplier=MODEL_TIER_MULTIPLIERS["tier_3_large"],
         strength_score=88.0,
     ),
 )
@@ -141,7 +150,7 @@ class ApprovedModelCatalog:
         selector: str,
         prompt_tokens: int,
         max_output_tokens: int,
-    ) -> float:
+    ) -> int:
         normalized = self.normalize_selector(selector)
         if normalized in QUALITY_SELECTORS:
             candidates = self._candidate_models_for_selector(normalized)
@@ -152,8 +161,7 @@ class ApprovedModelCatalog:
                     output_tokens=max_output_tokens,
                 ),
             )
-            base = model.estimate_credits(prompt_tokens=prompt_tokens, output_tokens=max_output_tokens)
-            return round(base * QUALITY_MULTIPLIERS[normalized], 4)
+            return model.estimate_credits(prompt_tokens=prompt_tokens, output_tokens=max_output_tokens)
         model = self.require_local_model(normalized)
         return model.estimate_credits(prompt_tokens=prompt_tokens, output_tokens=max_output_tokens)
 
@@ -163,13 +171,10 @@ class ApprovedModelCatalog:
         resolved_model_tag: str,
         prompt_tokens: int,
         output_tokens: int,
-    ) -> float:
+    ) -> int:
         model = self.require_local_model(resolved_model_tag)
-        base = model.estimate_credits(prompt_tokens=prompt_tokens, output_tokens=output_tokens)
-        normalized = self.normalize_selector(selector)
-        if normalized in QUALITY_SELECTORS:
-            return round(base * QUALITY_MULTIPLIERS[normalized], 4)
-        return base
+        _ = self.normalize_selector(selector)
+        return model.estimate_credits(prompt_tokens=prompt_tokens, output_tokens=output_tokens)
 
     def _candidate_models_for_selector(self, selector: str) -> list[ModelDefinition]:
         if selector == "auto":

@@ -1,51 +1,63 @@
-from types import SimpleNamespace
+from __future__ import annotations
+
+from urllib import error
 
 from ollama_network.executor import OllamaCommandExecutor
 
 
-def test_ollama_executor_builds_local_run_command(monkeypatch) -> None:
-    captured: dict[str, object] = {}
+class FakeStreamResponse:
+    def __init__(self, lines: list[str]) -> None:
+        self._lines = [line.encode("utf-8") for line in lines]
 
-    def fake_run(command, capture_output, text, timeout, check):
-        captured["command"] = command
-        captured["capture_output"] = capture_output
-        captured["text"] = text
-        captured["timeout"] = timeout
-        captured["check"] = check
-        return SimpleNamespace(returncode=0, stdout="hello from ollama", stderr="")
+    def __enter__(self):
+        return self
 
-    monkeypatch.setattr("ollama_network.executor.subprocess.run", fake_run)
+    def __exit__(self, exc_type, exc, tb):
+        return False
 
-    executor = OllamaCommandExecutor(timeout_seconds=12)
-    result = executor.run(
-        model_tag="llama3.1:8b",
-        prompt="Draft a network note.",
-        max_output_tokens=120,
-    )
-
-    assert captured["command"][0:3] == ["ollama", "run", "llama3.1:8b"]
-    assert "Respond in no more than 120 tokens." in captured["command"][3]
-    assert result.success is True
-    assert result.output_text == "hello from ollama"
-    assert result.output_tokens > 0
+    def __iter__(self):
+        return iter(self._lines)
 
 
-def test_ollama_executor_sanitizes_ansi_and_thinking_output(monkeypatch) -> None:
-    def fake_run(command, capture_output, text, timeout, check):
-        return SimpleNamespace(
-            returncode=0,
-            stdout=(
-                "Thinking...\n"
-                "drafting\n"
-                "...done thinking.\n\n"
-                "Final answer here.\x1b[3D\x1b[K"
-            ),
-            stderr="",
+def test_ollama_executor_streams_output_and_collects_token_counts(monkeypatch) -> None:
+    def fake_urlopen(req, timeout):
+        assert req.full_url.endswith("/api/generate")
+        assert timeout == 45
+        return FakeStreamResponse(
+            [
+                '{"response":"Hello","done":false}',
+                '{"response":" world","done":false}',
+                '{"done":true,"done_reason":"stop","eval_count":12,"prompt_eval_count":9}',
+            ]
         )
 
-    monkeypatch.setattr("ollama_network.executor.subprocess.run", fake_run)
+    monkeypatch.setattr("ollama_network.executor.request.urlopen", fake_urlopen)
 
-    executor = OllamaCommandExecutor(timeout_seconds=12)
+    executor = OllamaCommandExecutor(timeout_seconds=45, overall_timeout_seconds=90)
+    result = executor.run(
+        model_tag="glm4:9b",
+        prompt="Say hello.",
+        max_output_tokens=64,
+    )
+
+    assert result.success is True
+    assert result.output_text == "Hello world"
+    assert result.output_tokens == 12
+    assert result.prompt_tokens_used == 9
+
+
+def test_ollama_executor_sanitizes_thinking_blocks_from_stream(monkeypatch) -> None:
+    def fake_urlopen(req, timeout):
+        return FakeStreamResponse(
+            [
+                '{"response":"<think>drafting</think>Final answer here.","done":false}',
+                '{"done":true,"done_reason":"stop","eval_count":7,"prompt_eval_count":5}',
+            ]
+        )
+
+    monkeypatch.setattr("ollama_network.executor.request.urlopen", fake_urlopen)
+
+    executor = OllamaCommandExecutor(timeout_seconds=30, overall_timeout_seconds=60)
     result = executor.run(
         model_tag="qwen3:4b",
         prompt="Test output cleanup.",
@@ -54,4 +66,33 @@ def test_ollama_executor_sanitizes_ansi_and_thinking_output(monkeypatch) -> None
 
     assert result.success is True
     assert result.output_text == "Final answer here."
-    assert "\x1b" not in result.output_text
+
+
+def test_ollama_executor_returns_http_errors(monkeypatch) -> None:
+    class FakeHTTPError(error.HTTPError):
+        def __init__(self) -> None:
+            super().__init__(
+                url="http://127.0.0.1:11434/api/generate",
+                code=500,
+                msg="Internal Server Error",
+                hdrs=None,
+                fp=None,
+            )
+
+        def read(self) -> bytes:
+            return b'{"error":"model crashed"}'
+
+    def fake_urlopen(req, timeout):
+        raise FakeHTTPError()
+
+    monkeypatch.setattr("ollama_network.executor.request.urlopen", fake_urlopen)
+
+    executor = OllamaCommandExecutor(timeout_seconds=30, overall_timeout_seconds=60)
+    result = executor.run(
+        model_tag="gemma4:26b",
+        prompt="Run a hard prompt.",
+        max_output_tokens=120,
+    )
+
+    assert result.success is False
+    assert "Ollama HTTP 500" in result.error_message

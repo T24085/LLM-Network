@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import time
 from dataclasses import dataclass
 from urllib import error, request
@@ -21,6 +22,7 @@ class WorkerConfig:
     benchmark_tokens_per_second: dict[str, float]
     poll_interval_seconds: float = 2.0
     max_concurrent_jobs: int = 1
+    firebase_id_token: str = ""
 
 
 class WorkerDaemon:
@@ -86,10 +88,13 @@ class WorkerDaemon:
 
     def _post(self, path: str, payload: dict[str, object]) -> dict[str, object]:
         body = json.dumps(payload).encode("utf-8")
+        headers = {"Content-Type": "application/json"}
+        if self.config.firebase_id_token:
+            headers["Authorization"] = f"Bearer {self.config.firebase_id_token}"
         req = request.Request(
             url=f"{self.config.server_url.rstrip('/')}{path}",
             data=body,
-            headers={"Content-Type": "application/json"},
+            headers=headers,
             method="POST",
         )
         try:
@@ -122,6 +127,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Throughput entry in MODEL=TPS format. Repeatable.",
     )
     parser.add_argument("--poll-interval", type=float, default=2.0, help="Poll interval in seconds.")
+    parser.add_argument(
+        "--firebase-id-token",
+        default=os.environ.get("OLLAMA_NETWORK_FIREBASE_ID_TOKEN", ""),
+        help="Optional Firebase ID token for protected servers.",
+    )
     return parser
 
 
@@ -149,6 +159,7 @@ def main() -> None:
         installed_models=tuple(args.models),
         benchmark_tokens_per_second=parse_throughput(args.throughput_entries, args.models),
         poll_interval_seconds=args.poll_interval,
+        firebase_id_token=args.firebase_id_token,
     )
     daemon = WorkerDaemon(config=config)
     print(
