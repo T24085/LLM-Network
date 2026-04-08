@@ -780,6 +780,36 @@ DASHBOARD_HTML = """<!doctype html>
       }
     }
 
+    function renderLocalWorkerState(payload) {
+      const localWorkers = payload?.local_workers || {};
+      const currentWorkerId = el("worker-id").value.trim() || state.currentUserId || "";
+      const loop = currentWorkerId ? localWorkers[currentWorkerId] : null;
+      writeJson("local-worker-json", loop || localWorkers || {});
+      if (!currentWorkerId) {
+        return;
+      }
+      if (!loop) {
+        setStatus("worker-status", `Worker ${currentWorkerId} is not running on this server yet.`, "ok");
+        return;
+      }
+      if (loop.last_result_status === "error" && loop.last_error) {
+        setStatus("worker-status", `Worker ${currentWorkerId} hit an error: ${loop.last_error}`, "error");
+        return;
+      }
+      if (loop.running) {
+        const jobSummary = loop.last_job_id
+          ? ` Last job: ${loop.last_job_id} (${loop.last_result_status || "idle"}).`
+          : " Waiting for a compatible job.";
+        setStatus(
+          "worker-status",
+          `Worker ${currentWorkerId} is running locally.${jobSummary}`,
+          "ok",
+        );
+        return;
+      }
+      setStatus("worker-status", `Worker ${currentWorkerId} is stopped.`, "ok");
+    }
+
     function syncIdentityFields(userId) {
       const value = String(userId || "").trim();
       if (!value) {
@@ -890,7 +920,7 @@ DASHBOARD_HTML = """<!doctype html>
     async function refreshNetwork() {
       const payload = await api("/network");
       writeJson("network-json", payload);
-      writeJson("local-worker-json", payload.local_workers || {});
+      renderLocalWorkerState(payload);
       el("metric-queue").textContent = payload.queued_jobs.length;
       el("metric-workers").textContent = Object.keys(payload.workers).length;
       el("metric-users").textContent = payload.user_count;
@@ -997,7 +1027,7 @@ DASHBOARD_HTML = """<!doctype html>
         }),
       });
       writeJson("local-worker-json", payload.loop || {});
-      setStatus("worker-status", `Worker ${payload.worker.worker_id} is polling locally in the background.`, "ok");
+      setStatus("worker-status", `Worker ${payload.worker.worker_id} is polling locally in the background. Waiting for a compatible job.`, "ok");
       await refreshNetwork();
     }
 
@@ -1087,7 +1117,6 @@ DASHBOARD_HTML = """<!doctype html>
       await refreshWorkerContext();
       await refreshNetwork();
       renderTrackedJob({});
-      writeJson("local-worker-json", {});
       buildCliPack();
       setInterval(() => {
         refreshNetwork().catch(() => {});

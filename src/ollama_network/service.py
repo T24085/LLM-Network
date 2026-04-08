@@ -43,6 +43,7 @@ class NetworkService:
         with self._lock:
             self.coordinator.register_user(user_id=user_id, starting_credits=starting_credits)
             self._remember_user_locked(user_id)
+            self._remember_local_operator_locked(user_id)
             self._persist_locked()
             return {
                 "user_id": user_id,
@@ -54,6 +55,7 @@ class NetworkService:
             user_id = self._generate_user_id_locked()
             self.coordinator.register_user(user_id=user_id, starting_credits=starting_credits)
             self._remember_user_locked(user_id)
+            self._remember_local_operator_locked(user_id)
             self._persist_locked()
             return {
                 "user_id": user_id,
@@ -282,6 +284,7 @@ class NetworkService:
         worker_id = str(payload["worker_id"])
         poll_interval_seconds = float(payload.get("poll_interval_seconds", 2.0))
         with self._lock:
+            self._remember_local_operator_locked(str(payload["owner_user_id"]))
             worker_snapshot = self.register_worker(payload)
             existing = self._local_worker_loops.get(worker_id)
             if existing and existing["thread"].is_alive():
@@ -373,7 +376,13 @@ class NetworkService:
     def _remember_user_locked(self, user_id: str) -> None:
         self._meta["last_active_user_id"] = user_id
 
+    def _remember_local_operator_locked(self, user_id: str) -> None:
+        self._meta["local_operator_user_id"] = user_id
+
     def _auto_selected_user_id_locked(self, known_ids: list[str]) -> str | None:
+        local_operator = self._meta.get("local_operator_user_id")
+        if isinstance(local_operator, str) and local_operator in known_ids:
+            return local_operator
         last_active = self._meta.get("last_active_user_id")
         if isinstance(last_active, str) and last_active in known_ids:
             return last_active
