@@ -1,7 +1,7 @@
 import pytest
 
 from ollama_network.coordinator import OllamaNetworkCoordinator
-from ollama_network.models import JobResult, PolicyError, WorkerNode
+from ollama_network.models import JobResult, JobStatus, PolicyError, WorkerNode
 
 
 def make_worker(
@@ -93,10 +93,10 @@ def test_routes_public_job_to_other_owner_and_transfers_credits() -> None:
     )
 
     assert completed.actual_credits > 0
-    assert coordinator.ledger.balance_of("bob") == completed.actual_credits
-    assert coordinator.ledger.balance_of("alice") == pytest.approx(
-        8.0 - completed.actual_credits, abs=1e-4
-    )
+    assert completed.worker_earned_credits > 0
+    assert completed.platform_fee_credits >= 0
+    assert coordinator.ledger.balance_of("bob") == completed.worker_earned_credits
+    assert coordinator.ledger.balance_of("alice") == 8 - completed.actual_credits
 
 
 def test_unverified_jobs_refund_the_requester() -> None:
@@ -126,8 +126,8 @@ def test_unverified_jobs_refund_the_requester() -> None:
         )
     )
 
-    assert coordinator.ledger.balance_of("alice") == pytest.approx(4.0, abs=1e-4)
-    assert coordinator.ledger.balance_of("bob") == pytest.approx(0.0, abs=1e-4)
+    assert coordinator.ledger.balance_of("alice") == 4
+    assert coordinator.ledger.balance_of("bob") == 0
 
 
 def test_self_owned_workers_do_not_receive_public_pool_jobs() -> None:
@@ -143,6 +143,42 @@ def test_self_owned_workers_do_not_receive_public_pool_jobs() -> None:
     )
 
     assert coordinator.assign_next_job() is None
+
+
+def test_admin_override_allows_worker_to_claim_own_queued_job() -> None:
+    coordinator = OllamaNetworkCoordinator()
+    coordinator.register_user("alice", starting_credits=4.0)
+    coordinator.register_worker(make_worker(worker_id="worker-alice", owner_user_id="alice"))
+
+    record = coordinator.submit_job(
+        requester_user_id="alice",
+        model_tag="llama3.1:8b",
+        prompt="Draft a changelog.",
+        max_output_tokens=200,
+    )
+
+    assignment = coordinator.claim_job_for_worker("worker-alice", allow_own_jobs=True)
+
+    assert assignment is not None
+    assert assignment.job_id == record.request.job_id
+
+    completed = coordinator.complete_job(
+        JobResult(
+            job_id=record.request.job_id,
+            worker_id="worker-alice",
+            success=True,
+            verified=True,
+            output_tokens=64,
+            latency_seconds=0.5,
+            output_text="admin preview",
+        )
+    )
+
+    assert completed.status is JobStatus.COMPLETED
+    assert completed.result is not None
+    assert completed.result.output_text == "admin preview"
+    assert completed.refunded_credits == completed.reserved_credits
+    assert coordinator.ledger.balance_of("alice") == 4
 
 
 def test_auto_selector_uses_strongest_installed_worker_model() -> None:

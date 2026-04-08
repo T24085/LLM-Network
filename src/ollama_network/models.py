@@ -2,10 +2,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
+from math import ceil
 
 
 class PolicyError(ValueError):
     """Raised when a job or worker violates the reciprocal local-only network rules."""
+
+
+class AuthorizationError(PermissionError):
+    """Raised when an authenticated user tries to act as a different network identity."""
 
 
 class JobStatus(str, Enum):
@@ -13,6 +18,7 @@ class JobStatus(str, Enum):
     ASSIGNED = "assigned"
     COMPLETED = "completed"
     FAILED = "failed"
+    CANCELED = "canceled"
 
 
 class VerificationStatus(str, Enum):
@@ -20,26 +26,32 @@ class VerificationStatus(str, Enum):
     UNVERIFIED = "unverified"
 
 
+class LedgerEntryType(str, Enum):
+    PURCHASE = "purchase"
+    SPEND = "spend"
+    EARN = "earn"
+    REFUND = "refund"
+    ADJUSTMENT = "adjustment"
+
+
 @dataclass(frozen=True)
 class ModelDefinition:
     tag: str
     family: str
     min_vram_gb: float
-    input_credit_rate: float
-    output_credit_rate: float
+    input_credit_rate: float = 0.0
+    output_credit_rate: float = 0.0
     quality_tier: str = "better"
+    pricing_tier: str = "tier_2_standard"
+    credit_multiplier: float = 1.5
     strength_score: float = 50.0
     runtime: str = "ollama"
     local_only: bool = True
     supports_public_pool: bool = True
 
-    def estimate_credits(self, prompt_tokens: int, output_tokens: int) -> float:
-        prompt_units = max(prompt_tokens, 1) / 1000.0
-        output_units = max(output_tokens, 1) / 1000.0
-        estimate = (prompt_units * self.input_credit_rate) + (
-            output_units * self.output_credit_rate
-        )
-        return round(max(estimate, 0.25), 4)
+    def estimate_credits(self, prompt_tokens: int, output_tokens: int) -> int:
+        billed_units = max(1, ceil((max(prompt_tokens, 0) + max(output_tokens, 0)) / 1000))
+        return max(1, ceil(billed_units * self.credit_multiplier))
 
 
 @dataclass
@@ -65,7 +77,6 @@ class WorkerNode:
             and self.public_pool
             and self.runtime == "ollama"
             and not self.allows_cloud_fallback
-            and self.vram_gb >= model.min_vram_gb
             and model.tag in self.installed_models
             and self.benchmark_tokens_per_second.get(model.tag, 0.0) > 0.0
             and self.active_jobs < self.max_concurrent_jobs
@@ -78,9 +89,13 @@ class JobRequest:
     requester_user_id: str
     model_tag: str
     prompt: str
+    compiled_prompt: str
     prompt_tokens: int
     max_output_tokens: int
     privacy_tier: str = "public"
+    submitted_at_unix: float = 0.0
+    conversation_id: str = ""
+    conversation_turn: int = 0
 
 
 @dataclass(frozen=True)
@@ -88,7 +103,7 @@ class JobAssignment:
     job_id: str
     worker_id: str
     model_tag: str
-    reserved_credits: float
+    reserved_credits: int
     prompt: str
     prompt_tokens: int
     max_output_tokens: int
@@ -102,6 +117,7 @@ class JobResult:
     output_tokens: int
     latency_seconds: float
     verified: bool
+    prompt_tokens_used: int = 0
     output_text: str = ""
     error_message: str = ""
 
@@ -109,11 +125,18 @@ class JobResult:
 @dataclass
 class JobRecord:
     request: JobRequest
-    reserved_credits: float
+    reserved_credits: int
     status: JobStatus = JobStatus.QUEUED
     assigned_worker_id: str | None = None
     resolved_model_tag: str | None = None
-    actual_credits: float = 0.0
+    assigned_at_unix: float = 0.0
+    completed_at_unix: float = 0.0
+    actual_credits: int = 0
+    prompt_tokens_used: int = 0
+    billed_tokens: int = 0
+    worker_earned_credits: int = 0
+    platform_fee_credits: int = 0
+    refunded_credits: int = 0
     result: JobResult | None = None
 
 
@@ -121,20 +144,34 @@ class JobRecord:
 class CreditHold:
     job_id: str
     user_id: str
-    amount: float
+    amount: int
+    created_at_unix: float = 0.0
+
+
+@dataclass
+class UserWallet:
+    user_id: str
+    available_credits: int = 0
+    spent_credits: int = 0
+    earned_credits: int = 0
+    created_at_unix: float = 0.0
 
 
 @dataclass(frozen=True)
 class CreditTransaction:
+    entry_id: str
     user_id: str
-    delta: float
-    reason: str
-    reference_id: str
+    entry_type: LedgerEntryType
+    amount: int
+    source: str
+    job_id: str = ""
+    timestamp_unix: float = 0.0
+    pending: bool = False
 
 
 @dataclass
 class NetworkSnapshot:
-    users: dict[str, float]
+    users: dict[str, int]
     queued_jobs: list[str]
     active_jobs: dict[str, int] = field(default_factory=dict)
 
@@ -145,5 +182,6 @@ class ExecutorResult:
     output_text: str
     output_tokens: int
     latency_seconds: float
+    prompt_tokens_used: int = 0
     verified: bool = True
     error_message: str = ""

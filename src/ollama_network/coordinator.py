@@ -5,8 +5,9 @@ from dataclasses import asdict
 from time import time
 from uuid import uuid4
 
+from .artifacts import extract_job_artifacts
 from .catalog import ApprovedModelCatalog
-from .ledger import CreditLedger
+from .ledger import CreditLedger, PLATFORM_WALLET_ID
 from .models import (
     JobAssignment,
     JobRecord,
@@ -34,7 +35,7 @@ class OllamaNetworkCoordinator:
         self._queued_job_ids: deque[str] = deque()
 
     def register_user(self, user_id: str, starting_credits: float = 0.0) -> None:
-        self.ledger.register_user(user_id=user_id, starting_credits=starting_credits)
+        self.ledger.register_user(user_id=user_id, starting_credits=int(round(starting_credits)))
 
     def register_worker(self, worker: WorkerNode) -> None:
         if not worker.worker_id.strip():
@@ -65,13 +66,17 @@ class OllamaNetworkCoordinator:
         model_tag: str,
         prompt: str,
         max_output_tokens: int,
+        compiled_prompt: str | None = None,
         prompt_tokens: int | None = None,
         privacy_tier: str = "public",
+        conversation_id: str = "",
+        conversation_turn: int = 0,
     ) -> JobRecord:
         if privacy_tier != "public":
             raise PolicyError(
                 "This volunteer network only accepts public jobs until secure attestation is added."
             )
+        submitted_at = time()
         selector = self.catalog.normalize_selector(model_tag)
         self.register_user(requester_user_id)
         estimated_prompt_tokens = prompt_tokens or self._estimate_prompt_tokens(prompt)
@@ -86,9 +91,13 @@ class OllamaNetworkCoordinator:
             requester_user_id=requester_user_id,
             model_tag=selector,
             prompt=prompt,
+            compiled_prompt=compiled_prompt or prompt,
             prompt_tokens=estimated_prompt_tokens,
             max_output_tokens=max_output_tokens,
             privacy_tier=privacy_tier,
+            submitted_at_unix=submitted_at,
+            conversation_id=conversation_id,
+            conversation_turn=conversation_turn,
         )
         self.ledger.reserve(user_id=requester_user_id, job_id=job_id, amount=reserved_credits)
         record = JobRecord(request=request, reserved_credits=reserved_credits)
@@ -113,19 +122,24 @@ class OllamaNetworkCoordinator:
             record.status = JobStatus.ASSIGNED
             record.assigned_worker_id = worker.worker_id
             record.resolved_model_tag = resolved_model.tag
+            record.assigned_at_unix = time()
             worker.active_jobs += 1
             return JobAssignment(
                 job_id=job_id,
                 worker_id=worker.worker_id,
                 model_tag=resolved_model.tag,
                 reserved_credits=record.reserved_credits,
-                prompt=record.request.prompt,
+                prompt=record.request.compiled_prompt,
                 prompt_tokens=record.request.prompt_tokens,
                 max_output_tokens=record.request.max_output_tokens,
             )
         return None
 
-    def claim_job_for_worker(self, worker_id: str) -> JobAssignment | None:
+    def claim_job_for_worker(
+        self,
+        worker_id: str,
+        allow_own_jobs: bool = False,
+    ) -> JobAssignment | None:
         worker = self.update_worker(worker_id=worker_id, online=True)
         for _ in range(len(self._queued_job_ids)):
             job_id = self._queued_job_ids.popleft()
@@ -134,7 +148,7 @@ class OllamaNetworkCoordinator:
                 continue
             resolved_model = self._resolve_model_for_worker(worker, record.request.model_tag)
             if (
-                worker.owner_user_id == record.request.requester_user_id
+                (not allow_own_jobs and worker.owner_user_id == record.request.requester_user_id)
                 or resolved_model is None
                 or not worker.supports_model(resolved_model)
             ):
@@ -143,13 +157,14 @@ class OllamaNetworkCoordinator:
             record.status = JobStatus.ASSIGNED
             record.assigned_worker_id = worker.worker_id
             record.resolved_model_tag = resolved_model.tag
+            record.assigned_at_unix = time()
             worker.active_jobs += 1
             return JobAssignment(
                 job_id=job_id,
                 worker_id=worker.worker_id,
                 model_tag=resolved_model.tag,
                 reserved_credits=record.reserved_credits,
-                prompt=record.request.prompt,
+                prompt=record.request.compiled_prompt,
                 prompt_tokens=record.request.prompt_tokens,
                 max_output_tokens=record.request.max_output_tokens,
             )
@@ -166,33 +181,48 @@ class OllamaNetworkCoordinator:
         if not result.success or not result.verified:
             self.ledger.release(
                 job_id=result.job_id,
-                reason="job failed or could not be verified",
+                source="job_failed_or_unverified",
             )
             record.status = JobStatus.FAILED
+            record.refunded_credits = record.reserved_credits
+            record.prompt_tokens_used = result.prompt_tokens_used or record.request.prompt_tokens
+            record.completed_at_unix = time()
             return record
         if worker.owner_user_id == record.request.requester_user_id:
             self.ledger.release(
                 job_id=result.job_id,
-                reason="self-served work does not earn reciprocal credits",
+                source="self_served_refund",
             )
             record.status = JobStatus.COMPLETED
+            record.refunded_credits = record.reserved_credits
+            record.prompt_tokens_used = result.prompt_tokens_used or record.request.prompt_tokens
+            record.billed_tokens = record.prompt_tokens_used + result.output_tokens
+            record.completed_at_unix = time()
             return record
+        prompt_tokens_used = result.prompt_tokens_used or record.request.prompt_tokens
         actual_credits = min(
             record.reserved_credits,
             self.catalog.actual_cost(
                 selector=record.request.model_tag,
                 resolved_model_tag=record.resolved_model_tag or record.request.model_tag,
-                prompt_tokens=record.request.prompt_tokens,
+                prompt_tokens=prompt_tokens_used,
                 output_tokens=result.output_tokens,
             ),
         )
-        transferred, _ = self.ledger.settle(
+        billed_tokens = prompt_tokens_used + result.output_tokens
+        final_cost, refund, worker_share, platform_share = self.ledger.settle(
             job_id=result.job_id,
             worker_user_id=worker.owner_user_id,
-            amount_to_worker=actual_credits,
+            final_cost=actual_credits,
         )
-        record.actual_credits = transferred
+        record.actual_credits = final_cost
+        record.prompt_tokens_used = prompt_tokens_used
+        record.billed_tokens = billed_tokens
+        record.refunded_credits = refund
+        record.worker_earned_credits = worker_share
+        record.platform_fee_credits = platform_share
         record.status = JobStatus.COMPLETED
+        record.completed_at_unix = time()
         return record
 
     def snapshot(self) -> NetworkSnapshot:
@@ -218,19 +248,155 @@ class OllamaNetworkCoordinator:
             "model_tag": record.request.model_tag,
             "resolved_model_tag": record.resolved_model_tag,
             "prompt": record.request.prompt,
+            "compiled_prompt": record.request.compiled_prompt,
             "prompt_tokens": record.request.prompt_tokens,
             "max_output_tokens": record.request.max_output_tokens,
             "privacy_tier": record.request.privacy_tier,
+            "submitted_at_unix": record.request.submitted_at_unix,
+            "conversation_id": record.request.conversation_id,
+            "conversation_turn": record.request.conversation_turn,
+            "assigned_at_unix": record.assigned_at_unix,
+            "completed_at_unix": record.completed_at_unix,
             "reserved_credits": record.reserved_credits,
             "status": record.status.value,
             "assigned_worker_id": record.assigned_worker_id,
             "actual_credits": record.actual_credits,
+            "prompt_tokens_used": record.prompt_tokens_used,
+            "output_tokens_used": record.result.output_tokens if record.result else 0,
+            "billed_tokens": record.billed_tokens,
+            "worker_earned_credits": record.worker_earned_credits,
+            "platform_fee_credits": record.platform_fee_credits,
+            "refunded_credits": record.refunded_credits,
             "result": asdict(record.result) if record.result else None,
+            "artifacts": extract_job_artifacts(
+                record.result.output_text if record.result else "",
+                prompt=record.request.prompt,
+            ),
         }
         return payload
 
+    def list_jobs_for_user(
+        self,
+        requester_user_id: str,
+        limit: int = 20,
+    ) -> list[dict[str, object]]:
+        jobs = [
+            self.job_snapshot(job_id)
+            for job_id, record in self.jobs.items()
+            if record.request.requester_user_id == requester_user_id
+        ]
+        jobs.sort(
+            key=lambda item: (
+                float(item.get("submitted_at_unix", 0.0)),
+                str(item.get("job_id", "")),
+            ),
+            reverse=True,
+        )
+        return jobs[: max(limit, 0)]
+
+    def explain_worker_queue(
+        self,
+        worker_id: str,
+        allow_own_jobs: bool = False,
+    ) -> dict[str, object]:
+        worker = self.workers[worker_id]
+        queued_records = [
+            self.jobs[job_id]
+            for job_id in self._queued_job_ids
+            if job_id in self.jobs and self.jobs[job_id].status is JobStatus.QUEUED
+        ]
+        blocked_examples: list[dict[str, str]] = []
+        compatible_count = 0
+        for record in queued_records:
+            reason = self._queue_block_reason(worker, record, allow_own_jobs=allow_own_jobs)
+            if not reason:
+                compatible_count += 1
+                continue
+            if len(blocked_examples) < 3:
+                blocked_examples.append(
+                    {
+                        "job_id": record.request.job_id,
+                        "model_tag": record.request.model_tag,
+                        "requester_user_id": record.request.requester_user_id,
+                        "reason": reason,
+                    }
+                )
+        summary = "No queued jobs."
+        if compatible_count:
+            summary = f"{compatible_count} compatible queued job(s) available."
+        elif blocked_examples:
+            summary = blocked_examples[0]["reason"]
+        return {
+            "worker_id": worker_id,
+            "queued_jobs": len(queued_records),
+            "compatible_jobs": compatible_count,
+            "blocked_examples": blocked_examples,
+            "summary": summary,
+        }
+
+    def cancel_queued_job(
+        self,
+        job_id: str,
+        reason: str = "",
+    ) -> JobRecord:
+        record = self.jobs[job_id]
+        if record.status is not JobStatus.QUEUED:
+            raise PolicyError("Only queued jobs can be canceled.")
+        self._queued_job_ids = deque(queued_id for queued_id in self._queued_job_ids if queued_id != job_id)
+        refunded = 0
+        if job_id in self.ledger.export_state().get("holds", {}):
+            refunded = self.ledger.release(
+                job_id=job_id,
+                source=f"admin_cancel:{reason.strip() or 'queued job canceled'}",
+            )
+        record.status = JobStatus.CANCELED
+        record.refunded_credits = refunded
+        record.completed_at_unix = time()
+        record.result = JobResult(
+            job_id=job_id,
+            worker_id="",
+            success=False,
+            output_tokens=0,
+            latency_seconds=0.0,
+            verified=False,
+            output_text="",
+            error_message=reason.strip() or "Canceled by admin.",
+        )
+        return record
+
+    def reroute_queued_job(
+        self,
+        job_id: str,
+        model_tag: str,
+    ) -> JobRecord:
+        record = self.jobs[job_id]
+        if record.status is not JobStatus.QUEUED:
+            raise PolicyError("Only queued jobs can be rerouted.")
+        normalized_selector = self.catalog.normalize_selector(model_tag)
+        record.request = JobRequest(
+            job_id=record.request.job_id,
+            requester_user_id=record.request.requester_user_id,
+            model_tag=normalized_selector,
+            prompt=record.request.prompt,
+            compiled_prompt=record.request.compiled_prompt,
+            prompt_tokens=record.request.prompt_tokens,
+            max_output_tokens=record.request.max_output_tokens,
+            privacy_tier=record.request.privacy_tier,
+            submitted_at_unix=record.request.submitted_at_unix,
+            conversation_id=record.request.conversation_id,
+            conversation_turn=record.request.conversation_turn,
+        )
+        record.resolved_model_tag = None
+        record.assigned_worker_id = None
+        record.assigned_at_unix = 0.0
+        return record
+
     def _known_users(self) -> set[str]:
-        known = set(self.ledger.export_state().get("balances", {}).keys())
+        known = {
+            user_id
+            for user_id in self.ledger.export_state().get("wallets", {}).keys()
+            if user_id != PLATFORM_WALLET_ID
+        }
         known.update(worker.owner_user_id for worker in self.workers.values())
         known.update(record.request.requester_user_id for record in self.jobs.values())
         return known
@@ -274,6 +440,28 @@ class OllamaNetworkCoordinator:
             and worker.supports_model(self.catalog.models[model_tag])
         }
         return self.catalog.resolve_selector_for_models(selector, supported_models)
+
+    def _queue_block_reason(
+        self,
+        worker: WorkerNode,
+        record: JobRecord,
+        allow_own_jobs: bool,
+    ) -> str:
+        if not allow_own_jobs and worker.owner_user_id == record.request.requester_user_id:
+            return "This worker can only claim jobs from other users until admin self-serve is enabled."
+        if worker.active_jobs >= worker.max_concurrent_jobs:
+            return "This worker is already at its active job limit."
+        if not worker.online:
+            return "This worker is offline."
+        resolved_model = self._resolve_model_for_worker(worker, record.request.model_tag)
+        if resolved_model is None:
+            requested = record.request.model_tag
+            if requested in self.catalog.models and requested not in worker.installed_models:
+                return f"Queued job requires {requested}, which is not installed on this worker."
+            return f"No compatible local model is available for queued selector {requested}."
+        if not worker.supports_model(resolved_model):
+            return f"Worker cannot currently serve {resolved_model.tag}."
+        return ""
 
     def export_state(self) -> dict[str, object]:
         return {
@@ -333,6 +521,7 @@ class OllamaNetworkCoordinator:
                     output_tokens=int(result_payload["output_tokens"]),
                     latency_seconds=float(result_payload["latency_seconds"]),
                     verified=bool(result_payload["verified"]),
+                    prompt_tokens_used=int(result_payload.get("prompt_tokens_used", 0)),
                     output_text=str(result_payload.get("output_text", "")),
                     error_message=str(result_payload.get("error_message", "")),
                 )
@@ -345,11 +534,15 @@ class OllamaNetworkCoordinator:
                     requester_user_id=str(job_payload["requester_user_id"]),
                     model_tag=str(job_payload["model_tag"]),
                     prompt=str(job_payload["prompt"]),
+                    compiled_prompt=str(job_payload.get("compiled_prompt", job_payload.get("prompt", ""))),
                     prompt_tokens=int(job_payload["prompt_tokens"]),
                     max_output_tokens=int(job_payload["max_output_tokens"]),
                     privacy_tier=str(job_payload.get("privacy_tier", "public")),
+                    submitted_at_unix=float(job_payload.get("submitted_at_unix", 0.0)),
+                    conversation_id=str(job_payload.get("conversation_id", "")),
+                    conversation_turn=int(job_payload.get("conversation_turn", 0)),
                 ),
-                reserved_credits=float(job_payload["reserved_credits"]),
+                reserved_credits=int(round(float(job_payload["reserved_credits"]))),
                 status=JobStatus(str(job_payload["status"])),
                 assigned_worker_id=(
                     str(job_payload["assigned_worker_id"])
@@ -361,7 +554,14 @@ class OllamaNetworkCoordinator:
                     if job_payload.get("resolved_model_tag") is not None
                     else None
                 ),
-                actual_credits=float(job_payload.get("actual_credits", 0.0)),
+                assigned_at_unix=float(job_payload.get("assigned_at_unix", 0.0)),
+                completed_at_unix=float(job_payload.get("completed_at_unix", 0.0)),
+                actual_credits=int(round(float(job_payload.get("actual_credits", 0.0)))),
+                prompt_tokens_used=int(job_payload.get("prompt_tokens_used", 0)),
+                billed_tokens=int(job_payload.get("billed_tokens", 0)),
+                worker_earned_credits=int(job_payload.get("worker_earned_credits", 0)),
+                platform_fee_credits=int(job_payload.get("platform_fee_credits", 0)),
+                refunded_credits=int(job_payload.get("refunded_credits", 0)),
                 result=result,
             )
 

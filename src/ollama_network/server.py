@@ -7,7 +7,7 @@ from .api import create_server
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run the Ollama Network API server.")
-    parser.add_argument("--host", default="127.0.0.1", help="Bind host.")
+    parser.add_argument("--host", default="localhost", help="Bind host.")
     parser.add_argument("--port", type=int, default=8000, help="Bind port.")
     return parser
 
