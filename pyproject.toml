@@ -7,7 +7,7 @@ name = "ollama-network"
 version = "0.1.0"
 description = "Reciprocal local-only Ollama inference network MVP."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.8"
 dependencies = ["google-auth[requests]>=2.38", "google-cloud-firestore>=2.21"]
 
 [project.scripts]

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from ollama_network.ollama_local import LocalOllamaModelDetector
 
 

@@ -5,6 +5,7 @@ import json
 import os
 import time
 from dataclasses import dataclass
+from typing import Optional, Union
 from urllib import error, request
 
 from .executor import OllamaCommandExecutor
@@ -30,7 +31,7 @@ class WorkerDaemon:
     def __init__(
         self,
         config: WorkerConfig,
-        executor: OllamaCommandExecutor | object | None = None,
+        executor: Optional[Union[OllamaCommandExecutor, object]] = None,
     ) -> None:
         self.config = config
         self.executor = executor or OllamaCommandExecutor()
@@ -49,7 +50,7 @@ class WorkerDaemon:
         }
         return self._post("/workers/register", payload)
 
-    def run_once(self) -> dict[str, object] | None:
+    def run_once(self) -> Optional[dict[str, object]]:
         claimed = self._post(f"/workers/{self.config.worker_id}/claim", {})
         assignment = claimed.get("assignment")
         if assignment is None:

@@ -32,7 +32,7 @@ LLM Network lets one machine run the coordinator and dashboard while other machi
 
 ## Requirements
 
-- Python 3.11+
+- Python 3.8+
 - Ollama on any machine that will execute local models
 - Firebase project for Google sign-in
 - Optional Firestore service account if you want shared state across multiple hosts

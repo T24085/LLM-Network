@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Optional
 
 from .models import ModelDefinition, PolicyError
 
@@ -328,7 +329,7 @@ class ApprovedModelCatalog:
         self,
         selector: str,
         installed_models: set[str],
-    ) -> ModelDefinition | None:
+    ) -> Optional[ModelDefinition]:
         normalized = self.normalize_selector(selector)
         candidates = [
             self.models[model_tag]
@@ -389,7 +390,7 @@ class ApprovedModelCatalog:
         return [self.require_local_model(selector)]
 
     @staticmethod
-    def _strongest_model(models: list[ModelDefinition]) -> ModelDefinition | None:
+    def _strongest_model(models: list[ModelDefinition]) -> Optional[ModelDefinition]:
         if not models:
             return None
         return max(models, key=lambda model: (model.strength_score, model.min_vram_gb))

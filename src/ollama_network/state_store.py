@@ -4,11 +4,11 @@ import json
 import os
 from pathlib import Path
 from time import sleep
-from typing import Protocol
+from typing import Optional, Protocol, Union
 
 
 class StateStore(Protocol):
-    def load(self) -> dict[str, object] | None: ...
+    def load(self) -> Optional[dict[str, object]]: ...
 
     def save(self, payload: dict[str, object]) -> None: ...
 
@@ -16,10 +16,10 @@ class StateStore(Protocol):
 class LocalStateStore:
     """Persists coordinator state to a local JSON file that is never served by the API."""
 
-    def __init__(self, path: str | Path) -> None:
+    def __init__(self, path: Union[str, Path]) -> None:
         self.path = Path(path)
 
-    def load(self) -> dict[str, object] | None:
+    def load(self) -> Optional[dict[str, object]]:
         if not self.path.exists():
             return None
         return json.loads(self.path.read_text(encoding="utf-8"))
@@ -49,7 +49,7 @@ class FirestoreStateStore:
         collection: str,
         document: str,
         project_id: str = "",
-        client: object | None = None,
+        client: Optional[object] = None,
     ) -> None:
         self.collection = collection
         self.document = document
@@ -65,7 +65,7 @@ class FirestoreStateStore:
         self._client = client
         self._doc = self._client.collection(collection).document(document)
 
-    def load(self) -> dict[str, object] | None:
+    def load(self) -> Optional[dict[str, object]]:
         snapshot = self._doc.get()
         exists = getattr(snapshot, "exists", False)
         if not exists:

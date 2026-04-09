@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from ollama_network.service import NetworkService
 from ollama_network.state_store import FirestoreStateStore, LocalStateStore
 

@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import json
 import threading
 import time
+from typing import Optional
 from urllib import request
 
 from ollama_network.api import NetworkHTTPServer
@@ -55,7 +58,7 @@ def api_post(
     base_url: str,
     path: str,
     payload: dict[str, object],
-    headers: dict[str, str] | None = None,
+    headers: Optional[dict[str, str]] = None,
 ) -> dict[str, object]:
     body = json.dumps(payload).encode("utf-8")
     req = request.Request(
@@ -71,7 +74,7 @@ def api_post(
 def api_get(
     base_url: str,
     path: str,
-    headers: dict[str, str] | None = None,
+    headers: Optional[dict[str, str]] = None,
 ) -> dict[str, object]:
     req = request.Request(
         url=f"{base_url}{path}",

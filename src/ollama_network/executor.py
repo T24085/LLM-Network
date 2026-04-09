@@ -4,6 +4,7 @@ import json
 import os
 import re
 import time
+from typing import Optional
 from urllib import error, request
 
 from .models import ExecutorResult
@@ -18,8 +19,8 @@ class OllamaCommandExecutor:
     def __init__(
         self,
         ollama_host: str = "http://127.0.0.1:11434",
-        timeout_seconds: float | None = None,
-        overall_timeout_seconds: float | None = None,
+        timeout_seconds: Optional[float] = None,
+        overall_timeout_seconds: Optional[float] = None,
     ) -> None:
         self.ollama_host = ollama_host.rstrip("/")
         configured_idle = float(os.environ.get("OLLAMA_NETWORK_OLLAMA_IDLE_TIMEOUT_SECONDS", "900"))

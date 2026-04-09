@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from typing import Optional
 
 from .branding import load_logo_data_url
 
@@ -698,7 +699,7 @@ Credit exchange: $1 = 100 credits</code></div>
 """
 
 
-def render_landing_html(firebase_client_config: dict[str, str] | None = None) -> str:
+def render_landing_html(firebase_client_config: Optional[dict[str, str]] = None) -> str:
     config = dict(_DEFAULT_FIREBASE_CONFIG)
     if firebase_client_config:
         config.update(firebase_client_config)

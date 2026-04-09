@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from math import ceil
+from typing import Optional
 
 
 class PolicyError(ValueError):
@@ -69,7 +70,7 @@ class WorkerNode:
     runtime: str = "ollama"
     allows_cloud_fallback: bool = False
     active_jobs: int = 0
-    last_heartbeat_unix: float | None = None
+    last_heartbeat_unix: Optional[float] = None
 
     def supports_model(self, model: ModelDefinition) -> bool:
         return (
@@ -127,8 +128,8 @@ class JobRecord:
     request: JobRequest
     reserved_credits: int
     status: JobStatus = JobStatus.QUEUED
-    assigned_worker_id: str | None = None
-    resolved_model_tag: str | None = None
+    assigned_worker_id: Optional[str] = None
+    resolved_model_tag: Optional[str] = None
     assigned_at_unix: float = 0.0
     completed_at_unix: float = 0.0
     actual_credits: int = 0
@@ -137,7 +138,7 @@ class JobRecord:
     worker_earned_credits: int = 0
     platform_fee_credits: int = 0
     refunded_credits: int = 0
-    result: JobResult | None = None
+    result: Optional[JobResult] = None
 
 
 @dataclass(frozen=True)

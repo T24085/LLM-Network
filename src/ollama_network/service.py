@@ -8,7 +8,7 @@ import threading
 from dataclasses import asdict
 from pathlib import Path
 from time import time
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 from uuid import uuid4
 
 from .auth import AuthenticationError
@@ -29,13 +29,13 @@ class NetworkService:
 
     def __init__(
         self,
-        coordinator: OllamaNetworkCoordinator | None = None,
-        executor_factory: Callable[[str], object] | None = None,
-        model_detector: object | None = None,
-        hardware_detector: object | None = None,
-        state_store: LocalStateStore | None = None,
+        coordinator: Optional[OllamaNetworkCoordinator] = None,
+        executor_factory: Optional[Callable[[str], object]] = None,
+        model_detector: Optional[object] = None,
+        hardware_detector: Optional[object] = None,
+        state_store: Optional[LocalStateStore] = None,
         firebase_bootstrap_credits: float = 5.0,
-        admin_emails: set[str] | None = None,
+        admin_emails: Optional[set[str]] = None,
     ) -> None:
         self.coordinator = coordinator or OllamaNetworkCoordinator()
         self._lock = threading.RLock()
@@ -54,8 +54,8 @@ class NetworkService:
         self,
         user_id: str,
         starting_credits: float = 0.0,
-        actor_user_id: str | None = None,
-        grant_starting_credits: bool | None = None,
+        actor_user_id: Optional[str] = None,
+        grant_starting_credits: Optional[bool] = None,
     ) -> dict[str, object]:
         self._assert_actor_matches(actor_user_id, user_id, "register a user")
         applied_starting_credits = (
@@ -86,8 +86,8 @@ class NetworkService:
     def issue_user_identity(
         self,
         starting_credits: float = 0.0,
-        actor_user_id: str | None = None,
-        grant_starting_credits: bool | None = None,
+        actor_user_id: Optional[str] = None,
+        grant_starting_credits: Optional[bool] = None,
     ) -> dict[str, object]:
         applied_starting_credits = (
             float(starting_credits)
@@ -125,7 +125,7 @@ class NetworkService:
     def register_worker(
         self,
         payload: dict[str, object],
-        actor_user_id: str | None = None,
+        actor_user_id: Optional[str] = None,
     ) -> dict[str, object]:
         owner_user_id = str(payload["owner_user_id"])
         self._assert_actor_matches(actor_user_id, owner_user_id, "register a worker")
@@ -154,7 +154,7 @@ class NetworkService:
     def submit_job(
         self,
         payload: dict[str, object],
-        actor_user_id: str | None = None,
+        actor_user_id: Optional[str] = None,
     ) -> dict[str, object]:
         requester_user_id = str(payload.get("requester_user_id") or actor_user_id or "")
         self._assert_actor_matches(actor_user_id, requester_user_id, "submit a job")
@@ -197,10 +197,10 @@ class NetworkService:
     def claim_job_for_worker(
         self,
         worker_id: str,
-        actor_user_id: str | None = None,
+        actor_user_id: Optional[str] = None,
         actor_email: str = "",
         allow_admin_self_serve: bool = False,
-    ) -> dict[str, object] | None:
+    ) -> Optional[dict[str, object]]:
         allow_own_jobs = False
         if allow_admin_self_serve:
             self._assert_admin_email(actor_email)
@@ -227,7 +227,7 @@ class NetworkService:
     def complete_job(
         self,
         payload: dict[str, object],
-        actor_user_id: str | None = None,
+        actor_user_id: Optional[str] = None,
         actor_email: str = "",
     ) -> dict[str, object]:
         result = JobResult(
@@ -277,7 +277,7 @@ class NetworkService:
     def get_job(
         self,
         job_id: str,
-        actor_user_id: str | None = None,
+        actor_user_id: Optional[str] = None,
         actor_email: str = "",
     ) -> dict[str, object]:
         with self._lock:
@@ -292,7 +292,7 @@ class NetworkService:
     def create_job_artifacts(
         self,
         job_id: str,
-        actor_user_id: str | None = None,
+        actor_user_id: Optional[str] = None,
         actor_email: str = "",
     ) -> dict[str, object]:
         with self._lock:
@@ -305,7 +305,7 @@ class NetworkService:
     def download_job_artifacts(
         self,
         job_id: str,
-        actor_user_id: str | None = None,
+        actor_user_id: Optional[str] = None,
         actor_email: str = "",
     ) -> tuple[str, bytes]:
         with self._lock:
@@ -316,7 +316,7 @@ class NetworkService:
     def get_user(
         self,
         user_id: str,
-        actor_user_id: str | None = None,
+        actor_user_id: Optional[str] = None,
         actor_email: str = "",
     ) -> dict[str, object]:
         if not self.is_admin_email(actor_email):
@@ -378,7 +378,7 @@ class NetworkService:
     def get_conversation(
         self,
         conversation_id: str,
-        actor_user_id: str | None = None,
+        actor_user_id: Optional[str] = None,
         actor_email: str = "",
     ) -> dict[str, object]:
         with self._lock:
@@ -396,7 +396,7 @@ class NetworkService:
     def archive_conversation(
         self,
         conversation_id: str,
-        actor_user_id: str | None = None,
+        actor_user_id: Optional[str] = None,
         actor_email: str = "",
     ) -> dict[str, object]:
         with self._lock:
@@ -419,7 +419,7 @@ class NetworkService:
     def restore_conversation(
         self,
         conversation_id: str,
-        actor_user_id: str | None = None,
+        actor_user_id: Optional[str] = None,
         actor_email: str = "",
     ) -> dict[str, object]:
         with self._lock:
@@ -744,7 +744,7 @@ class NetworkService:
                 "label": str(record.get("label", "")),
             }
 
-    def get_identity_context(self, actor_user_id: str | None = None) -> dict[str, object]:
+    def get_identity_context(self, actor_user_id: Optional[str] = None) -> dict[str, object]:
         with self._lock:
             wallets = self.coordinator.ledger.export_state().get("wallets", {})
             known_ids = sorted(str(user_id) for user_id in wallets.keys() if user_id != "platform_treasury")
@@ -755,7 +755,7 @@ class NetworkService:
                 "auto_selected_user_id": selected_user_id,
             }
 
-    def get_worker_context(self, actor_user_id: str | None = None) -> dict[str, object]:
+    def get_worker_context(self, actor_user_id: Optional[str] = None) -> dict[str, object]:
         with self._lock:
             wallets = self.coordinator.ledger.export_state().get("wallets", {})
             known_ids = sorted(str(user_id) for user_id in wallets.keys() if user_id != "platform_treasury")
@@ -867,7 +867,7 @@ class NetworkService:
     def get_worker_stats(
         self,
         worker_id: str,
-        actor_user_id: str | None = None,
+        actor_user_id: Optional[str] = None,
         actor_email: str = "",
     ) -> dict[str, object]:
         with self._lock:
@@ -968,11 +968,11 @@ class NetworkService:
     def run_worker_cycle(
         self,
         worker_id: str,
-        executor: object | None = None,
-        actor_user_id: str | None = None,
+        executor: Optional[object] = None,
+        actor_user_id: Optional[str] = None,
         actor_email: str = "",
         allow_admin_self_serve: bool = False,
-    ) -> dict[str, object] | None:
+    ) -> Optional[dict[str, object]]:
         allow_own_jobs = False
         if allow_admin_self_serve:
             self._assert_admin_email(actor_email)
@@ -1025,7 +1025,7 @@ class NetworkService:
     def inspect_worker_queue(
         self,
         worker_id: str,
-        actor_user_id: str | None = None,
+        actor_user_id: Optional[str] = None,
         actor_email: str = "",
         allow_admin_self_serve: bool = False,
     ) -> dict[str, object]:
@@ -1051,7 +1051,7 @@ class NetworkService:
     def start_local_worker(
         self,
         payload: dict[str, object],
-        actor_user_id: str | None = None,
+        actor_user_id: Optional[str] = None,
     ) -> dict[str, object]:
         worker_id = str(payload["worker_id"])
         poll_interval_seconds = float(payload.get("poll_interval_seconds", 2.0))
@@ -1110,7 +1110,7 @@ class NetworkService:
                 "loop": dict(status),
             }
 
-    def stop_local_worker(self, worker_id: str, actor_user_id: str | None = None) -> dict[str, object]:
+    def stop_local_worker(self, worker_id: str, actor_user_id: Optional[str] = None) -> dict[str, object]:
         with self._lock:
             session = self._local_worker_loops.get(worker_id)
             if worker_id in self.coordinator.workers:
@@ -1182,7 +1182,7 @@ class NetworkService:
     def _authorized_job_payload_locked(
         self,
         job_id: str,
-        actor_user_id: str | None,
+        actor_user_id: Optional[str],
         actor_email: str,
     ) -> dict[str, object]:
         payload = self.coordinator.job_snapshot(job_id)
@@ -1356,7 +1356,7 @@ class NetworkService:
         return "\n".join(lines)
 
     @staticmethod
-    def _conversation_assistant_content(output_text: str, artifacts: list[dict[str, object]] | None = None) -> str:
+    def _conversation_assistant_content(output_text: str, artifacts: Optional[list[dict[str, object]]] = None) -> str:
         text = str(output_text or "").strip()
         files = list(artifacts or []) or extract_job_artifacts(text)
         if not files:
@@ -1410,7 +1410,7 @@ class NetworkService:
         return float(thread.get("archived_at_unix", 0.0)) > 0
 
     @staticmethod
-    def _load_admin_emails(admin_emails: set[str] | None) -> set[str]:
+    def _load_admin_emails(admin_emails: Optional[set[str]]) -> set[str]:
         configured = admin_emails
         if configured is None:
             env_value = os.environ.get("OLLAMA_NETWORK_ADMIN_EMAILS", "")
@@ -1442,7 +1442,7 @@ class NetworkService:
 
     @staticmethod
     def _assert_actor_matches(
-        actor_user_id: str | None,
+        actor_user_id: Optional[str],
         requested_user_id: str,
         action: str,
     ) -> None:
@@ -1451,7 +1451,7 @@ class NetworkService:
                 f"You can only {action} with your own network account."
             )
 
-    def _auto_selected_user_id_locked(self, known_ids: list[str]) -> str | None:
+    def _auto_selected_user_id_locked(self, known_ids: list[str]) -> Optional[str]:
         local_operator = self._meta.get("local_operator_user_id")
         if isinstance(local_operator, str) and local_operator in known_ids:
             return local_operator

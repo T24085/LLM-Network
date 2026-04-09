@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from typing import Any
+from typing import Any, Optional
 from urllib.parse import urlparse
 
 from .auth import AuthenticationError, GoogleFirebaseTokenVerifier, load_firebase_project_config
@@ -20,8 +20,8 @@ class NetworkHTTPServer(ThreadingHTTPServer):
         self,
         server_address: tuple[str, int],
         service: NetworkService,
-        auth_verifier: object | None = None,
-        firebase_client_config: dict[str, str] | None = None,
+        auth_verifier: Optional[object] = None,
+        firebase_client_config: Optional[dict[str, str]] = None,
     ) -> None:
         super().__init__(server_address, NetworkAPIHandler)
         self.service = service
@@ -202,7 +202,7 @@ class NetworkAPIHandler(BaseHTTPRequestHandler):
         path = parsed.path.rstrip("/") or "/"
         try:
             worker_session = self._worker_token_session()
-            actor_user_id: str | None = None
+            actor_user_id: Optional[str] = None
             actor_email = ""
             if worker_session:
                 if not self._path_allows_worker_token(path):
@@ -497,12 +497,12 @@ class NetworkAPIHandler(BaseHTTPRequestHandler):
             raise AuthenticationError("Sign in with Google to use the network.")
         return verifier.verify(token)
 
-    def _actor_session(self, auth_claims: dict[str, Any]) -> dict[str, object] | None:
+    def _actor_session(self, auth_claims: dict[str, Any]) -> Optional[dict[str, object]]:
         if not auth_claims:
             return None
         return self.server.service.get_authenticated_session(auth_claims)
 
-    def _worker_token_session(self) -> dict[str, object] | None:
+    def _worker_token_session(self) -> Optional[dict[str, object]]:
         token = self.headers.get("X-Worker-Token", "").strip()
         if not token:
             return None

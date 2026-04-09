@@ -125,11 +125,11 @@ ensure_base_tools() {
 
 choose_python() {
   local candidate
-  for candidate in python3.13 python3.12 python3.11 python3; do
+  for candidate in python3.13 python3.12 python3.11 python3.10 python3.9 python3.8 python3; do
     if have_cmd "$candidate"; then
       if "$candidate" - <<'PY' >/dev/null 2>&1
 import sys
-raise SystemExit(0 if sys.version_info >= (3, 11) else 1)
+raise SystemExit(0 if sys.version_info >= (3, 8) else 1)
 PY
       then
         printf '%s' "$candidate"
@@ -143,13 +143,13 @@ PY
 ensure_python() {
   if ! PYTHON_BIN="$(choose_python)"; then
     if have_cmd apt-get && have_cmd sudo; then
-      log "Installing Python 3.11 and venv support"
+      log "Installing Python 3 and venv support"
       sudo apt-get update -y
       sudo apt-get install -y python3 python3-venv python3-pip
       PYTHON_BIN="$(choose_python || true)"
     fi
   fi
-  [[ -n "${PYTHON_BIN:-}" ]] || fail "Python 3.11+ is required."
+  [[ -n "${PYTHON_BIN:-}" ]] || fail "Python 3.8+ is required."
   if ! "$PYTHON_BIN" -m venv --help >/dev/null 2>&1; then
     apt_install_if_possible python3-venv || fail "python3-venv is required."
   fi

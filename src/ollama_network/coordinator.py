@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import deque
 from dataclasses import asdict
 from time import time
+from typing import Optional
 from uuid import uuid4
 
 from .artifacts import extract_job_artifacts
@@ -33,8 +34,8 @@ class OllamaNetworkCoordinator:
 
     def __init__(
         self,
-        catalog: ApprovedModelCatalog | None = None,
-        ledger: CreditLedger | None = None,
+        catalog: Optional[ApprovedModelCatalog] = None,
+        ledger: Optional[CreditLedger] = None,
     ) -> None:
         self.catalog = catalog or ApprovedModelCatalog.default()
         self.ledger = ledger or CreditLedger()
@@ -72,8 +73,8 @@ class OllamaNetworkCoordinator:
         model_tag: str,
         prompt: str,
         max_output_tokens: int,
-        compiled_prompt: str | None = None,
-        prompt_tokens: int | None = None,
+        compiled_prompt: Optional[str] = None,
+        prompt_tokens: Optional[int] = None,
         privacy_tier: str = "public",
         conversation_id: str = "",
         conversation_turn: int = 0,
@@ -111,7 +112,7 @@ class OllamaNetworkCoordinator:
         self._queued_job_ids.append(job_id)
         return record
 
-    def assign_next_job(self) -> JobAssignment | None:
+    def assign_next_job(self) -> Optional[JobAssignment]:
         for _ in range(len(self._queued_job_ids)):
             job_id = self._queued_job_ids.popleft()
             record = self.jobs[job_id]
@@ -145,7 +146,7 @@ class OllamaNetworkCoordinator:
         self,
         worker_id: str,
         allow_own_jobs: bool = False,
-    ) -> JobAssignment | None:
+    ) -> Optional[JobAssignment]:
         worker = self.update_worker(worker_id=worker_id, online=True)
         for _ in range(len(self._queued_job_ids)):
             job_id = self._queued_job_ids.popleft()
@@ -412,7 +413,7 @@ class OllamaNetworkCoordinator:
         word_count = len([token for token in prompt.split() if token.strip()])
         return max(8, word_count * 2)
 
-    def _select_worker(self, record: JobRecord) -> WorkerNode | None:
+    def _select_worker(self, record: JobRecord) -> Optional[WorkerNode]:
         candidates = [
             worker
             for worker in self.workers.values()

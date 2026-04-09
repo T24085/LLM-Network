@@ -18,7 +18,7 @@ if not defined PYTHON_BIN (
   if not errorlevel 1 set "PYTHON_BIN=python"
 )
 if not defined PYTHON_BIN (
-  echo Could not find Python. Create .venv or install Python 3.11+ first.
+  echo Could not find Python. Create .venv or install Python 3.8+ first.
   exit /b 1
 )
 
@@ -45,4 +45,3 @@ echo   3. Prints the local dashboard URL for this PC.
 echo.
 echo Edit HOST or PORT at the top of this file if you need different values.
 exit /b 0
-

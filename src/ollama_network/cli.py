@@ -4,7 +4,7 @@ import argparse
 import json
 import os
 import sys
-from typing import Iterable, TextIO
+from typing import Iterable, Optional, TextIO
 from urllib import error, request
 
 from .worker_daemon import parse_throughput
@@ -14,9 +14,9 @@ def _http_request(
     server_url: str,
     path: str,
     method: str,
-    payload: dict[str, object] | None = None,
-    firebase_id_token: str | None = None,
-    worker_token: str | None = None,
+    payload: Optional[dict[str, object]] = None,
+    firebase_id_token: Optional[str] = None,
+    worker_token: Optional[str] = None,
 ) -> dict[str, object]:
     body = None if payload is None else json.dumps(payload).encode("utf-8")
     headers = {"Content-Type": "application/json"}
@@ -136,7 +136,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def run_cli(argv: Iterable[str] | None = None, stdout: TextIO | None = None) -> dict[str, object]:
+def run_cli(argv: Optional[Iterable[str]] = None, stdout: Optional[TextIO] = None) -> dict[str, object]:
     parser = build_parser()
     args = parser.parse_args(list(argv) if argv is not None else None)
     stdout = stdout or sys.stdout
