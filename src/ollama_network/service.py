@@ -764,41 +764,32 @@ class NetworkService:
             model_detection = self._model_detector.detect()
             hardware = self._hardware_detector.detect()
             available_vram_gb = hardware.primary_vram_gb if hardware.detected else 0.0
-            excluded_local_models: list[dict[str, object]] = []
-            approved_local_models = [
-                model_tag
-                for model_tag in model_detection.models
-                if model_tag in self.coordinator.catalog.models
+            suggested_installed_models = list(model_detection.models)
+            network_supported_local_models, model_selection_notes = self._classify_detected_models(
+                suggested_installed_models,
+                available_vram_gb=available_vram_gb,
+            )
+            unsupported_local_models = [
+                item["tag"]
+                for item in model_selection_notes
+                if not bool(item.get("network_supported", False))
             ]
-            for model_tag in model_detection.models:
-                if model_tag not in self.coordinator.catalog.models:
-                    excluded_local_models.append(
-                        {
-                            "tag": model_tag,
-                            "reason": "Detected on this host but not in the approved network catalog.",
-                        }
-                    )
-                    continue
-                required_vram = self.coordinator.catalog.models[model_tag].min_vram_gb
-                if available_vram_gb and required_vram > available_vram_gb:
-                    excluded_local_models.append(
-                        {
-                            "tag": model_tag,
-                            "reason": f"Large model detected. Catalog target is {required_vram:g} GB dedicated VRAM, but this worker reports {available_vram_gb:g} GB. Ollama may still run it using shared memory or RAM, but performance can be much slower.",
-                        }
-                    )
+            suggested_benchmarks = {
+                model_tag: self._default_tokens_per_second(model_tag)
+                for model_tag in suggested_installed_models
+            }
             return {
                 "suggested_worker_id": suggested_worker_id,
                 "suggested_owner_user_id": selected_user_id,
                 "suggested_gpu_name": hardware.primary_gpu_name,
                 "suggested_vram_gb": hardware.primary_vram_gb,
                 "suggested_system_ram_gb": hardware.system_ram_gb,
-                "suggested_installed_models": approved_local_models,
-                "excluded_local_models": excluded_local_models,
-                "suggested_benchmark_tokens_per_second": {
-                    model_tag: self._default_tokens_per_second(model_tag)
-                    for model_tag in approved_local_models
-                },
+                "suggested_installed_models": suggested_installed_models,
+                "network_supported_local_models": network_supported_local_models,
+                "unsupported_local_models": unsupported_local_models,
+                "model_selection_notes": model_selection_notes,
+                "excluded_local_models": model_selection_notes,
+                "suggested_benchmark_tokens_per_second": suggested_benchmarks,
                 "hardware_detection": {
                     "detected": hardware.detected,
                     "primary_gpu_name": hardware.primary_gpu_name,
@@ -838,6 +829,12 @@ class NetworkService:
                     "ollama_available": detection.ollama_available,
                     "error": detection.error,
                     "detected_models": detection.models,
+                    "network_supported_local_models": [
+                        model_tag for model_tag in detection.models if model_tag in approved_tags
+                    ],
+                    "unsupported_local_models": [
+                        model_tag for model_tag in detection.models if model_tag not in approved_tags
+                    ],
                     "approved_local_models": [
                         model_tag for model_tag in detection.models if model_tag in approved_tags
                     ],
@@ -1558,6 +1555,35 @@ class NetworkService:
         if size <= 20:
             return 24.0
         return 12.0
+
+    def _classify_detected_models(
+        self,
+        detected_models: list[str],
+        available_vram_gb: float,
+    ) -> tuple[list[str], list[dict[str, object]]]:
+        network_supported_local_models: list[str] = []
+        notes: list[dict[str, object]] = []
+        for model_tag in detected_models:
+            catalog_model = self.coordinator.catalog.models.get(model_tag)
+            if catalog_model is None:
+                notes.append(
+                    {
+                        "tag": model_tag,
+                        "reason": "Detected on this host. You can advertise it, but the network will not route exact-tag jobs to it until catalog metadata is added.",
+                        "network_supported": False,
+                    }
+                )
+                continue
+            network_supported_local_models.append(model_tag)
+            if available_vram_gb and catalog_model.min_vram_gb > available_vram_gb:
+                notes.append(
+                    {
+                        "tag": model_tag,
+                        "reason": f"Catalog target is {catalog_model.min_vram_gb:g} GB dedicated VRAM, but this worker reports {available_vram_gb:g} GB. Ollama may still run it using shared memory or RAM, but performance can be much slower.",
+                        "network_supported": True,
+                    }
+                )
+        return network_supported_local_models, notes
 
 
 def handle_policy_error(error: PolicyError) -> tuple[int, dict[str, str]]:

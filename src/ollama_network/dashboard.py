@@ -361,11 +361,12 @@ HTML = """<!doctype html>
               <label>GPU name<input id="worker-gpu" readonly></label>
               <label>Dedicated VRAM GB<input id="worker-vram" readonly></label>
               <label>Host RAM GB<input id="worker-system-ram" readonly></label>
-              <label>Approved local models<input id="worker-models" readonly></label>
+              <label>Models to advertise<input id="worker-models"></label>
               <label>Estimated throughput<input id="worker-throughput" readonly></label>
               <label>Poll interval seconds<input id="worker-poll-interval" type="number" min="0.5" step="0.5" value="2"></label>
             </div>
             <div id="worker-excluded-models" class="job-meta-strip subtle hidden"></div>
+            <div class="subtle">Detected local models are prefilled here. Remove any model you do not want this worker to advertise to the network.</div>
             <div id="admin-override-wrap" class="hidden">
               <label class="checkline" style="text-transform:none;letter-spacing:0;color:var(--text);font-size:.94rem;font-weight:600">
                 <input id="worker-admin-override" type="checkbox">
@@ -588,7 +589,10 @@ HTML = """<!doctype html>
         node.classList.add("hidden");
         return;
       }
-      node.textContent = models.map((item) => `${item.tag}: ${item.reason}`).join(" | ");
+      node.textContent = models.map((item) => {
+        const prefix = item.network_supported === false ? "Not yet network-routable" : "Heads-up";
+        return `${item.tag}: ${prefix}. ${item.reason}`;
+      }).join(" | ");
       node.classList.remove("hidden");
     }
     function updateElasticTabs(container) {
@@ -1305,7 +1309,8 @@ HTML = """<!doctype html>
       ["auto","good","better","best"].forEach((value) => { const option = document.createElement("option"); option.value = value; option.textContent = value; select.appendChild(option); });
       if (payload.local_detection?.ollama_available) {
         summary.appendChild(chip("Ollama detected"));
-        summary.appendChild(chip(`${payload.local_detection.approved_local_models.length} approved local`));
+        summary.appendChild(chip(`${(payload.local_detection.detected_models || []).length} detected local models`));
+        summary.appendChild(chip(`${(payload.local_detection.network_supported_local_models || []).length} network-supported exact tags`));
       } else summary.appendChild(chip(payload.local_detection?.error || "Ollama not detected", "warn"));
       payload.models.forEach((model) => {
         const row = document.createElement("div");
@@ -1317,7 +1322,7 @@ HTML = """<!doctype html>
         option.textContent = `${model.tag} - exact`;
         select.appendChild(option);
       });
-      if ((payload.local_detection?.approved_local_models || []).includes("glm4:9b")) {
+      if ((payload.local_detection?.network_supported_local_models || payload.local_detection?.approved_local_models || []).includes("glm4:9b")) {
         select.value = "glm4:9b";
       }
     }
@@ -1333,9 +1338,10 @@ HTML = """<!doctype html>
       el("worker-system-ram").value = payload.suggested_system_ram_gb || "";
       el("worker-models").value = (payload.suggested_installed_models || []).join(", ");
       el("worker-throughput").value = Object.entries(payload.suggested_benchmark_tokens_per_second || {}).map(([model, value]) => `${model}=${value}`).join(", ");
-      renderExcludedModels(payload.excluded_local_models || []);
+      renderExcludedModels(payload.model_selection_notes || payload.excluded_local_models || []);
       summary.appendChild(chip(payload.hardware_detection?.detected ? "GPU detected" : payload.hardware_detection?.error || "GPU not detected", payload.hardware_detection?.detected ? "" : "warn"));
-      summary.appendChild(chip((payload.suggested_installed_models || []).length ? `${payload.suggested_installed_models.length} approved local models` : "No approved local models ready", (payload.suggested_installed_models || []).length ? "" : "warn"));
+      summary.appendChild(chip((payload.suggested_installed_models || []).length ? `${payload.suggested_installed_models.length} detected models ready to advertise` : "No local models detected yet", (payload.suggested_installed_models || []).length ? "" : "warn"));
+      summary.appendChild(chip(`${(payload.network_supported_local_models || []).length} network-supported exact tags`));
       await refreshWorkerStats();
     }
 

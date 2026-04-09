@@ -56,8 +56,6 @@ class OllamaNetworkCoordinator:
             raise PolicyError("At least one installed Ollama model is required.")
         if worker.runtime != "ollama" or worker.allows_cloud_fallback:
             raise PolicyError("Workers must run Ollama locally with cloud fallback disabled.")
-        for model_tag in worker.installed_models:
-            self.catalog.require_local_model(model_tag)
         self.register_user(worker.owner_user_id)
         worker.last_heartbeat_unix = time()
         self.workers[worker.worker_id] = worker
