@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 
 from ollama_network.coordinator import OllamaNetworkCoordinator
@@ -181,7 +183,7 @@ def test_admin_override_allows_worker_to_claim_own_queued_job() -> None:
     assert coordinator.ledger.balance_of("alice") == 4
 
 
-def test_auto_selector_uses_strongest_installed_worker_model() -> None:
+def test_auto_selector_prefers_balanced_installed_worker_model() -> None:
     coordinator = OllamaNetworkCoordinator()
     coordinator.register_user("alice", starting_credits=10.0)
     coordinator.register_user("bob")
@@ -200,15 +202,15 @@ def test_auto_selector_uses_strongest_installed_worker_model() -> None:
     record = coordinator.submit_job(
         requester_user_id="alice",
         model_tag="auto",
-        prompt="Pick the strongest local model.",
+        prompt="Pick the best balanced local model for default routing.",
         max_output_tokens=220,
         prompt_tokens=20,
     )
     assignment = coordinator.assign_next_job()
 
     assert assignment is not None
-    assert assignment.model_tag == "deepseek-r1:8b"
-    assert coordinator.job_snapshot(record.request.job_id)["resolved_model_tag"] == "deepseek-r1:8b"
+    assert assignment.model_tag == "glm4:9b"
+    assert coordinator.job_snapshot(record.request.job_id)["resolved_model_tag"] == "glm4:9b"
 
 
 def test_quality_tier_routes_to_matching_band_and_charges_more() -> None:
@@ -280,3 +282,71 @@ def test_quality_tier_routes_to_matching_band_and_charges_more() -> None:
     third = coordinator.assign_next_job()
     assert third is not None and third.model_tag == "gpt-oss:20b"
     assert good_job.reserved_credits < better_job.reserved_credits < best_job.reserved_credits
+
+
+def test_auto_prefers_balanced_worker_over_extreme_large_model() -> None:
+    coordinator = OllamaNetworkCoordinator()
+    coordinator.register_user("alice", starting_credits=20.0)
+    coordinator.register_user("bob")
+    coordinator.register_user("carol")
+    coordinator.register_worker(
+        make_multi_model_worker(
+            worker_id="worker-bob",
+            owner_user_id="bob",
+            installed_models={
+                "qwen3:14b": 42.0,
+            },
+        )
+    )
+    coordinator.register_worker(
+        make_multi_model_worker(
+            worker_id="worker-carol",
+            owner_user_id="carol",
+            installed_models={
+                "deepseek-r1:671b": 6.0,
+            },
+            vram_gb=512.0,
+        )
+    )
+
+    coordinator.submit_job(
+        requester_user_id="alice",
+        model_tag="auto",
+        prompt="Default routing should avoid the giant worker.",
+        max_output_tokens=200,
+        prompt_tokens=20,
+    )
+    assignment = coordinator.assign_next_job()
+
+    assert assignment is not None
+    assert assignment.worker_id == "worker-bob"
+    assert assignment.model_tag == "qwen3:14b"
+
+
+def test_explicit_large_model_tag_can_route_to_high_end_worker() -> None:
+    coordinator = OllamaNetworkCoordinator()
+    coordinator.register_user("alice", starting_credits=20.0)
+    coordinator.register_user("carol")
+    coordinator.register_worker(
+        make_multi_model_worker(
+            worker_id="worker-carol",
+            owner_user_id="carol",
+            installed_models={
+                "deepseek-r1:671b": 6.0,
+            },
+            vram_gb=512.0,
+        )
+    )
+
+    coordinator.submit_job(
+        requester_user_id="alice",
+        model_tag="deepseek-r1:671b",
+        prompt="Use the large reasoning model explicitly.",
+        max_output_tokens=200,
+        prompt_tokens=20,
+    )
+    assignment = coordinator.assign_next_job()
+
+    assert assignment is not None
+    assert assignment.worker_id == "worker-carol"
+    assert assignment.model_tag == "deepseek-r1:671b"

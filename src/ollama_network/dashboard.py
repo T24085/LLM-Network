@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from typing import Optional
 
 from .branding import load_logo_data_url
 
@@ -29,7 +30,9 @@ HTML = """<!doctype html>
     .card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 14px 36px rgba(23,33,38,.06)}
     .hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:start;background:linear-gradient(135deg,var(--deep),var(--teal));color:#fff}
     .hero-brand{display:flex;gap:18px;align-items:flex-start}
+    .hero-home{display:flex;gap:18px;align-items:flex-start;color:inherit;text-decoration:none}
     .hero-logo{width:110px;max-width:24vw;height:auto;display:block;filter:drop-shadow(0 12px 24px rgba(0,0,0,.18))}
+    .hero-home:hover .hero-logo{transform:translateY(-1px)}
     .hero-copy{display:grid;gap:8px}
     .actions,.chips{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
     .grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
@@ -118,27 +121,86 @@ HTML = """<!doctype html>
     .drawer-shell{position:fixed;inset:0;display:none;z-index:50}
     .drawer-shell.open{display:block}
     .drawer-backdrop{position:absolute;inset:0;background:rgba(10,16,22,.22);backdrop-filter:blur(2px)}
-    .drawer{position:absolute;right:0;top:0;height:100%;width:min(560px,94vw);background:var(--panel);border-left:1px solid var(--line);box-shadow:-24px 0 48px rgba(23,33,38,.18);padding:22px;display:grid;gap:14px;transform:translateX(100%);transition:transform .22s ease}
+    .drawer{position:absolute;right:0;top:0;height:100%;width:min(720px,96vw);background:var(--panel);border-left:1px solid var(--line);box-shadow:-24px 0 48px rgba(23,33,38,.18);padding:22px;display:grid;gap:14px;transform:translateX(100%);transition:transform .22s ease}
     .drawer-shell.open .drawer{transform:translateX(0)}
     .drawer-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
     .drawer-body{display:grid;gap:14px;overflow:auto;padding-right:4px}
     .floating-rail{position:fixed;right:22px;top:50%;transform:translateY(-50%);display:grid;gap:10px;z-index:30}
     .rail-button{border:1px solid var(--line);border-radius:999px;padding:10px 16px;background:var(--panel);box-shadow:0 12px 28px rgba(23,33,38,.12)}
+    .network-visual{display:grid;gap:14px}
+    .network-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    .network-metric{padding:14px 16px;border-radius:18px;border:1px solid rgba(255,255,255,.18);background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.06));box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+    .network-metric strong{display:block;font-size:1.25rem;color:#fff}
+    .network-metric span{display:block;margin-top:4px;font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(240,245,245,.78)}
+    .network-map-card{display:grid;gap:12px;padding:16px;border-radius:24px;background:radial-gradient(circle at top left,rgba(242,106,61,.24),transparent 36%),radial-gradient(circle at 82% 18%,rgba(27,214,193,.18),transparent 24%),linear-gradient(180deg,#14232b 0%,#0d1820 100%);border:1px solid rgba(14,116,122,.28);box-shadow:0 20px 42px rgba(7,16,22,.26)}
+    .network-map-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+    .network-map-title{display:grid;gap:4px}
+    .network-map-title strong{font-size:1rem;color:#eff9f7}
+    .network-map-title span{color:rgba(226,238,240,.72);font-size:.84rem}
+    .network-legend{display:flex;flex-wrap:wrap;gap:8px}
+    .network-legend-chip{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.08);color:#d9ece8;font-size:.78rem}
+    .network-legend-dot{width:9px;height:9px;border-radius:999px;display:inline-block;box-shadow:0 0 0 4px rgba(255,255,255,.05)}
+    .network-legend-dot.working{background:#ff8e5a}
+    .network-legend-dot.ready{background:#3de1cb}
+    .network-legend-dot.waiting{background:#ffd166}
+    .network-legend-dot.offline{background:#70838b}
+    .network-map{width:100%;height:auto;display:block}
+    .network-lane-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .network-lane{padding:14px;border:1px solid var(--line);border-radius:18px;background:#fff}
+    .network-lane h3{margin:0 0 10px;font-size:.96rem}
+    .network-lane-list{display:grid;gap:8px}
+    .network-entry{padding:10px 12px;border-radius:14px;background:linear-gradient(180deg,rgba(10,143,131,.06),rgba(255,255,255,.98));border:1px solid rgba(10,143,131,.1)}
+    .network-entry strong{display:block;font-size:.92rem}
+    .network-entry span{display:block;margin-top:4px;color:var(--muted);font-size:.82rem;line-height:1.45}
+    .network-entry.offline{background:linear-gradient(180deg,rgba(112,131,139,.08),rgba(255,255,255,.98));border-color:rgba(112,131,139,.18)}
+    .network-entry.queue{background:linear-gradient(180deg,rgba(242,106,61,.08),rgba(255,255,255,.98));border-color:rgba(242,106,61,.14)}
+    .network-empty{padding:18px;border-radius:18px;background:rgba(255,255,255,.06);border:1px dashed rgba(255,255,255,.16);color:#deece9}
+    .network-raw details{background:#fff}
+    .network-map .backbone{stroke:rgba(83,219,211,.18);stroke-width:1.25}
+    .network-map .queue-edge{stroke:rgba(255,164,122,.34);stroke-width:1.8;stroke-dasharray:5 8;fill:none;animation:networkFlow 9s linear infinite}
+    .network-map .worker-edge{stroke:rgba(117,242,233,.22);stroke-width:1.4;fill:none}
+    .network-map .worker-edge.working{stroke:rgba(255,156,98,.62);stroke-width:2.4;stroke-dasharray:6 8;animation:networkFlow 3.2s linear infinite}
+    .network-map .worker-edge.ready{stroke:rgba(66,232,211,.42);stroke-width:2}
+    .network-map .worker-edge.waiting{stroke:rgba(255,209,102,.26)}
+    .network-map .worker-edge.offline{stroke:rgba(112,131,139,.18)}
+    .network-map .core-ring{fill:none;stroke:rgba(115,245,229,.24);stroke-width:1.4}
+    .network-map .core-halo{fill:url(#coreGlow);opacity:.95}
+    .network-map .core-node{fill:url(#coreFill);filter:url(#softGlow)}
+    .network-map .core-label{fill:#f0faf8;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+    .network-map .core-sub{fill:rgba(229,239,240,.72);font-size:10px}
+    .network-map .job-node{fill:url(#queueFill);stroke:rgba(255,208,177,.88);stroke-width:1}
+    .network-map .job-label{fill:#ffdccc;font-size:10px}
+    .network-map .worker-node{stroke-width:1.3;filter:url(#softGlow)}
+    .network-map .worker-node.working{fill:#ff8e5a;stroke:#ffd2bf}
+    .network-map .worker-node.ready{fill:#38dbc5;stroke:#b0fff3}
+    .network-map .worker-node.waiting{fill:#ffd166;stroke:#ffe6a4}
+    .network-map .worker-node.idle{fill:#82d8cd;stroke:#d8fff9}
+    .network-map .worker-node.offline{fill:#61757d;stroke:#93a6ad}
+    .network-map .worker-halo{opacity:.22;transform-box:fill-box;transform-origin:center}
+    .network-map .worker-halo.working{fill:#ff8e5a;animation:networkPulse 2.2s ease-in-out infinite}
+    .network-map .worker-halo.ready{fill:#38dbc5;animation:networkPulse 3.1s ease-in-out infinite}
+    .network-map .worker-halo.waiting{fill:#ffd166;animation:networkPulse 4s ease-in-out infinite}
+    .network-map .worker-label{fill:#eef7f6;font-size:11px;font-weight:600}
+    .network-map .worker-sub{fill:rgba(222,235,237,.68);font-size:9px}
+    @keyframes networkFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-56}}
+    @keyframes networkPulse{0%,100%{transform:scale(1);opacity:.18}50%{transform:scale(1.22);opacity:.34}}
     details{border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px}
     summary{cursor:pointer;font-weight:700;color:var(--text)}
-    @media (max-width:1120px){.hero,.grid,.two,.three,.stats-grid{grid-template-columns:1fr}.row,.workspace-head{flex-direction:column}}
+    @media (max-width:1120px){.hero,.grid,.two,.three,.stats-grid,.network-summary-grid,.network-lane-grid{grid-template-columns:1fr}.row,.workspace-head,.network-map-head{flex-direction:column}}
   </style>
 </head>
 <body>
   <div class="shell">
     <section class="card hero">
       <div class="hero-brand">
-        <img src="__LOGO_DATA_URL__" alt="LLM Network logo" class="hero-logo">
-        <div class="hero-copy">
-          <div style="text-transform:uppercase;letter-spacing:.18em;font-size:12px;opacity:.8">LLM Network</div>
-          <h1 style="margin:0;font-size:clamp(2rem,3vw,3.2rem)">LLM Network Control Room</h1>
-          <p style="margin:0;max-width:64ch">Sign in with Google to unlock your bound network account, submit jobs, inspect outputs, and operate local workers. Admin accounts can optionally let their local worker service the full queue, including their own prompts.</p>
-        </div>
+        <a href="/" class="hero-home" aria-label="Go to the LLM Network landing page">
+          <img src="__LOGO_DATA_URL__" alt="LLM Network logo" class="hero-logo">
+          <div class="hero-copy">
+            <div style="text-transform:uppercase;letter-spacing:.18em;font-size:12px;opacity:.8">LLM Network</div>
+            <h1 style="margin:0;font-size:clamp(2rem,3vw,3.2rem)">LLM Network Control Room</h1>
+            <p style="margin:0;max-width:64ch">Sign in with Google to unlock your bound network account, submit jobs, inspect outputs, and operate local workers. Admin accounts can optionally let their local worker service the full queue, including their own prompts.</p>
+          </div>
+        </a>
       </div>
       <div class="actions">
         <div id="session-pill" class="chip">Sign in required</div>
@@ -300,11 +362,12 @@ HTML = """<!doctype html>
               <label>GPU name<input id="worker-gpu" readonly></label>
               <label>Dedicated VRAM GB<input id="worker-vram" readonly></label>
               <label>Host RAM GB<input id="worker-system-ram" readonly></label>
-              <label>Approved local models<input id="worker-models" readonly></label>
+              <label>Models to advertise<input id="worker-models"></label>
               <label>Estimated throughput<input id="worker-throughput" readonly></label>
               <label>Poll interval seconds<input id="worker-poll-interval" type="number" min="0.5" step="0.5" value="2"></label>
             </div>
             <div id="worker-excluded-models" class="job-meta-strip subtle hidden"></div>
+            <div class="subtle">Detected local models are prefilled here. Remove any model you do not want this worker to advertise to the network.</div>
             <div id="admin-override-wrap" class="hidden">
               <label class="checkline" style="text-transform:none;letter-spacing:0;color:var(--text);font-size:.94rem;font-weight:600">
                 <input id="worker-admin-override" type="checkbox">
@@ -368,10 +431,10 @@ HTML = """<!doctype html>
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: "select_account" });
 
-    const state = { authUser: null, session: null, lastJobId: "", trackedJob: null, pollHandle: null, activeDrawer: "", activeWorkspace: "network", activeAdminJobTab: "all", activeConversationId: "", conversationCache: {}, workerStats: null };
+    const state = { authUser: null, session: null, lastJobId: "", trackedJob: null, pollHandle: null, activeDrawer: "", activeWorkspace: "network", activeAdminJobTab: "all", activeConversationId: "", conversationCache: {}, workerStats: null, networkSnapshot: null };
     const el = (id) => document.getElementById(id);
     const DRAWER_PANELS = {
-      network: { eyebrow: "Network", title: "Network Snapshot", render: () => `<pre>${escapeHtml(el("network-json").textContent)}</pre>` },
+      network: { eyebrow: "Network", title: "Live Network Map", render: () => networkMapMarkup(state.networkSnapshot) },
       job: { eyebrow: "Jobs", title: "Tracked Job", render: () => `${el("job-meta-summary").classList.contains("hidden") ? "" : `<div class="job-meta-strip subtle">${escapeHtml(el("job-meta-summary").textContent)}</div>`}${el("job-artifacts").classList.contains("hidden") ? "" : `<div class="artifact-list">${el("job-artifacts").innerHTML}</div>`}${el("job-raw-output").classList.contains("hidden") ? "" : `<details open><summary>Raw model output</summary><div style="height:10px"></div><pre>${escapeHtml(el("job-answer").textContent)}</pre></details>`}<pre>${escapeHtml(el("job-json").textContent)}</pre>` },
       worker: { eyebrow: "Workers", title: "Local Worker Loop", render: () => `<pre>${escapeHtml(el("local-worker-json").textContent)}</pre>` },
       "worker-stats": { eyebrow: "Workers", title: "Worker Stats", render: () => workerStatsMarkup(state.workerStats) },
@@ -527,7 +590,10 @@ HTML = """<!doctype html>
         node.classList.add("hidden");
         return;
       }
-      node.textContent = models.map((item) => `${item.tag}: ${item.reason}`).join(" | ");
+      node.textContent = models.map((item) => {
+        const prefix = item.network_supported === false ? "Not yet network-routable" : "Heads-up";
+        return `${item.tag}: ${prefix}. ${item.reason}`;
+      }).join(" | ");
       node.classList.remove("hidden");
     }
     function updateElasticTabs(container) {
@@ -868,6 +934,310 @@ HTML = """<!doctype html>
         </div>
       `;
     }
+    function compactId(value) {
+      const text = String(value || "").trim();
+      if (!text) return "unknown";
+      const cleaned = text.replace(/^job-/, "").replace(/^worker-/, "").replace(/^usr_/, "");
+      return cleaned.length > 10 ? `${cleaned.slice(0, 4)}…${cleaned.slice(-4)}` : cleaned;
+    }
+    function pluralize(count, noun) {
+      return `${count} ${noun}${count === 1 ? "" : "s"}`;
+    }
+    function networkWorkerState(worker, loop) {
+      const activeJobs = Number(worker?.active_jobs || 0);
+      const compatibleJobs = Number(loop?.compatible_queued_jobs || 0);
+      const visibleJobs = Number(loop?.visible_queued_jobs || 0);
+      const online = Boolean(worker?.online);
+      const running = Boolean(loop?.running && loop?.thread_alive !== false);
+      if (!online) {
+        return { key: "offline", label: "Offline", detail: "Worker is registered but currently offline.", tone: "offline" };
+      }
+      if (activeJobs > 0) {
+        return { key: "working", label: "Working", detail: `${pluralize(activeJobs, "active job")} in flight.`, tone: "working" };
+      }
+      if (compatibleJobs > 0) {
+        return { key: "ready", label: "Ready", detail: `${pluralize(compatibleJobs, "compatible queued job")} available now.`, tone: "ready" };
+      }
+      if (visibleJobs > 0) {
+        return { key: "waiting", label: "Waiting", detail: loop?.last_queue_summary || `${pluralize(visibleJobs, "queued job")} visible, but not a current fit.`, tone: "waiting" };
+      }
+      if (running) {
+        return { key: "idle", label: "Watching", detail: loop?.last_queue_summary || "Polling locally and waiting for fresh work.", tone: "ready" };
+      }
+      return { key: "idle", label: "Idle", detail: "Online and available, but no local loop is polling right now.", tone: "ready" };
+    }
+    function networkToneClass(workerState) {
+      if (workerState.key === "working") return "working";
+      if (workerState.key === "ready") return "ready";
+      if (workerState.key === "waiting") return "waiting";
+      if (workerState.key === "offline") return "offline";
+      return "idle";
+    }
+    function networkOrbitPoints(items, centerX, centerY, radiusX, radiusY, startDeg, endDeg) {
+      if (!items.length) return [];
+      const singleAngle = (startDeg + endDeg) / 2;
+      return items.map((item, index) => {
+        const angle = items.length === 1 ? singleAngle : startDeg + ((endDeg - startDeg) * index) / (items.length - 1);
+        const radians = (angle * Math.PI) / 180;
+        return {
+          ...item,
+          x: centerX + Math.cos(radians) * radiusX,
+          y: centerY + Math.sin(radians) * radiusY,
+          angle,
+        };
+      });
+    }
+    function networkLayeredOrbitPoints(items, centerX, centerY, layers) {
+      if (!items.length) return [];
+      let offset = 0;
+      const points = [];
+      layers.forEach((layer) => {
+        if (offset >= items.length) return;
+        const count = Math.min(Number(layer.limit || 0), items.length - offset);
+        if (count <= 0) return;
+        const subset = items.slice(offset, offset + count);
+        points.push(
+          ...networkOrbitPoints(
+            subset,
+            centerX,
+            centerY,
+            Number(layer.radiusX || 0),
+            Number(layer.radiusY || 0),
+            Number(layer.startDeg || 0),
+            Number(layer.endDeg || 0),
+          ),
+        );
+        offset += count;
+      });
+      if (offset < items.length && layers.length) {
+        const spill = layers[layers.length - 1];
+        points.push(
+          ...networkOrbitPoints(
+            items.slice(offset),
+            centerX,
+            centerY,
+            Number(spill.radiusX || 0) + 18,
+            Number(spill.radiusY || 0) + 12,
+            Number(spill.startDeg || 0),
+            Number(spill.endDeg || 0),
+          ),
+        );
+      }
+      return points;
+    }
+    function networkLinkPath(fromX, fromY, toX, toY, curveBias = 0) {
+      const controlX = (fromX + toX) / 2 + curveBias;
+      const controlY = (fromY + toY) / 2;
+      return `M ${fromX.toFixed(1)} ${fromY.toFixed(1)} Q ${controlX.toFixed(1)} ${controlY.toFixed(1)} ${toX.toFixed(1)} ${toY.toFixed(1)}`;
+    }
+    function networkMetricCard(value, label) {
+      return `<div class="network-metric"><strong>${escapeHtml(String(value))}</strong><span>${escapeHtml(label)}</span></div>`;
+    }
+    function networkEntryMarkup(title, subtitle, kind = "") {
+      return `<div class="network-entry ${escapeHtml(kind)}"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(subtitle)}</span></div>`;
+    }
+    function networkWorkerEntry(worker, loop, workerState) {
+      const modelCount = Array.isArray(worker?.installed_models) ? worker.installed_models.length : 0;
+      const modelText = modelCount ? `${pluralize(modelCount, "model")} installed` : "No models advertised";
+      const gpu = worker?.gpu_name ? `${worker.gpu_name} | ${Number(worker?.vram_gb || 0)} GB VRAM` : "GPU not reported";
+      const queueDetail = loop?.last_queue_summary ? ` ${loop.last_queue_summary}` : "";
+      return networkEntryMarkup(
+        `${worker.worker_id} · ${workerState.label}`,
+        `${gpu}. ${modelText}.${queueDetail || ` ${workerState.detail}`}`,
+        workerState.key === "offline" ? "offline" : "",
+      );
+    }
+    function networkMapMarkup(payload) {
+      if (!payload) {
+        return `<div class="network-visual"><div class="network-empty"><strong>Network view is waiting for data.</strong><div class="subtle" style="margin-top:8px;color:inherit">Refresh the network after signing in to light up the live worker graph.</div></div></div>`;
+      }
+      const workers = Object.values(payload.workers || {});
+      const localWorkers = payload.local_workers || {};
+      const queuedJobs = Array.isArray(payload.queued_jobs) ? payload.queued_jobs : [];
+      const activeJobsByWorker = payload.active_jobs || {};
+      const workerNodes = workers.map((worker) => {
+        const loop = localWorkers[worker.worker_id] || null;
+        const derivedWorker = { ...worker, active_jobs: activeJobsByWorker[worker.worker_id] ?? worker.active_jobs ?? 0 };
+        const workerState = networkWorkerState(derivedWorker, loop);
+        return { worker: derivedWorker, loop, workerState };
+      });
+      const grouped = {
+        working: workerNodes.filter((item) => item.workerState.key === "working"),
+        ready: workerNodes.filter((item) => item.workerState.key === "ready"),
+        waiting: workerNodes.filter((item) => item.workerState.key === "waiting" || item.workerState.key === "idle"),
+        offline: workerNodes.filter((item) => item.workerState.key === "offline"),
+      };
+      const onlineCount = workerNodes.filter((item) => item.worker.online).length;
+      const runningLoops = Object.values(localWorkers).filter((loop) => loop?.running && loop?.thread_alive !== false).length;
+      const metrics = [
+        networkMetricCard(onlineCount, "Workers online"),
+        networkMetricCard(grouped.working.length, "Currently executing"),
+        networkMetricCard(grouped.ready.length, "Ready to claim"),
+        networkMetricCard(queuedJobs.length, "Queued prompts"),
+      ].join("");
+
+      const centerX = 330;
+      const centerY = 230;
+      const queueNodes = networkLayeredOrbitPoints(
+        queuedJobs.slice(0, 18).map((jobId) => ({ jobId })),
+        centerX,
+        centerY,
+        [
+          { limit: 8, radiusX: 238, radiusY: 142, startDeg: 144, endDeg: 216 },
+          { limit: 10, radiusX: 282, radiusY: 168, startDeg: 148, endDeg: 212 },
+        ],
+      );
+      const workingNodes = networkLayeredOrbitPoints(grouped.working, centerX, centerY, [
+        { limit: 10, radiusX: 168, radiusY: 116, startDeg: -48, endDeg: 48 },
+        { limit: 14, radiusX: 208, radiusY: 142, startDeg: -62, endDeg: 62 },
+        { limit: 18, radiusX: 246, radiusY: 168, startDeg: -76, endDeg: 76 },
+      ]);
+      const readyNodes = networkLayeredOrbitPoints(grouped.ready, centerX, centerY, [
+        { limit: 14, radiusX: 224, radiusY: 152, startDeg: -74, endDeg: 74 },
+        { limit: 18, radiusX: 262, radiusY: 178, startDeg: -88, endDeg: 88 },
+        { limit: 24, radiusX: 300, radiusY: 204, startDeg: -100, endDeg: 100 },
+      ]);
+      const waitingNodes = networkLayeredOrbitPoints(grouped.waiting, centerX, centerY, [
+        { limit: 16, radiusX: 244, radiusY: 166, startDeg: -86, endDeg: 86 },
+        { limit: 22, radiusX: 286, radiusY: 194, startDeg: -102, endDeg: 102 },
+        { limit: 28, radiusX: 322, radiusY: 214, startDeg: -112, endDeg: 112 },
+      ]);
+      const offlineNodes = networkLayeredOrbitPoints(grouped.offline, centerX, centerY, [
+        { limit: 10, radiusX: 238, radiusY: 102, startDeg: 120, endDeg: 240 },
+        { limit: 14, radiusX: 278, radiusY: 126, startDeg: 116, endDeg: 244 },
+        { limit: 18, radiusX: 314, radiusY: 148, startDeg: 112, endDeg: 248 },
+      ]);
+      const workerPoints = [...workingNodes, ...readyNodes, ...waitingNodes, ...offlineNodes];
+      const labelAllWorkers = workerPoints.length <= 18;
+      const labeledWorkerIds = new Set([
+        ...grouped.working.slice(0, 6),
+        ...grouped.ready.slice(0, 4),
+        ...grouped.waiting.slice(0, 4),
+        ...grouped.offline.slice(0, 2),
+      ].map((item) => item.worker.worker_id));
+      const labelAllQueueNodes = queueNodes.length <= 8;
+
+      const queueEdges = queueNodes.map((node) => `<path class="queue-edge" d="${networkLinkPath(node.x, node.y, centerX, centerY, -70)}"></path>`).join("");
+      const workerEdges = workerPoints.map((node) => {
+        const tone = networkToneClass(node.workerState);
+        const bias = node.x >= centerX ? 72 : -72;
+        return `<path class="worker-edge ${tone}" d="${networkLinkPath(centerX, centerY, node.x, node.y, bias)}"></path>`;
+      }).join("");
+      const queueNodeMarkup = queueNodes.map((node) => `
+        <g>
+          <circle class="job-node" cx="${node.x.toFixed(1)}" cy="${node.y.toFixed(1)}" r="8"></circle>
+          ${labelAllQueueNodes ? `<text class="job-label" x="${(node.x - 14).toFixed(1)}" y="${(node.y - 14).toFixed(1)}">${escapeHtml(compactId(node.jobId))}</text>` : ""}
+        </g>
+      `).join("");
+      const workerNodeMarkup = workerPoints.map((node) => {
+        const tone = networkToneClass(node.workerState);
+        const denseMesh = workerPoints.length >= 40;
+        const r = tone === "working" ? (denseMesh ? 8 : 12) : tone === "ready" ? (denseMesh ? 6.5 : 10) : (denseMesh ? 5.8 : 9);
+        const labelX = node.x >= centerX ? node.x + 15 : node.x - 15;
+        const anchor = node.x >= centerX ? "start" : "end";
+        const shouldLabel = labelAllWorkers || labeledWorkerIds.has(node.worker.worker_id);
+        return `
+          <g>
+            <circle class="worker-halo ${tone}" cx="${node.x.toFixed(1)}" cy="${node.y.toFixed(1)}" r="${(r + 8).toFixed(1)}"></circle>
+            <circle class="worker-node ${tone}" cx="${node.x.toFixed(1)}" cy="${node.y.toFixed(1)}" r="${r}"></circle>
+            ${shouldLabel ? `<text class="worker-label" x="${labelX.toFixed(1)}" y="${(node.y - 2).toFixed(1)}" text-anchor="${anchor}">${escapeHtml(compactId(node.worker.worker_id))}</text>` : ""}
+            ${shouldLabel ? `<text class="worker-sub" x="${labelX.toFixed(1)}" y="${(node.y + 11).toFixed(1)}" text-anchor="${anchor}">${escapeHtml(node.workerState.label)}</text>` : ""}
+          </g>
+        `;
+      }).join("");
+
+      const spotlightWorkers = [...grouped.working, ...grouped.ready, ...grouped.waiting, ...grouped.offline].slice(0, 16);
+      const spotlightMarkup = spotlightWorkers.length
+        ? spotlightWorkers.map((item) => networkWorkerEntry(item.worker, item.loop, item.workerState)).join("")
+        : networkEntryMarkup("No workers yet", "Start a worker to bring the network map online.");
+      const queueMarkup = queuedJobs.length
+        ? queuedJobs.slice(0, 12).map((jobId, index) => networkEntryMarkup(
+            `Queued prompt ${index + 1}`,
+            `Job ${jobId} is waiting for a compatible worker to claim it.`,
+            "queue",
+          )).join("")
+        : networkEntryMarkup("Queue is clear", "No prompts are currently waiting to be assigned.", "queue");
+      const networkNote = workerNodes.length
+        ? `Showing ${pluralize(workerPoints.length, "worker node")} and ${pluralize(queueNodes.length, "queued prompt node")}. ${labelAllWorkers ? "Every visible node is labeled." : "A highlighted subset is labeled to keep dense meshes readable."} ${runningLoops ? `${pluralize(runningLoops, "local loop")} actively polling.` : "No local polling loops are running yet."}`
+        : "No workers have joined the mesh yet. Start a worker to populate the live graph.";
+
+      return `
+        <div class="network-visual">
+          <div class="network-map-card">
+            <div class="network-map-head">
+              <div class="network-map-title">
+                <strong>Neural view of the live mesh</strong>
+                <span>${escapeHtml(networkNote)}</span>
+              </div>
+              <div class="network-legend">
+                <span class="network-legend-chip"><span class="network-legend-dot working"></span>Working</span>
+                <span class="network-legend-chip"><span class="network-legend-dot ready"></span>Ready</span>
+                <span class="network-legend-chip"><span class="network-legend-dot waiting"></span>Waiting</span>
+                <span class="network-legend-chip"><span class="network-legend-dot offline"></span>Offline</span>
+              </div>
+            </div>
+            <div class="network-summary-grid">${metrics}</div>
+            <svg class="network-map" viewBox="0 0 660 460" role="img" aria-label="Live network map showing queued prompts and worker connectivity">
+              <defs>
+                <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#49f7df" stop-opacity=".42"></stop>
+                  <stop offset="100%" stop-color="#49f7df" stop-opacity="0"></stop>
+                </radialGradient>
+                <radialGradient id="coreFill" cx="50%" cy="45%" r="58%">
+                  <stop offset="0%" stop-color="#76fff0"></stop>
+                  <stop offset="100%" stop-color="#1ab7a7"></stop>
+                </radialGradient>
+                <linearGradient id="queueFill" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#ffd1a6"></stop>
+                  <stop offset="100%" stop-color="#ff8b57"></stop>
+                </linearGradient>
+                <filter id="softGlow">
+                  <feGaussianBlur stdDeviation="3" result="blur"></feGaussianBlur>
+                  <feMerge>
+                    <feMergeNode in="blur"></feMergeNode>
+                    <feMergeNode in="SourceGraphic"></feMergeNode>
+                  </feMerge>
+                </filter>
+              </defs>
+              <g opacity=".42">
+                <path class="backbone" d="M 90 230 Q 220 126 330 230 Q 440 334 576 230"></path>
+                <path class="backbone" d="M 116 130 Q 232 96 330 230 Q 430 364 544 330"></path>
+                <path class="backbone" d="M 118 330 Q 228 364 330 230 Q 432 96 548 130"></path>
+              </g>
+              <circle class="core-halo" cx="${centerX}" cy="${centerY}" r="66"></circle>
+              <circle class="core-ring" cx="${centerX}" cy="${centerY}" r="92"></circle>
+              <circle class="core-ring" cx="${centerX}" cy="${centerY}" r="136" opacity=".55"></circle>
+              ${queueEdges}
+              ${workerEdges}
+              ${queueNodeMarkup}
+              <g>
+                <circle class="core-node" cx="${centerX}" cy="${centerY}" r="28"></circle>
+                <text class="core-label" x="${centerX}" y="${centerY - 2}" text-anchor="middle">Mesh</text>
+                <text class="core-sub" x="${centerX}" y="${centerY + 14}" text-anchor="middle">scheduler core</text>
+              </g>
+              ${workerNodeMarkup}
+            </svg>
+          </div>
+          <div class="network-lane-grid">
+            <section class="network-lane">
+              <h3>Worker pulse</h3>
+              <div class="network-lane-list">${spotlightMarkup}</div>
+            </section>
+            <section class="network-lane">
+              <h3>Queued prompts</h3>
+              <div class="network-lane-list">${queueMarkup}</div>
+            </section>
+          </div>
+          <div class="network-raw">
+            <details>
+              <summary>Raw network snapshot</summary>
+              <div style="height:10px"></div>
+              <pre>${escapeHtml(JSON.stringify(payload, null, 2))}</pre>
+            </details>
+          </div>
+        </div>
+      `;
+    }
     function renderDrawer() {
       const panel = DRAWER_PANELS[state.activeDrawer];
       if (!panel) { el("drawer-shell").classList.remove("open"); return; }
@@ -876,6 +1246,9 @@ HTML = """<!doctype html>
       el("drawer-body").innerHTML = panel.render();
       el("drawer-shell").classList.add("open");
     }
+    function isMissingWorkerStatsError(error) {
+      return error?.message === "unknown resource" || error?.message === "not found";
+    }
     async function refreshWorkerStats() {
       const workerId = el("worker-id").value.trim();
       if (!workerId) {
@@ -883,7 +1256,12 @@ HTML = """<!doctype html>
         if (state.activeDrawer === "worker-stats") renderDrawer();
         return;
       }
-      state.workerStats = await api(`/workers/${encodeURIComponent(workerId)}/stats`);
+      try {
+        state.workerStats = await api(`/workers/${encodeURIComponent(workerId)}/stats`);
+      } catch (error) {
+        if (!isMissingWorkerStatsError(error)) throw error;
+        state.workerStats = null;
+      }
       if (state.activeDrawer === "worker-stats") renderDrawer();
     }
     function openDrawer(name) { state.activeDrawer = name; renderDrawer(); if (name === "worker-stats") refreshWorkerStats().catch((error) => setStatus("worker-status", error.message, "error")); }
@@ -915,7 +1293,6 @@ HTML = """<!doctype html>
       renderSessionPill();
       el("user-id").value = payload.user_id || "";
       el("job-user-id").value = payload.user_id || "";
-      el("worker-id").value = payload.user_id || "";
       el("worker-owner").value = payload.user_id || "";
       el("user-balance").value = String(payload.wallet?.available_credits ?? payload.balance ?? "");
       setAdminVisible(Boolean(payload.is_admin));
@@ -933,7 +1310,8 @@ HTML = """<!doctype html>
       ["auto","good","better","best"].forEach((value) => { const option = document.createElement("option"); option.value = value; option.textContent = value; select.appendChild(option); });
       if (payload.local_detection?.ollama_available) {
         summary.appendChild(chip("Ollama detected"));
-        summary.appendChild(chip(`${payload.local_detection.approved_local_models.length} approved local`));
+        summary.appendChild(chip(`${(payload.local_detection.detected_models || []).length} detected local models`));
+        summary.appendChild(chip(`${(payload.local_detection.network_supported_local_models || []).length} network-supported exact tags`));
       } else summary.appendChild(chip(payload.local_detection?.error || "Ollama not detected", "warn"));
       payload.models.forEach((model) => {
         const row = document.createElement("div");
@@ -945,7 +1323,7 @@ HTML = """<!doctype html>
         option.textContent = `${model.tag} - exact`;
         select.appendChild(option);
       });
-      if ((payload.local_detection?.approved_local_models || []).includes("glm4:9b")) {
+      if ((payload.local_detection?.network_supported_local_models || payload.local_detection?.approved_local_models || []).includes("glm4:9b")) {
         select.value = "glm4:9b";
       }
     }
@@ -961,14 +1339,16 @@ HTML = """<!doctype html>
       el("worker-system-ram").value = payload.suggested_system_ram_gb || "";
       el("worker-models").value = (payload.suggested_installed_models || []).join(", ");
       el("worker-throughput").value = Object.entries(payload.suggested_benchmark_tokens_per_second || {}).map(([model, value]) => `${model}=${value}`).join(", ");
-      renderExcludedModels(payload.excluded_local_models || []);
+      renderExcludedModels(payload.model_selection_notes || payload.excluded_local_models || []);
       summary.appendChild(chip(payload.hardware_detection?.detected ? "GPU detected" : payload.hardware_detection?.error || "GPU not detected", payload.hardware_detection?.detected ? "" : "warn"));
-      summary.appendChild(chip((payload.suggested_installed_models || []).length ? `${payload.suggested_installed_models.length} approved local models` : "No approved local models ready", (payload.suggested_installed_models || []).length ? "" : "warn"));
+      summary.appendChild(chip((payload.suggested_installed_models || []).length ? `${payload.suggested_installed_models.length} detected models ready to advertise` : "No local models detected yet", (payload.suggested_installed_models || []).length ? "" : "warn"));
+      summary.appendChild(chip(`${(payload.network_supported_local_models || []).length} network-supported exact tags`));
       await refreshWorkerStats();
     }
 
     async function refreshNetwork() {
       const payload = await api("/network");
+      state.networkSnapshot = payload;
       writeJson("network-json", payload);
       writeJson("local-worker-json", payload.local_workers || {});
       el("metric-queue").textContent = payload.queued_jobs.length;
@@ -1286,7 +1666,7 @@ HTML = """<!doctype html>
 
     function resetSignedOutState() {
       stopPolling();
-      state.session = null; state.lastJobId = ""; state.trackedJob = null; state.activeConversationId = ""; state.conversationCache = {};
+      state.session = null; state.lastJobId = ""; state.trackedJob = null; state.activeConversationId = ""; state.conversationCache = {}; state.networkSnapshot = null;
       ["user-id","user-balance","job-user-id","worker-id","worker-owner","worker-gpu","worker-vram","worker-system-ram","worker-models","worker-throughput"].forEach((id) => { const node = el(id); if (node) node.value = ""; });
       closeDrawer(); setRailVisible(false); toggleDashboard(false); setAdminVisible(false); setWorkspaceTab("network"); renderSessionPill(); renderTrackedJob({}); renderPromptHistory({ conversations: [], archived_conversations: [] }); renderConversationList({ conversations: [] }); renderConversationDetail({ messages: [] }); renderWorkerQueueState(null); writeJson("network-json", {}); writeJson("local-worker-json", {}); setStatus("auth-status", "Waiting for sign-in.", "ok");
     }
@@ -1307,7 +1687,7 @@ HTML = """<!doctype html>
 """
 
 
-def render_dashboard_html(firebase_client_config: dict[str, str] | None = None) -> str:
+def render_dashboard_html(firebase_client_config: Optional[dict[str, str]] = None) -> str:
     config = dict(_DEFAULT_FIREBASE_CONFIG)
     if firebase_client_config:
         config.update(firebase_client_config)

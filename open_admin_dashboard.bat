@@ -2,5 +2,5 @@
 setlocal
 
 cd /d "%~dp0"
-start "" "http://localhost:8000/dashboard"
+call "%~dp0start_dashboard.bat" %*
 

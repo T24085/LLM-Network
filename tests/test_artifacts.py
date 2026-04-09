@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 from ollama_network.artifacts import extract_job_artifacts

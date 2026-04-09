@@ -5,6 +5,7 @@ import json
 import os
 import time
 from dataclasses import dataclass
+from typing import Optional, Union
 from urllib import error, request
 
 from .executor import OllamaCommandExecutor
@@ -22,6 +23,7 @@ class WorkerConfig:
     benchmark_tokens_per_second: dict[str, float]
     poll_interval_seconds: float = 2.0
     max_concurrent_jobs: int = 1
+    worker_token: str = ""
     firebase_id_token: str = ""
 
 
@@ -29,7 +31,7 @@ class WorkerDaemon:
     def __init__(
         self,
         config: WorkerConfig,
-        executor: OllamaCommandExecutor | object | None = None,
+        executor: Optional[Union[OllamaCommandExecutor, object]] = None,
     ) -> None:
         self.config = config
         self.executor = executor or OllamaCommandExecutor()
@@ -48,7 +50,7 @@ class WorkerDaemon:
         }
         return self._post("/workers/register", payload)
 
-    def run_once(self) -> dict[str, object] | None:
+    def run_once(self) -> Optional[dict[str, object]]:
         claimed = self._post(f"/workers/{self.config.worker_id}/claim", {})
         assignment = claimed.get("assignment")
         if assignment is None:
@@ -89,6 +91,8 @@ class WorkerDaemon:
     def _post(self, path: str, payload: dict[str, object]) -> dict[str, object]:
         body = json.dumps(payload).encode("utf-8")
         headers = {"Content-Type": "application/json"}
+        if self.config.worker_token:
+            headers["X-Worker-Token"] = self.config.worker_token
         if self.config.firebase_id_token:
             headers["Authorization"] = f"Bearer {self.config.firebase_id_token}"
         req = request.Request(
@@ -128,9 +132,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--poll-interval", type=float, default=2.0, help="Poll interval in seconds.")
     parser.add_argument(
+        "--worker-token",
+        default=os.environ.get("OLLAMA_NETWORK_WORKER_TOKEN", ""),
+        help="Optional long-lived worker token issued by the coordinator.",
+    )
+    parser.add_argument(
         "--firebase-id-token",
         default=os.environ.get("OLLAMA_NETWORK_FIREBASE_ID_TOKEN", ""),
-        help="Optional Firebase ID token for protected servers.",
+        help="Optional Firebase ID token for protected servers. Prefer --worker-token for long-lived daemons.",
     )
     return parser
 
@@ -159,6 +168,7 @@ def main() -> None:
         installed_models=tuple(args.models),
         benchmark_tokens_per_second=parse_throughput(args.throughput_entries, args.models),
         poll_interval_seconds=args.poll_interval,
+        worker_token=args.worker_token,
         firebase_id_token=args.firebase_id_token,
     )
     daemon = WorkerDaemon(config=config)

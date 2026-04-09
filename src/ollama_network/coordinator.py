@@ -3,10 +3,11 @@ from __future__ import annotations
 from collections import deque
 from dataclasses import asdict
 from time import time
+from typing import Optional
 from uuid import uuid4
 
 from .artifacts import extract_job_artifacts
-from .catalog import ApprovedModelCatalog
+from .catalog import ApprovedModelCatalog, QUALITY_SELECTORS
 from .ledger import CreditLedger, PLATFORM_WALLET_ID
 from .models import (
     JobAssignment,
@@ -19,14 +20,22 @@ from .models import (
     WorkerNode,
 )
 
+QUALITY_TIER_RANK = {"good": 1, "better": 2, "best": 3}
+PRICING_TIER_RANK = {
+    "tier_1_small": 1,
+    "tier_2_standard": 2,
+    "tier_3_large": 3,
+    "tier_4_reasoning": 4,
+}
+
 
 class OllamaNetworkCoordinator:
     """In-memory coordinator for a reciprocal local-only Ollama worker pool."""
 
     def __init__(
         self,
-        catalog: ApprovedModelCatalog | None = None,
-        ledger: CreditLedger | None = None,
+        catalog: Optional[ApprovedModelCatalog] = None,
+        ledger: Optional[CreditLedger] = None,
     ) -> None:
         self.catalog = catalog or ApprovedModelCatalog.default()
         self.ledger = ledger or CreditLedger()
@@ -48,8 +57,6 @@ class OllamaNetworkCoordinator:
             raise PolicyError("At least one installed Ollama model is required.")
         if worker.runtime != "ollama" or worker.allows_cloud_fallback:
             raise PolicyError("Workers must run Ollama locally with cloud fallback disabled.")
-        for model_tag in worker.installed_models:
-            self.catalog.require_local_model(model_tag)
         self.register_user(worker.owner_user_id)
         worker.last_heartbeat_unix = time()
         self.workers[worker.worker_id] = worker
@@ -66,8 +73,8 @@ class OllamaNetworkCoordinator:
         model_tag: str,
         prompt: str,
         max_output_tokens: int,
-        compiled_prompt: str | None = None,
-        prompt_tokens: int | None = None,
+        compiled_prompt: Optional[str] = None,
+        prompt_tokens: Optional[int] = None,
         privacy_tier: str = "public",
         conversation_id: str = "",
         conversation_turn: int = 0,
@@ -105,7 +112,7 @@ class OllamaNetworkCoordinator:
         self._queued_job_ids.append(job_id)
         return record
 
-    def assign_next_job(self) -> JobAssignment | None:
+    def assign_next_job(self) -> Optional[JobAssignment]:
         for _ in range(len(self._queued_job_ids)):
             job_id = self._queued_job_ids.popleft()
             record = self.jobs[job_id]
@@ -139,7 +146,7 @@ class OllamaNetworkCoordinator:
         self,
         worker_id: str,
         allow_own_jobs: bool = False,
-    ) -> JobAssignment | None:
+    ) -> Optional[JobAssignment]:
         worker = self.update_worker(worker_id=worker_id, online=True)
         for _ in range(len(self._queued_job_ids)):
             job_id = self._queued_job_ids.popleft()
@@ -406,30 +413,50 @@ class OllamaNetworkCoordinator:
         word_count = len([token for token in prompt.split() if token.strip()])
         return max(8, word_count * 2)
 
-    def _select_worker(self, record: JobRecord) -> WorkerNode | None:
+    def _select_worker(self, record: JobRecord) -> Optional[WorkerNode]:
         candidates = [
             worker
             for worker in self.workers.values()
             if worker.owner_user_id != record.request.requester_user_id
         ]
-        scored_candidates: list[tuple[WorkerNode, str]] = []
+        scored_candidates: list[tuple[WorkerNode, object]] = []
         for worker in candidates:
             resolved_model = self._resolve_model_for_worker(worker, record.request.model_tag)
             if resolved_model is None or not worker.supports_model(resolved_model):
                 continue
-            scored_candidates.append((worker, resolved_model.tag))
+            scored_candidates.append((worker, resolved_model))
         if not scored_candidates:
             return None
         return max(
             scored_candidates,
-            key=lambda item: self._worker_score(item[0], item[1]),
+            key=lambda item: self._worker_score(item[0], item[1], record.request.model_tag),
         )[0]
 
-    @staticmethod
-    def _worker_score(worker: WorkerNode, model_tag: str) -> float:
-        return (
-            worker.benchmark_tokens_per_second.get(model_tag, 0.0)
+    def _worker_score(self, worker: WorkerNode, resolved_model, selector: str) -> float:
+        throughput_score = (
+            worker.benchmark_tokens_per_second.get(resolved_model.tag, 0.0)
             * max(worker.reliability_score, 0.1)
+        )
+        if selector not in QUALITY_SELECTORS:
+            return throughput_score + (resolved_model.strength_score * 0.2)
+        target_pricing_rank = {
+            "good": PRICING_TIER_RANK["tier_1_small"],
+            "better": PRICING_TIER_RANK["tier_2_standard"],
+            "best": PRICING_TIER_RANK["tier_4_reasoning"],
+            "auto": PRICING_TIER_RANK["tier_2_standard"],
+        }[selector]
+        resolved_pricing_rank = PRICING_TIER_RANK.get(resolved_model.pricing_tier, target_pricing_rank)
+        distance_penalty = abs(resolved_pricing_rank - target_pricing_rank) * 30.0
+        overshoot_penalty = max(0, resolved_pricing_rank - target_pricing_rank) * 25.0
+        auto_vram_penalty = 0.0
+        if selector == "auto":
+            auto_vram_penalty = max(0.0, resolved_model.min_vram_gb - 24.0) / 4.0
+        return (
+            throughput_score
+            + (resolved_model.strength_score * 0.2)
+            - distance_penalty
+            - overshoot_penalty
+            - auto_vram_penalty
         )
 
     def _resolve_model_for_worker(self, worker: WorkerNode, selector: str):

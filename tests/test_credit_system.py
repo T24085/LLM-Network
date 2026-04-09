@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from pathlib import Path
+from typing import Optional
 
 from ollama_network.models import ExecutorResult
 from ollama_network.service import NetworkService
@@ -22,7 +25,7 @@ class FakeExecutor:
         )
 
 
-def _build_service(tmp_path, *, executor_tokens: int = 48, admin_emails: set[str] | None = None) -> NetworkService:
+def _build_service(tmp_path, *, executor_tokens: int = 48, admin_emails: Optional[set[str]] = None) -> NetworkService:
     return NetworkService(
         executor_factory=lambda _worker_id: FakeExecutor(output_tokens=executor_tokens),
         state_store=LocalStateStore(Path(tmp_path) / "private_state.json"),
