@@ -1,8 +1,16 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from time import sleep
+from typing import Protocol
+
+
+class StateStore(Protocol):
+    def load(self) -> dict[str, object] | None: ...
+
+    def save(self, payload: dict[str, object]) -> None: ...
 
 
 class LocalStateStore:
@@ -31,3 +39,55 @@ class LocalStateStore:
         self.path.write_text(encoded, encoding="utf-8")
         if temp_path.exists():
             temp_path.unlink()
+
+
+class FirestoreStateStore:
+    """Persists coordinator state in a shared Firestore document."""
+
+    def __init__(
+        self,
+        collection: str,
+        document: str,
+        project_id: str = "",
+        client: object | None = None,
+    ) -> None:
+        self.collection = collection
+        self.document = document
+        self.project_id = project_id
+        if client is None:
+            try:
+                from google.cloud import firestore
+            except ImportError as error:
+                raise RuntimeError(
+                    "Firestore state backend requires the 'google-cloud-firestore' package."
+                ) from error
+            client = firestore.Client(project=project_id or None)
+        self._client = client
+        self._doc = self._client.collection(collection).document(document)
+
+    def load(self) -> dict[str, object] | None:
+        snapshot = self._doc.get()
+        exists = getattr(snapshot, "exists", False)
+        if not exists:
+            return None
+        payload = snapshot.to_dict() or {}
+        state = payload.get("state")
+        return dict(state) if isinstance(state, dict) else None
+
+    def save(self, payload: dict[str, object]) -> None:
+        self._doc.set(
+            {
+                "state": payload,
+            }
+        )
+
+
+def create_state_store(project_root: Path) -> StateStore:
+    backend = os.environ.get("OLLAMA_NETWORK_STATE_BACKEND", "local").strip().lower()
+    if backend == "firestore":
+        return FirestoreStateStore(
+            collection=os.environ.get("OLLAMA_NETWORK_FIRESTORE_COLLECTION", "ollama_network_state"),
+            document=os.environ.get("OLLAMA_NETWORK_FIRESTORE_DOCUMENT", "shared"),
+            project_id=os.environ.get("OLLAMA_NETWORK_FIRESTORE_PROJECT_ID", ""),
+        )
+    return LocalStateStore(project_root / ".runtime" / "private_state.json")

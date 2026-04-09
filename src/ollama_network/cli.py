@@ -16,9 +16,12 @@ def _http_request(
     method: str,
     payload: dict[str, object] | None = None,
     firebase_id_token: str | None = None,
+    worker_token: str | None = None,
 ) -> dict[str, object]:
     body = None if payload is None else json.dumps(payload).encode("utf-8")
     headers = {"Content-Type": "application/json"}
+    if worker_token:
+        headers["X-Worker-Token"] = worker_token
     if firebase_id_token:
         headers["Authorization"] = f"Bearer {firebase_id_token}"
     req = request.Request(
@@ -40,7 +43,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="CLI for the Ollama Network local coordinator.")
     parser.add_argument(
         "--server-url",
-        default="http://127.0.0.1:8000",
+        default="http://localhost:8000",
         help="Coordinator API base URL.",
     )
     parser.add_argument(
@@ -48,12 +51,19 @@ def build_parser() -> argparse.ArgumentParser:
         default=os.environ.get("OLLAMA_NETWORK_FIREBASE_ID_TOKEN", ""),
         help="Optional Firebase ID token for protected servers.",
     )
+    parser.add_argument(
+        "--worker-token",
+        default=os.environ.get("OLLAMA_NETWORK_WORKER_TOKEN", ""),
+        help="Optional long-lived worker token for worker daemon routes.",
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    subparsers.add_parser("issue-user", help="Issue or sync the authenticated network identifier.")
+    issue_user = subparsers.add_parser("issue-user", help="Issue or sync the authenticated network identifier.")
+    issue_user.add_argument("--starting-credits", type=float, default=0.0)
 
     register_user = subparsers.add_parser("register-user", help="Register a user.")
     register_user.add_argument("--user-id", required=True)
+    register_user.add_argument("--starting-credits", type=float, default=0.0)
 
     user = subparsers.add_parser("user", help="Fetch a user balance.")
     user.add_argument("--user-id", required=True)
@@ -103,6 +113,26 @@ def build_parser() -> argparse.ArgumentParser:
     )
     run_once.add_argument("--worker-id", required=True)
 
+    issue_worker_token = subparsers.add_parser(
+        "issue-worker-token",
+        help="Issue a long-lived worker token in the local coordinator state.",
+    )
+    issue_worker_token.add_argument("--user-id", required=True)
+    issue_worker_token.add_argument("--label", default="")
+
+    list_worker_tokens = subparsers.add_parser(
+        "list-worker-tokens",
+        help="List long-lived worker tokens from the local coordinator state.",
+    )
+    list_worker_tokens.add_argument("--user-id", required=True)
+
+    revoke_worker_token = subparsers.add_parser(
+        "revoke-worker-token",
+        help="Revoke a long-lived worker token in the local coordinator state.",
+    )
+    revoke_worker_token.add_argument("--user-id", required=True)
+    revoke_worker_token.add_argument("--token-id", required=True)
+
     return parser
 
 
@@ -116,8 +146,9 @@ def run_cli(argv: Iterable[str] | None = None, stdout: TextIO | None = None) -> 
             args.server_url,
             "/users/issue",
             "POST",
-            {},
+            {"starting_credits": args.starting_credits},
             firebase_id_token=args.firebase_id_token,
+            worker_token=args.worker_token,
         )
     elif args.command == "register-user":
         result = _http_request(
@@ -126,8 +157,10 @@ def run_cli(argv: Iterable[str] | None = None, stdout: TextIO | None = None) -> 
             "POST",
             {
                 "user_id": args.user_id,
+                "starting_credits": args.starting_credits,
             },
             firebase_id_token=args.firebase_id_token,
+            worker_token=args.worker_token,
         )
     elif args.command == "user":
         result = _http_request(
@@ -135,15 +168,40 @@ def run_cli(argv: Iterable[str] | None = None, stdout: TextIO | None = None) -> 
             f"/users/{args.user_id}",
             "GET",
             firebase_id_token=args.firebase_id_token,
+            worker_token=args.worker_token,
         )
     elif args.command == "models":
-        result = _http_request(args.server_url, "/models", "GET", firebase_id_token=args.firebase_id_token)
+        result = _http_request(
+            args.server_url,
+            "/models",
+            "GET",
+            firebase_id_token=args.firebase_id_token,
+            worker_token=args.worker_token,
+        )
     elif args.command == "network":
-        result = _http_request(args.server_url, "/network", "GET", firebase_id_token=args.firebase_id_token)
+        result = _http_request(
+            args.server_url,
+            "/network",
+            "GET",
+            firebase_id_token=args.firebase_id_token,
+            worker_token=args.worker_token,
+        )
     elif args.command == "wallet":
-        result = _http_request(args.server_url, "/wallet", "GET", firebase_id_token=args.firebase_id_token)
+        result = _http_request(
+            args.server_url,
+            "/wallet",
+            "GET",
+            firebase_id_token=args.firebase_id_token,
+            worker_token=args.worker_token,
+        )
     elif args.command == "ledger":
-        result = _http_request(args.server_url, "/ledger", "GET", firebase_id_token=args.firebase_id_token)
+        result = _http_request(
+            args.server_url,
+            "/ledger",
+            "GET",
+            firebase_id_token=args.firebase_id_token,
+            worker_token=args.worker_token,
+        )
     elif args.command == "purchase-credits":
         result = _http_request(
             args.server_url,
@@ -151,6 +209,7 @@ def run_cli(argv: Iterable[str] | None = None, stdout: TextIO | None = None) -> 
             "POST",
             {"usd_amount": args.usd_amount},
             firebase_id_token=args.firebase_id_token,
+            worker_token=args.worker_token,
         )
     elif args.command == "job":
         result = _http_request(
@@ -158,6 +217,7 @@ def run_cli(argv: Iterable[str] | None = None, stdout: TextIO | None = None) -> 
             f"/jobs/{args.job_id}",
             "GET",
             firebase_id_token=args.firebase_id_token,
+            worker_token=args.worker_token,
         )
     elif args.command == "submit-job":
         payload = {
@@ -174,6 +234,7 @@ def run_cli(argv: Iterable[str] | None = None, stdout: TextIO | None = None) -> 
             "POST",
             payload,
             firebase_id_token=args.firebase_id_token,
+            worker_token=args.worker_token,
         )
     elif args.command == "register-worker":
         payload = {
@@ -195,6 +256,7 @@ def run_cli(argv: Iterable[str] | None = None, stdout: TextIO | None = None) -> 
             "POST",
             payload,
             firebase_id_token=args.firebase_id_token,
+            worker_token=args.worker_token,
         )
     elif args.command == "claim-job":
         result = _http_request(
@@ -203,6 +265,7 @@ def run_cli(argv: Iterable[str] | None = None, stdout: TextIO | None = None) -> 
             "POST",
             {},
             firebase_id_token=args.firebase_id_token,
+            worker_token=args.worker_token,
         )
     elif args.command == "run-worker-once":
         result = _http_request(
@@ -211,7 +274,23 @@ def run_cli(argv: Iterable[str] | None = None, stdout: TextIO | None = None) -> 
             "POST",
             {},
             firebase_id_token=args.firebase_id_token,
+            worker_token=args.worker_token,
         )
+    elif args.command == "issue-worker-token":
+        from .service import NetworkService
+
+        service = NetworkService()
+        result = service.issue_worker_token(actor_user_id=args.user_id, label=args.label)
+    elif args.command == "list-worker-tokens":
+        from .service import NetworkService
+
+        service = NetworkService()
+        result = service.list_worker_tokens(actor_user_id=args.user_id)
+    elif args.command == "revoke-worker-token":
+        from .service import NetworkService
+
+        service = NetworkService()
+        result = service.revoke_worker_token(actor_user_id=args.user_id, token_id=args.token_id)
     else:
         raise RuntimeError(f"Unsupported command: {args.command}")
 

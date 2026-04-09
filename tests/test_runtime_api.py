@@ -183,6 +183,8 @@ def test_dashboard_and_local_worker_cycle_routes(tmp_path) -> None:
         assert "Operator Credits" in landing
         html = text_get(base_url, "/dashboard")
         assert "LLM Network Control Room" in html
+        assert "Live Network Map" in html
+        assert "Neural view of the live mesh" in html
         models = api_get(base_url, "/models")
         assert any(model["tag"] == "llama3.1:8b" for model in models["models"])
         assert models["local_detection"]["approved_local_models"] == ["llama3.1:8b", "qwen3:4b"]
@@ -288,6 +290,10 @@ def test_protected_api_requires_auth_and_binds_stable_user(tmp_path) -> None:
         assert session["issued"] is True
         assert session["is_admin"] is False
 
+        worker_context = api_get(base_url, "/worker-context", headers=headers)
+        assert worker_context["suggested_owner_user_id"] == session["user_id"]
+        assert worker_context["suggested_worker_id"].startswith("worker-")
+
         second_session = api_get(base_url, "/auth/session", headers=headers)
         assert second_session["user_id"] == session["user_id"]
         assert second_session["issued"] is False
@@ -371,6 +377,98 @@ def test_protected_api_requires_auth_and_binds_stable_user(tmp_path) -> None:
         except Exception as error:
             admin_error = error
         assert admin_error is not None
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
+
+def test_protected_api_accepts_long_lived_worker_token_for_remote_daemon(tmp_path) -> None:
+    service = NetworkService(
+        executor_factory=lambda _worker_id: FakeExecutor("worker token executor"),
+        state_store=LocalStateStore(tmp_path / "private_state.json"),
+        admin_emails={"admin@example.com"},
+    )
+    server = NetworkHTTPServer(
+        ("127.0.0.1", 0),
+        service=service,
+        auth_verifier=FakeAuthVerifier(),
+        firebase_client_config={"projectId": "llm-network"},
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base_url = f"http://127.0.0.1:{server.server_address[1]}"
+
+    try:
+        owner_headers = {"Authorization": "Bearer valid-token"}
+        owner_session = api_get(base_url, "/auth/session", headers=owner_headers)
+        token_result = service.issue_worker_token(
+            actor_user_id=owner_session["user_id"],
+            label="jetson-nano",
+        )
+        worker_token = str(token_result["token"])
+        worker_headers = {"X-Worker-Token": worker_token}
+
+        registered = api_post(
+            base_url,
+            "/workers/register",
+            {
+                "worker_id": "worker-jetson-nano",
+                "owner_user_id": owner_session["user_id"],
+                "gpu_name": "Jetson Nano",
+                "vram_gb": 4.0,
+                "installed_models": ["qwen3:4b"],
+                "benchmark_tokens_per_second": {"qwen3:4b": 10.0},
+                "runtime": "ollama",
+                "allows_cloud_fallback": False,
+            },
+            headers=worker_headers,
+        )
+        assert registered["worker_id"] == "worker-jetson-nano"
+
+        admin_headers = {"Authorization": "Bearer admin-token"}
+        admin_session = api_get(base_url, "/auth/session", headers=admin_headers)
+        service.coordinator.ledger.adjust(admin_session["user_id"], amount=50, source="test_setup")
+
+        created = api_post(
+            base_url,
+            "/jobs",
+            {
+                "requester_user_id": admin_session["user_id"],
+                "model_tag": "qwen3:4b",
+                "prompt": "Run this through the token-auth worker path.",
+                "max_output_tokens": 120,
+                "prompt_tokens": 16,
+            },
+            headers=admin_headers,
+        )
+
+        worker = WorkerDaemon(
+            config=WorkerConfig(
+                server_url=base_url,
+                worker_id="worker-jetson-nano",
+                owner_user_id=owner_session["user_id"],
+                gpu_name="Jetson Nano",
+                vram_gb=4.0,
+                installed_models=("qwen3:4b",),
+                benchmark_tokens_per_second={"qwen3:4b": 10.0},
+                worker_token=worker_token,
+            ),
+            executor=FakeExecutor("worker token executor"),
+        )
+        completed = worker.run_once()
+        assert completed is not None
+        assert completed["job_id"] == created["job_id"]
+        assert completed["status"] == "completed"
+        assert completed["assigned_worker_id"] == "worker-jetson-nano"
+        assert completed["result"]["output_text"].startswith("worker token executor")
+
+        fetched = api_get(base_url, f"/jobs/{created['job_id']}", headers=admin_headers)
+        assert fetched["status"] == "completed"
+
+        listed = service.list_worker_tokens(owner_session["user_id"])
+        assert listed["tokens"][0]["label"] == "jetson-nano"
+        assert listed["tokens"][0]["last_used_unix"] > 0
     finally:
         server.shutdown()
         server.server_close()

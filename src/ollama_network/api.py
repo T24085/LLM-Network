@@ -107,6 +107,14 @@ class NetworkAPIHandler(BaseHTTPRequestHandler):
                     self.server.service.get_worker_context(actor_user_id=actor_user_id),
                 )
                 return
+            if path == "/workers/tokens":
+                if not actor_user_id:
+                    raise AuthenticationError("Sign in with Google to use the network.")
+                self._write_json(
+                    HTTPStatus.OK,
+                    self.server.service.list_worker_tokens(actor_user_id),
+                )
+                return
             if path == "/network":
                 self._write_json(HTTPStatus.OK, self.server.service.get_network())
                 return
@@ -193,13 +201,22 @@ class NetworkAPIHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path.rstrip("/") or "/"
         try:
-            auth_claims = self._require_auth()
-            actor_session = self._actor_session(auth_claims)
-            actor_user_id = str(actor_session.get("user_id", "")) or None if actor_session else None
-            actor_email = str(actor_session.get("email", "")) if actor_session else ""
+            worker_session = self._worker_token_session()
+            actor_user_id: str | None = None
+            actor_email = ""
+            if worker_session:
+                if not self._path_allows_worker_token(path):
+                    raise AuthorizationError("Worker tokens can only be used for worker daemon routes.")
+                actor_user_id = str(worker_session.get("user_id", "")) or None
+            else:
+                auth_claims = self._require_auth()
+                actor_session = self._actor_session(auth_claims)
+                actor_user_id = str(actor_session.get("user_id", "")) or None if actor_session else None
+                actor_email = str(actor_session.get("email", "")) if actor_session else ""
             payload = self._read_json_body()
             if path == "/users/issue":
                 result = self.server.service.issue_user_identity(
+                    starting_credits=float(payload.get("starting_credits", 0.0)),
                     actor_user_id=actor_user_id,
                 )
                 self._write_json(HTTPStatus.CREATED, result)
@@ -207,6 +224,7 @@ class NetworkAPIHandler(BaseHTTPRequestHandler):
             if path == "/users/register":
                 result = self.server.service.register_user(
                     user_id=str(payload["user_id"]),
+                    starting_credits=float(payload.get("starting_credits", 0.0)),
                     actor_user_id=actor_user_id,
                 )
                 self._write_json(HTTPStatus.CREATED, result)
@@ -325,6 +343,32 @@ class NetworkAPIHandler(BaseHTTPRequestHandler):
                     ),
                 )
                 return
+            if path == "/workers/tokens":
+                if not actor_user_id:
+                    raise AuthenticationError("Sign in with Google to use the network.")
+                self._write_json(
+                    HTTPStatus.CREATED,
+                    self.server.service.issue_worker_token(
+                        actor_user_id=actor_user_id,
+                        label=str(payload.get("label", "")),
+                    ),
+                )
+                return
+            if path.startswith("/workers/tokens/") and path.endswith("/revoke"):
+                if not actor_user_id:
+                    raise AuthenticationError("Sign in with Google to use the network.")
+                parts = path.strip("/").split("/")
+                if len(parts) != 4:
+                    self._write_json(HTTPStatus.NOT_FOUND, {"error": "not found"})
+                    return
+                self._write_json(
+                    HTTPStatus.OK,
+                    self.server.service.revoke_worker_token(
+                        actor_user_id=actor_user_id,
+                        token_id=parts[2],
+                    ),
+                )
+                return
             if path == "/workers/register":
                 self._write_json(
                     HTTPStatus.CREATED,
@@ -347,6 +391,7 @@ class NetworkAPIHandler(BaseHTTPRequestHandler):
                 worker_id = path.split("/")[2]
                 assignment = self.server.service.claim_job_for_worker(
                     worker_id,
+                    actor_user_id=actor_user_id,
                     actor_email=actor_email,
                     allow_admin_self_serve=bool(payload.get("allow_admin_self_serve", False)),
                 )
@@ -361,6 +406,7 @@ class NetworkAPIHandler(BaseHTTPRequestHandler):
                     HTTPStatus.OK,
                     self.server.service.inspect_worker_queue(
                         worker_id,
+                        actor_user_id=actor_user_id,
                         actor_email=actor_email,
                         allow_admin_self_serve=bool(payload.get("allow_admin_self_serve", False)),
                     ),
@@ -377,6 +423,7 @@ class NetworkAPIHandler(BaseHTTPRequestHandler):
                 worker_id = path.split("/")[2]
                 result = self.server.service.run_worker_cycle(
                     worker_id,
+                    actor_user_id=actor_user_id,
                     actor_email=actor_email,
                     allow_admin_self_serve=bool(payload.get("allow_admin_self_serve", False)),
                 )
@@ -387,6 +434,7 @@ class NetworkAPIHandler(BaseHTTPRequestHandler):
                             "job": None,
                             "queue": self.server.service.inspect_worker_queue(
                                 worker_id,
+                                actor_user_id=actor_user_id,
                                 actor_email=actor_email,
                                 allow_admin_self_serve=bool(payload.get("allow_admin_self_serve", False)),
                             ),
@@ -402,7 +450,14 @@ class NetworkAPIHandler(BaseHTTPRequestHandler):
                 )
                 return
             if path == "/jobs/complete":
-                self._write_json(HTTPStatus.OK, self.server.service.complete_job(payload))
+                self._write_json(
+                    HTTPStatus.OK,
+                    self.server.service.complete_job(
+                        payload,
+                        actor_user_id=actor_user_id,
+                        actor_email=actor_email,
+                    ),
+                )
                 return
             self._write_json(HTTPStatus.NOT_FOUND, {"error": "not found"})
         except json.JSONDecodeError:
@@ -446,6 +501,24 @@ class NetworkAPIHandler(BaseHTTPRequestHandler):
         if not auth_claims:
             return None
         return self.server.service.get_authenticated_session(auth_claims)
+
+    def _worker_token_session(self) -> dict[str, object] | None:
+        token = self.headers.get("X-Worker-Token", "").strip()
+        if not token:
+            return None
+        return self.server.service.authenticate_worker_token(token)
+
+    @staticmethod
+    def _path_allows_worker_token(path: str) -> bool:
+        if path == "/workers/register" or path == "/jobs/complete":
+            return True
+        if path.startswith("/workers/") and (
+            path.endswith("/claim")
+            or path.endswith("/queue-status")
+            or path.endswith("/run-once")
+        ):
+            return True
+        return False
 
     def _write_json(self, status: int | HTTPStatus, payload: dict[str, object]) -> None:
         encoded = json.dumps(payload).encode("utf-8")
