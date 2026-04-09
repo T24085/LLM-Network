@@ -168,7 +168,7 @@ def test_worker_daemon_executes_claimed_job_end_to_end(tmp_path) -> None:
 def test_dashboard_and_local_worker_cycle_routes(tmp_path) -> None:
     service = NetworkService(
         executor_factory=lambda _worker_id: FakeExecutor("ui executor"),
-        model_detector=FakeModelDetector(models=["llama3.1:8b", "qwen3:4b"]),
+        model_detector=FakeModelDetector(models=["llama3.1:8b", "qwen3:4b", "my-lab-model:3b"]),
         hardware_detector=FakeHardwareDetector(),
         state_store=LocalStateStore(tmp_path / "private_state.json"),
     )
@@ -187,13 +187,28 @@ def test_dashboard_and_local_worker_cycle_routes(tmp_path) -> None:
         assert "Neural view of the live mesh" in html
         models = api_get(base_url, "/models")
         assert any(model["tag"] == "llama3.1:8b" for model in models["models"])
-        assert models["local_detection"]["approved_local_models"] == ["llama3.1:8b", "qwen3:4b"]
-        assert models["local_detection"]["unapproved_local_models"] == []
+        assert models["local_detection"]["detected_models"] == [
+            "llama3.1:8b",
+            "qwen3:4b",
+            "my-lab-model:3b",
+        ]
+        assert models["local_detection"]["network_supported_local_models"] == [
+            "llama3.1:8b",
+            "qwen3:4b",
+        ]
+        assert models["local_detection"]["unsupported_local_models"] == ["my-lab-model:3b"]
         worker_context = api_get(base_url, "/worker-context")
         assert worker_context["suggested_gpu_name"] == "RTX 4090"
         assert worker_context["suggested_vram_gb"] == 24.0
-        assert worker_context["suggested_installed_models"] == ["llama3.1:8b", "qwen3:4b"]
+        assert worker_context["suggested_installed_models"] == [
+            "llama3.1:8b",
+            "qwen3:4b",
+            "my-lab-model:3b",
+        ]
+        assert worker_context["network_supported_local_models"] == ["llama3.1:8b", "qwen3:4b"]
+        assert worker_context["unsupported_local_models"] == ["my-lab-model:3b"]
         assert worker_context["suggested_benchmark_tokens_per_second"]["llama3.1:8b"] > 0
+        assert worker_context["suggested_benchmark_tokens_per_second"]["my-lab-model:3b"] > 0
 
         service.coordinator.ledger.adjust("bob", amount=50, source="test_setup")
         issued = api_post(base_url, "/users/issue", {})
@@ -208,14 +223,15 @@ def test_dashboard_and_local_worker_cycle_routes(tmp_path) -> None:
                 "owner_user_id": "bob",
                 "gpu_name": "RTX 4090",
                 "vram_gb": 24,
-                "installed_models": ["llama3.1:8b"],
-                "benchmark_tokens_per_second": {"llama3.1:8b": 72},
+                "installed_models": ["llama3.1:8b", "my-lab-model:3b"],
+                "benchmark_tokens_per_second": {"llama3.1:8b": 72, "my-lab-model:3b": 90},
                 "poll_interval_seconds": 0.05,
                 "runtime": "ollama",
                 "allows_cloud_fallback": False,
             },
         )
         assert started["loop"]["running"] is True
+        assert started["worker"]["installed_models"] == ["llama3.1:8b", "my-lab-model:3b"]
         api_post(
             base_url,
             "/jobs",
