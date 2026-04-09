@@ -34,7 +34,9 @@ HTML = """<!doctype html>
     .topbar,.metric-grid,.story,.pricing,.faq,.final{display:grid;gap:16px}
     .topbar{grid-template-columns:1fr auto;align-items:center}
     .brand{display:flex;align-items:center;gap:14px}
+    .brand-link{display:inline-flex;align-items:center;gap:14px}
     .brand-logo{width:58px;height:58px;object-fit:contain;display:block;filter:drop-shadow(0 10px 18px rgba(0,0,0,.18))}
+    .brand-link:hover .brand-logo{transform:translateY(-1px)}
     .brand strong,.section h2,.price,.display{font-family:"Space Grotesk","Segoe UI",sans-serif}
     .brand span,.nav a,.lede,.fine,.faq p,.plan p,.story p,.feature-list li,.section p{color:var(--muted)}
     .brand span{display:block;font-size:.82rem;letter-spacing:.1em;text-transform:uppercase}
@@ -54,17 +56,60 @@ HTML = """<!doctype html>
     .button-secondary{background:rgba(255,255,255,.03);border-color:var(--line);color:var(--text)}
     .pill{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.04)}
     .pill::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--gold)}
-    .poster{position:relative;min-height:660px;border:1px solid var(--line);border-radius:32px;background:radial-gradient(circle at 60% 45%,rgba(99,219,201,.16),transparent 20%),linear-gradient(160deg,rgba(12,29,40,.92),rgba(7,16,24,.82));box-shadow:var(--shadow);overflow:hidden}
-    .poster::before,.poster::after{content:"";position:absolute;border:1px solid rgba(255,255,255,.08);border-radius:50%}
-    .poster::before{inset:10%}.poster::after{inset:20%}
-    .core{position:absolute;left:50%;top:45%;width:170px;height:170px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(242,199,114,.95),rgba(242,199,114,.18) 34%,transparent 62%)}
-    .poster-logo{position:absolute;left:50%;top:33%;width:min(360px,62%);transform:translateX(-50%);opacity:.92;filter:drop-shadow(0 18px 28px rgba(0,0,0,.28))}
-    .node,.terminal,.summary,.panel,.plan,.faq-item,.story-item{border:1px solid var(--line);background:rgba(255,255,255,.03);box-shadow:var(--shadow)}
-    .node{position:absolute;z-index:2;max-width:210px;padding:12px 14px;border-radius:18px;backdrop-filter:blur(10px)} .node small{display:block;color:#91e1d6;text-transform:uppercase;letter-spacing:.06em;font-size:.7rem} .node span{display:block;color:var(--muted);font-size:.82rem;margin-top:4px}
-    .n1{top:12%;right:7%}.n2{top:38%;right:9%}.n3{left:7%;bottom:26%}.n4{left:9%;top:20%}
-    .poster-floor{position:absolute;left:24px;right:24px;bottom:24px;z-index:1;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(220px,.85fr);gap:14px;align-items:stretch}
+    .poster{position:relative;min-height:660px;padding:24px;border:1px solid var(--line);border-radius:32px;background:radial-gradient(circle at 18% 16%,rgba(242,199,114,.18),transparent 24%),radial-gradient(circle at 82% 12%,rgba(99,219,201,.14),transparent 24%),linear-gradient(160deg,rgba(12,29,40,.96),rgba(7,16,24,.88));box-shadow:var(--shadow);overflow:hidden;display:grid;gap:18px}
+    .poster::before,.poster::after{content:"";position:absolute;border:1px solid rgba(255,255,255,.08);border-radius:50%;pointer-events:none}
+    .poster::before{width:420px;height:420px;right:-120px;top:-120px}
+    .poster::after{width:300px;height:300px;left:-90px;bottom:-90px}
+    .poster-head{position:relative;z-index:1;display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+    .poster-kicker{display:grid;gap:8px}
+    .poster-kicker strong{font-family:"Space Grotesk","Segoe UI",sans-serif;font-size:1.2rem}
+    .poster-kicker span,.poster-refresh{color:var(--muted);font-size:.84rem}
+    .poster-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;color:#dff7f3}
+    .poster-badge::before{content:"";width:8px;height:8px;border-radius:999px;background:#55f1d7;box-shadow:0 0 14px rgba(85,241,215,.45)}
+    .poster-stats{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    .poster-stat{padding:14px 16px;border-radius:22px;border:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.03))}
+    .poster-stat strong{display:block;font-family:"Space Grotesk","Segoe UI",sans-serif;font-size:1.55rem;line-height:1}
+    .poster-stat span{display:block;margin-top:6px;color:var(--muted);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase}
+    .poster-visual{position:relative;z-index:1;padding:16px 16px 8px;border-radius:28px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(9,24,33,.78),rgba(5,14,21,.86))}
+    .poster-visual-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:8px}
+    .poster-visual-head strong{font-size:1rem}
+    .poster-visual-head span{display:block;color:var(--muted);font-size:.84rem;max-width:30rem}
+    .poster-legend{display:flex;flex-wrap:wrap;gap:8px}
+    .poster-legend-chip{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.05);font-size:.76rem;color:#deece9}
+    .poster-legend-dot{width:8px;height:8px;border-radius:999px;display:inline-block}
+    .poster-legend-dot.working{background:#ff925e}
+    .poster-legend-dot.ready{background:#4ce9d2}
+    .poster-legend-dot.offline{background:#70838b}
+    .hero-map{width:100%;height:auto;display:block;min-height:320px}
+    .hero-map .ring{fill:none;stroke:rgba(78,227,210,.18);stroke-width:1.2}
+    .hero-map .backbone{fill:none;stroke:rgba(89,224,211,.14);stroke-width:1.3}
+    .hero-map .queue-edge{fill:none;stroke:rgba(255,184,127,.34);stroke-width:1.6;stroke-dasharray:5 7;animation:heroFlow 8s linear infinite}
+    .hero-map .worker-edge{fill:none;stroke:rgba(94,234,219,.18);stroke-width:1.4}
+    .hero-map .worker-edge.working{stroke:rgba(255,153,97,.68);stroke-width:2.2;stroke-dasharray:6 8;animation:heroFlow 3.4s linear infinite}
+    .hero-map .worker-edge.ready{stroke:rgba(76,233,210,.42);stroke-width:1.8}
+    .hero-map .worker-edge.offline{stroke:rgba(112,131,139,.22)}
+    .hero-map .queue-node{fill:url(#heroQueueFill);stroke:rgba(255,222,187,.84);stroke-width:1}
+    .hero-map .worker-node{stroke-width:1.3;filter:url(#heroGlow)}
+    .hero-map .worker-node.working{fill:#ff925e;stroke:#ffe0cf}
+    .hero-map .worker-node.ready{fill:#4ce9d2;stroke:#bafff5}
+    .hero-map .worker-node.offline{fill:#637982;stroke:#93a9b1}
+    .hero-map .worker-halo{opacity:.2}
+    .hero-map .worker-halo.working{fill:#ff925e;animation:heroPulse 2.3s ease-in-out infinite}
+    .hero-map .worker-halo.ready{fill:#4ce9d2;animation:heroPulse 3.1s ease-in-out infinite}
+    .hero-map .worker-halo.offline{fill:#637982}
+    .hero-map .queue-label,.hero-map .worker-sub{fill:rgba(219,232,234,.66);font-size:9px}
+    .hero-map .worker-label{fill:#edf8f6;font-size:10px;font-weight:700}
+    .hero-map .core-halo{fill:url(#heroCoreGlow)}
+    .hero-map .core-node{fill:url(#heroCoreFill);filter:url(#heroGlow)}
+    .hero-map .core-label{fill:#f4fffd;font-size:15px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+    .hero-map .core-sub{fill:rgba(225,239,240,.72);font-size:10px}
+    .hero-feed{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(220px,.9fr);gap:14px}
+    .terminal,.summary,.panel,.plan,.faq-item,.story-item{border:1px solid var(--line);background:rgba(255,255,255,.03);box-shadow:var(--shadow)}
+    .poster-floor{position:relative;left:auto;right:auto;bottom:auto;z-index:1;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(220px,.85fr);gap:14px;align-items:stretch}
     .terminal,.summary{min-width:0;padding:16px 18px;border-radius:22px}
     .terminal code,.summary code{display:block;white-space:pre-wrap;overflow-wrap:anywhere;color:#c9f0eb;font:inherit;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.78rem;line-height:1.55}
+    @keyframes heroFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-52}}
+    @keyframes heroPulse{0%,100%{transform:scale(1);transform-origin:center;opacity:.16}50%{transform:scale(1.22);transform-origin:center;opacity:.32}}
     main{padding:0 24px 84px}
     .section{padding:92px 0;border-top:1px solid var(--line)}
     .section-head{max-width:760px;margin-bottom:32px}
@@ -95,9 +140,9 @@ HTML = """<!doctype html>
     .story-item strong{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;background:rgba(242,199,114,.14);color:var(--gold);font-family:"Space Grotesk","Segoe UI",sans-serif}
     .final{grid-template-columns:1fr auto;align-items:end;padding:34px;border:1px solid var(--line);border-radius:34px;background:linear-gradient(135deg,rgba(99,219,201,.16),rgba(255,255,255,.03))}
     footer{padding:20px 24px 36px;color:var(--muted)} .footer-row{max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:18px}
-    @media (max-width:1240px){.hero-grid{grid-template-columns:1fr}.poster{max-width:760px;width:100%;justify-self:center}.n2{top:56%;right:8%}.n3{bottom:24%}}
-    @media (max-width:1040px){.two-col,.final{grid-template-columns:1fr}.plan.featured{transform:none}}
-    @media (max-width:720px){.hero,main,footer{padding-inline:18px}.topbar{grid-template-columns:1fr}.nav{justify-content:flex-start}.display{font-size:clamp(3rem,18vw,4.3rem)}.poster{min-height:560px}.poster-floor,.metric-grid{grid-template-columns:1fr}.button{width:100%}.node{max-width:170px}.n1{right:4%}.n2{top:52%;right:4%}.n3{left:4%;bottom:28%}.n4{left:4%}}
+    @media (max-width:1240px){.hero-grid{grid-template-columns:1fr}.poster{max-width:860px;width:100%;justify-self:center}}
+    @media (max-width:1040px){.two-col,.final,.poster-stats,.poster-floor{grid-template-columns:1fr}.plan.featured{transform:none}}
+    @media (max-width:720px){.hero,main,footer{padding-inline:18px}.topbar{grid-template-columns:1fr}.nav{justify-content:flex-start}.display{font-size:clamp(3rem,18vw,4.3rem)}.poster{min-height:560px;padding:18px}.poster-head,.poster-visual-head{flex-direction:column}.metric-grid{grid-template-columns:1fr}.button{width:100%}.hero-map{min-height:260px}}
   </style>
 </head>
 <body>
@@ -105,11 +150,13 @@ HTML = """<!doctype html>
     <div class="container">
       <header class="topbar">
         <div class="brand">
-          <img src="__LOGO_DATA_URL__" alt="LLM Network logo" class="brand-logo">
-          <div>
-            <strong>LLM Network</strong>
-            <span>Local inference exchange</span>
-          </div>
+          <a href="./" class="brand-link" aria-label="Go to the LLM Network landing page">
+            <img src="__LOGO_DATA_URL__" alt="LLM Network logo" class="brand-logo">
+            <div>
+              <strong>LLM Network</strong>
+              <span>Local inference exchange</span>
+            </div>
+          </a>
         </div>
         <nav class="nav" aria-label="Primary">
           <a href="#why">Why it works</a>
@@ -135,21 +182,42 @@ HTML = """<!doctype html>
           </div>
         </div>
 
-        <div class="poster" aria-hidden="true">
-          <div class="core"></div>
-          <img src="__LOGO_DATA_URL__" alt="" class="poster-logo">
-          <div class="node n1"><small>Dashboard</small><strong>Control Room</strong><span>Wallet, queue, workers, CLI pack</span></div>
-          <div class="node n2"><small>Worker</small><strong>RTX 4090 Local Node</strong><span>Approved Ollama models with verified throughput</span></div>
-          <div class="node n3"><small>Usage</small><strong>Prompt Dispatch</strong><span>Reserve credits, route jobs, collect results</span></div>
-          <div class="node n4"><small>Identity</small><strong>Google Bound Account</strong><span>One stable network id across sessions</span></div>
+        <div class="poster">
+          <div class="poster-head">
+            <div class="poster-kicker">
+              <span class="poster-badge">Live network preview</span>
+              <strong>Watch the mesh route work in real time.</strong>
+              <span id="hero-network-note">Connecting to the local coordinator for a live snapshot.</span>
+            </div>
+            <div id="poster-refresh" class="poster-refresh">Waiting for first sync</div>
+          </div>
+          <div class="poster-stats">
+            <div class="poster-stat"><strong id="hero-metric-workers">0</strong><span>Workers online</span></div>
+            <div class="poster-stat"><strong id="hero-metric-active">0</strong><span>Jobs in flight</span></div>
+            <div class="poster-stat"><strong id="hero-metric-queued">0</strong><span>Queued prompts</span></div>
+            <div class="poster-stat"><strong id="hero-metric-users">0</strong><span>Connected users</span></div>
+          </div>
+          <div class="poster-visual">
+            <div class="poster-visual-head">
+              <div>
+                <strong>Hero mesh telemetry</strong>
+                <span>Public visitors can immediately see workers, queue pressure, and active routing instead of a static mockup.</span>
+              </div>
+              <div class="poster-legend">
+                <span class="poster-legend-chip"><span class="poster-legend-dot working"></span>Working</span>
+                <span class="poster-legend-chip"><span class="poster-legend-dot ready"></span>Ready</span>
+                <span class="poster-legend-chip"><span class="poster-legend-dot offline"></span>Offline</span>
+              </div>
+            </div>
+            <svg id="hero-network-map" class="hero-map" viewBox="0 0 620 380" role="img" aria-label="Live hero preview of the network mesh"></svg>
+          </div>
           <div class="poster-floor">
-            <div class="terminal"><code>python -m ollama_network.server --host 127.0.0.1 --port 8000
-
-python -m ollama_network.cli --server-url http://127.0.0.1:8000 submit-job --model-tag qwen3:4b --prompt "Summarize the worker protocol."</code></div>
-            <div class="summary"><code>Queue depth: 12 active jobs
-Connected workers: 48 verified
-Credit exchange: $1 = 100 credits
-Launch credit: 5 bootstrap credits</code></div>
+            <div class="terminal"><code id="hero-activity-log">Connecting to /network ...
+Waiting for the first live snapshot from the coordinator.</code></div>
+            <div class="summary"><code id="hero-summary-panel">Queue depth: --
+Connected workers: --
+Users online: --
+Credit exchange: $1 = 100 credits</code></div>
           </div>
         </div>
       </div>
@@ -303,8 +371,14 @@ Launch credit: 5 bootstrap credits</code></div>
     const authStatus = document.getElementById("auth-status");
     const signInButtons = [...document.querySelectorAll("[data-sign-in]"), document.getElementById("hero-sign-in")].filter(Boolean);
     const dashboardLinks = [...document.querySelectorAll("[data-dashboard-link]")];
+    const heroNetworkMap = document.getElementById("hero-network-map");
+    const heroNetworkNote = document.getElementById("hero-network-note");
+    const heroActivityLog = document.getElementById("hero-activity-log");
+    const heroSummaryPanel = document.getElementById("hero-summary-panel");
+    const posterRefresh = document.getElementById("poster-refresh");
     let auth = null;
     let provider = null;
+    let networkPollHandle = null;
 
     function setAuthMessage(pill, message) {
       sessionPill.textContent = pill;
@@ -334,6 +408,256 @@ Launch credit: 5 bootstrap credits</code></div>
         setAuthMessage("Sign-in failed", message);
         toggleButtons(false, "Sign in with Google");
       }
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>\"']/g, (character) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#39;",
+      }[character]));
+    }
+
+    function compactId(value) {
+      const text = String(value || "").trim().replace(/^worker-/, "").replace(/^usr_/, "").replace(/^job-/, "");
+      if (!text) return "unknown";
+      return text.length > 12 ? `${text.slice(0, 5)}...${text.slice(-4)}` : text;
+    }
+
+    function pluralize(count, noun) {
+      return `${count} ${noun}${count === 1 ? "" : "s"}`;
+    }
+
+    function formatRefreshTime() {
+      return new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit", second: "2-digit" });
+    }
+
+    function orbitPoints(items, centerX, centerY, radiusX, radiusY, startDeg, endDeg) {
+      if (!items.length) return [];
+      const singleAngle = (startDeg + endDeg) / 2;
+      return items.map((item, index) => {
+        const angle = items.length === 1 ? singleAngle : startDeg + ((endDeg - startDeg) * index) / (items.length - 1);
+        const radians = (angle * Math.PI) / 180;
+        return {
+          ...item,
+          x: centerX + Math.cos(radians) * radiusX,
+          y: centerY + Math.sin(radians) * radiusY,
+        };
+      });
+    }
+    function layeredOrbitPoints(items, centerX, centerY, layers) {
+      if (!items.length) return [];
+      let offset = 0;
+      const points = [];
+      layers.forEach((layer) => {
+        if (offset >= items.length) return;
+        const count = Math.min(Number(layer.limit || 0), items.length - offset);
+        if (count <= 0) return;
+        points.push(
+          ...orbitPoints(
+            items.slice(offset, offset + count),
+            centerX,
+            centerY,
+            Number(layer.radiusX || 0),
+            Number(layer.radiusY || 0),
+            Number(layer.startDeg || 0),
+            Number(layer.endDeg || 0),
+          ),
+        );
+        offset += count;
+      });
+      if (offset < items.length && layers.length) {
+        const spill = layers[layers.length - 1];
+        points.push(
+          ...orbitPoints(
+            items.slice(offset),
+            centerX,
+            centerY,
+            Number(spill.radiusX || 0) + 16,
+            Number(spill.radiusY || 0) + 10,
+            Number(spill.startDeg || 0),
+            Number(spill.endDeg || 0),
+          ),
+        );
+      }
+      return points;
+    }
+
+    function linkPath(fromX, fromY, toX, toY, curveBias = 0) {
+      const controlX = (fromX + toX) / 2 + curveBias;
+      const controlY = (fromY + toY) / 2;
+      return `M ${fromX.toFixed(1)} ${fromY.toFixed(1)} Q ${controlX.toFixed(1)} ${controlY.toFixed(1)} ${toX.toFixed(1)} ${toY.toFixed(1)}`;
+    }
+
+    function renderHeroNetwork(payload) {
+      const workers = Object.values(payload?.workers || {});
+      const queuedJobs = Array.isArray(payload?.queued_jobs) ? payload.queued_jobs : [];
+      const activeJobsByWorker = payload?.active_jobs || {};
+      const workerNodes = workers.map((worker) => {
+        const activeJobs = Number(activeJobsByWorker[worker.worker_id] ?? worker.active_jobs ?? 0);
+        const state = !worker.online ? "offline" : activeJobs > 0 ? "working" : "ready";
+        return { ...worker, active_jobs: activeJobs, state };
+      });
+      const onlineWorkers = workerNodes.filter((worker) => worker.online);
+      const workingWorkers = workerNodes.filter((worker) => worker.state === "working");
+      const readyWorkers = workerNodes.filter((worker) => worker.state === "ready");
+      const offlineWorkers = workerNodes.filter((worker) => worker.state === "offline");
+
+      document.getElementById("hero-metric-workers").textContent = String(onlineWorkers.length);
+      document.getElementById("hero-metric-active").textContent = String(workingWorkers.length);
+      document.getElementById("hero-metric-queued").textContent = String(queuedJobs.length);
+      document.getElementById("hero-metric-users").textContent = String(Number(payload?.user_count || 0));
+      heroNetworkNote.textContent = `${pluralize(onlineWorkers.length, "worker")} online, ${pluralize(workingWorkers.length, "job")} in flight, ${pluralize(queuedJobs.length, "queued prompt")} waiting for routing.`;
+      posterRefresh.textContent = `Last sync ${formatRefreshTime()}`;
+
+      const activityLines = [
+        `mesh snapshot @ ${formatRefreshTime()}`,
+        `${pluralize(onlineWorkers.length, "worker")} online`,
+        `${pluralize(workingWorkers.length, "job")} currently executing`,
+        `${pluralize(queuedJobs.length, "queued prompt")} awaiting a matching node`,
+        "",
+      ];
+      workingWorkers.slice(0, 5).forEach((worker) => {
+        activityLines.push(`${compactId(worker.worker_id)}  ${worker.gpu_name}  ${worker.active_jobs} active`);
+      });
+      if (!workingWorkers.length) {
+        activityLines.push("No workers are currently executing jobs.");
+      }
+      heroActivityLog.textContent = activityLines.join("\n");
+
+      const summaryLines = [
+        `Queue depth: ${queuedJobs.length}`,
+        `Connected workers: ${onlineWorkers.length} online / ${workerNodes.length} total`,
+        `Registered users: ${Number(payload?.user_count || 0)}`,
+        `Working nodes: ${workingWorkers.map((worker) => compactId(worker.worker_id)).slice(0, 4).join(", ") || "none"}`,
+      ];
+      heroSummaryPanel.textContent = summaryLines.join("\n");
+
+      const centerX = 310;
+      const centerY = 194;
+      const queueNodes = layeredOrbitPoints(queuedJobs.slice(0, 12).map((jobId) => ({ jobId })), centerX, centerY, [
+        { limit: 6, radiusX: 218, radiusY: 118, startDeg: 150, endDeg: 210 },
+        { limit: 6, radiusX: 252, radiusY: 138, startDeg: 154, endDeg: 206 },
+      ]);
+      const workingNodes = layeredOrbitPoints(workingWorkers, centerX, centerY, [
+        { limit: 10, radiusX: 152, radiusY: 108, startDeg: -55, endDeg: 55 },
+        { limit: 14, radiusX: 188, radiusY: 132, startDeg: -68, endDeg: 68 },
+        { limit: 18, radiusX: 224, radiusY: 154, startDeg: -80, endDeg: 80 },
+      ]);
+      const readyNodes = layeredOrbitPoints(readyWorkers, centerX, centerY, [
+        { limit: 14, radiusX: 224, radiusY: 150, startDeg: -78, endDeg: 78 },
+        { limit: 20, radiusX: 254, radiusY: 170, startDeg: -92, endDeg: 92 },
+        { limit: 26, radiusX: 284, radiusY: 188, startDeg: -106, endDeg: 106 },
+      ]);
+      const offlineNodes = layeredOrbitPoints(offlineWorkers, centerX, centerY, [
+        { limit: 10, radiusX: 178, radiusY: 118, startDeg: 118, endDeg: 242 },
+        { limit: 14, radiusX: 218, radiusY: 138, startDeg: 114, endDeg: 246 },
+        { limit: 18, radiusX: 254, radiusY: 156, startDeg: 110, endDeg: 250 },
+      ]);
+      const renderableWorkers = [...workingNodes, ...readyNodes, ...offlineNodes];
+      const labelAllWorkers = renderableWorkers.length <= 16;
+      const labeledWorkerIds = new Set([
+        ...workingWorkers.slice(0, 4),
+        ...readyWorkers.slice(0, 3),
+        ...offlineWorkers.slice(0, 2),
+      ].map((worker) => worker.worker_id));
+      const labelAllQueueNodes = queueNodes.length <= 6;
+
+      const queueEdges = queueNodes.map((node) => `<path class="queue-edge" d="${linkPath(node.x, node.y, centerX, centerY, -70)}"></path>`).join("");
+      const workerEdges = renderableWorkers.map((node) => {
+        const bias = node.x >= centerX ? 64 : -64;
+        return `<path class="worker-edge ${node.state}" d="${linkPath(centerX, centerY, node.x, node.y, bias)}"></path>`;
+      }).join("");
+      const queueMarkup = queueNodes.map((node) => `
+        <g>
+          <circle class="queue-node" cx="${node.x.toFixed(1)}" cy="${node.y.toFixed(1)}" r="8"></circle>
+          ${labelAllQueueNodes ? `<text class="queue-label" x="${(node.x - 12).toFixed(1)}" y="${(node.y - 14).toFixed(1)}">${escapeHtml(compactId(node.jobId))}</text>` : ""}
+        </g>
+      `).join("");
+      const workerMarkup = renderableWorkers.map((node) => {
+        const denseMesh = renderableWorkers.length >= 36;
+        const radius = node.state === "working" ? (denseMesh ? 7.5 : 11) : (denseMesh ? 6 : 9);
+        const labelX = node.x >= centerX ? node.x + 14 : node.x - 14;
+        const anchor = node.x >= centerX ? "start" : "end";
+        const shouldLabel = labelAllWorkers || labeledWorkerIds.has(node.worker_id);
+        return `
+          <g>
+            <circle class="worker-halo ${node.state}" cx="${node.x.toFixed(1)}" cy="${node.y.toFixed(1)}" r="${(radius + 8).toFixed(1)}"></circle>
+            <circle class="worker-node ${node.state}" cx="${node.x.toFixed(1)}" cy="${node.y.toFixed(1)}" r="${radius}"></circle>
+            ${shouldLabel ? `<text class="worker-label" x="${labelX.toFixed(1)}" y="${(node.y - 2).toFixed(1)}" text-anchor="${anchor}">${escapeHtml(compactId(node.worker_id))}</text>` : ""}
+            ${shouldLabel ? `<text class="worker-sub" x="${labelX.toFixed(1)}" y="${(node.y + 11).toFixed(1)}" text-anchor="${anchor}">${escapeHtml(node.state)}</text>` : ""}
+          </g>
+        `;
+      }).join("");
+
+      heroNetworkMap.innerHTML = `
+        <defs>
+          <radialGradient id="heroCoreGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#4ff4de" stop-opacity=".48"></stop>
+            <stop offset="100%" stop-color="#4ff4de" stop-opacity="0"></stop>
+          </radialGradient>
+          <radialGradient id="heroCoreFill" cx="50%" cy="45%" r="58%">
+            <stop offset="0%" stop-color="#8ffff4"></stop>
+            <stop offset="100%" stop-color="#1ab7a7"></stop>
+          </radialGradient>
+          <linearGradient id="heroQueueFill" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#ffd0a8"></stop>
+            <stop offset="100%" stop-color="#ff8f59"></stop>
+          </linearGradient>
+          <filter id="heroGlow">
+            <feGaussianBlur stdDeviation="3" result="blur"></feGaussianBlur>
+            <feMerge>
+              <feMergeNode in="blur"></feMergeNode>
+              <feMergeNode in="SourceGraphic"></feMergeNode>
+            </feMerge>
+          </filter>
+        </defs>
+        <path class="backbone" d="M 78 192 Q 198 110 310 194 Q 422 278 540 192"></path>
+        <path class="backbone" d="M 102 110 Q 206 88 310 194 Q 414 300 518 278"></path>
+        <path class="backbone" d="M 102 278 Q 206 300 310 194 Q 414 88 518 110"></path>
+        <circle class="core-halo" cx="${centerX}" cy="${centerY}" r="64"></circle>
+        <circle class="ring" cx="${centerX}" cy="${centerY}" r="84"></circle>
+        <circle class="ring" cx="${centerX}" cy="${centerY}" r="126"></circle>
+        ${queueEdges}
+        ${workerEdges}
+        ${queueMarkup}
+        <g>
+          <circle class="core-node" cx="${centerX}" cy="${centerY}" r="30"></circle>
+          <text class="core-label" x="${centerX}" y="${centerY - 2}" text-anchor="middle">Mesh</text>
+          <text class="core-sub" x="${centerX}" y="${centerY + 15}" text-anchor="middle">live scheduler core</text>
+        </g>
+        ${workerMarkup}
+      `;
+    }
+
+    function renderNetworkError(message) {
+      heroNetworkNote.textContent = message;
+      posterRefresh.textContent = "Unable to sync";
+      heroActivityLog.textContent = `landing hero preview\n${message}`;
+      heroSummaryPanel.textContent = "Queue depth: --\nConnected workers: --\nRegistered users: --\nCredit exchange: $1 = 100 credits";
+      heroNetworkMap.innerHTML = `
+        <text x="310" y="172" text-anchor="middle" fill="#f3f8f7" font-size="24" font-family="Space Grotesk, Segoe UI, sans-serif">Live preview unavailable</text>
+        <text x="310" y="202" text-anchor="middle" fill="rgba(219,232,234,.72)" font-size="13" font-family="Instrument Sans, Segoe UI, sans-serif">${escapeHtml(message)}</text>
+      `;
+    }
+
+    async function refreshNetworkPreview() {
+      try {
+        const response = await fetch("./network", { headers: { "Accept": "application/json" } });
+        if (!response.ok) throw new Error(`Network preview failed: ${response.status}`);
+        const payload = await response.json();
+        renderHeroNetwork(payload);
+      } catch (error) {
+        renderNetworkError(error?.message || String(error));
+      }
+    }
+
+    function bootNetworkPreview() {
+      refreshNetworkPreview();
+      if (networkPollHandle) clearInterval(networkPollHandle);
+      networkPollHandle = window.setInterval(refreshNetworkPreview, 5000);
     }
 
     function bind() {
@@ -367,6 +691,7 @@ Launch credit: 5 bootstrap credits</code></div>
 
     bind();
     bootAuth();
+    bootNetworkPreview();
   </script>
 </body>
 </html>

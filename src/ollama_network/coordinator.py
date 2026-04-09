@@ -6,7 +6,7 @@ from time import time
 from uuid import uuid4
 
 from .artifacts import extract_job_artifacts
-from .catalog import ApprovedModelCatalog
+from .catalog import ApprovedModelCatalog, QUALITY_SELECTORS
 from .ledger import CreditLedger, PLATFORM_WALLET_ID
 from .models import (
     JobAssignment,
@@ -18,6 +18,14 @@ from .models import (
     PolicyError,
     WorkerNode,
 )
+
+QUALITY_TIER_RANK = {"good": 1, "better": 2, "best": 3}
+PRICING_TIER_RANK = {
+    "tier_1_small": 1,
+    "tier_2_standard": 2,
+    "tier_3_large": 3,
+    "tier_4_reasoning": 4,
+}
 
 
 class OllamaNetworkCoordinator:
@@ -412,24 +420,44 @@ class OllamaNetworkCoordinator:
             for worker in self.workers.values()
             if worker.owner_user_id != record.request.requester_user_id
         ]
-        scored_candidates: list[tuple[WorkerNode, str]] = []
+        scored_candidates: list[tuple[WorkerNode, object]] = []
         for worker in candidates:
             resolved_model = self._resolve_model_for_worker(worker, record.request.model_tag)
             if resolved_model is None or not worker.supports_model(resolved_model):
                 continue
-            scored_candidates.append((worker, resolved_model.tag))
+            scored_candidates.append((worker, resolved_model))
         if not scored_candidates:
             return None
         return max(
             scored_candidates,
-            key=lambda item: self._worker_score(item[0], item[1]),
+            key=lambda item: self._worker_score(item[0], item[1], record.request.model_tag),
         )[0]
 
-    @staticmethod
-    def _worker_score(worker: WorkerNode, model_tag: str) -> float:
-        return (
-            worker.benchmark_tokens_per_second.get(model_tag, 0.0)
+    def _worker_score(self, worker: WorkerNode, resolved_model, selector: str) -> float:
+        throughput_score = (
+            worker.benchmark_tokens_per_second.get(resolved_model.tag, 0.0)
             * max(worker.reliability_score, 0.1)
+        )
+        if selector not in QUALITY_SELECTORS:
+            return throughput_score + (resolved_model.strength_score * 0.2)
+        target_pricing_rank = {
+            "good": PRICING_TIER_RANK["tier_1_small"],
+            "better": PRICING_TIER_RANK["tier_2_standard"],
+            "best": PRICING_TIER_RANK["tier_4_reasoning"],
+            "auto": PRICING_TIER_RANK["tier_2_standard"],
+        }[selector]
+        resolved_pricing_rank = PRICING_TIER_RANK.get(resolved_model.pricing_tier, target_pricing_rank)
+        distance_penalty = abs(resolved_pricing_rank - target_pricing_rank) * 30.0
+        overshoot_penalty = max(0, resolved_pricing_rank - target_pricing_rank) * 25.0
+        auto_vram_penalty = 0.0
+        if selector == "auto":
+            auto_vram_penalty = max(0.0, resolved_model.min_vram_gb - 24.0) / 4.0
+        return (
+            throughput_score
+            + (resolved_model.strength_score * 0.2)
+            - distance_penalty
+            - overshoot_penalty
+            - auto_vram_penalty
         )
 
     def _resolve_model_for_worker(self, worker: WorkerNode, selector: str):

@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import hashlib
+import hmac
 import os
+import secrets
 import threading
 from dataclasses import asdict
 from pathlib import Path
@@ -8,6 +11,7 @@ from time import time
 from typing import Any, Callable
 from uuid import uuid4
 
+from .auth import AuthenticationError
 from .artifacts import extract_job_artifacts, materialize_artifacts, zip_artifacts
 from .coordinator import OllamaNetworkCoordinator
 from .executor import OllamaCommandExecutor
@@ -15,7 +19,7 @@ from .local_hardware import LocalHardwareDetector
 from .catalog import QUALITY_SELECTORS
 from .models import AuthorizationError, ExecutorResult, JobAssignment, JobResult, PolicyError, WorkerNode
 from .ollama_local import LocalOllamaModelDetector
-from .state_store import LocalStateStore
+from .state_store import LocalStateStore, create_state_store
 
 DEFAULT_ADMIN_EMAILS = {"christoffersent@gmail.com"}
 
@@ -38,9 +42,7 @@ class NetworkService:
         self._executor_factory = executor_factory or (lambda _worker_id: OllamaCommandExecutor())
         self._model_detector = model_detector or LocalOllamaModelDetector()
         self._hardware_detector = hardware_detector or LocalHardwareDetector()
-        self._state_store = state_store or LocalStateStore(
-            Path(__file__).resolve().parents[2] / ".runtime" / "private_state.json"
-        )
+        self._state_store = state_store or create_state_store(Path(__file__).resolve().parents[2])
         self._artifact_root = Path(__file__).resolve().parents[2] / ".runtime" / "generated"
         self._local_worker_loops: dict[str, dict[str, object]] = {}
         self._meta: dict[str, object] = {}
@@ -53,10 +55,14 @@ class NetworkService:
         user_id: str,
         starting_credits: float = 0.0,
         actor_user_id: str | None = None,
-        grant_starting_credits: bool = False,
+        grant_starting_credits: bool | None = None,
     ) -> dict[str, object]:
         self._assert_actor_matches(actor_user_id, user_id, "register a user")
-        applied_starting_credits = starting_credits if grant_starting_credits else 0.0
+        applied_starting_credits = (
+            float(starting_credits)
+            if (grant_starting_credits if grant_starting_credits is not None else float(starting_credits) > 0)
+            else 0.0
+        )
         with self._lock:
             if actor_user_id and self.coordinator.ledger.has_user(user_id):
                 self._remember_user_locked(user_id)
@@ -81,9 +87,13 @@ class NetworkService:
         self,
         starting_credits: float = 0.0,
         actor_user_id: str | None = None,
-        grant_starting_credits: bool = False,
+        grant_starting_credits: bool | None = None,
     ) -> dict[str, object]:
-        applied_starting_credits = starting_credits if grant_starting_credits else 0.0
+        applied_starting_credits = (
+            float(starting_credits)
+            if (grant_starting_credits if grant_starting_credits is not None else float(starting_credits) > 0)
+            else 0.0
+        )
         with self._lock:
             if actor_user_id:
                 if not self.coordinator.ledger.has_user(actor_user_id):
@@ -187,6 +197,7 @@ class NetworkService:
     def claim_job_for_worker(
         self,
         worker_id: str,
+        actor_user_id: str | None = None,
         actor_email: str = "",
         allow_admin_self_serve: bool = False,
     ) -> dict[str, object] | None:
@@ -195,6 +206,15 @@ class NetworkService:
             self._assert_admin_email(actor_email)
             allow_own_jobs = True
         with self._lock:
+            worker = self.coordinator.workers.get(worker_id)
+            if worker is None:
+                raise KeyError(worker_id)
+            if not self.is_admin_email(actor_email):
+                self._assert_actor_matches(
+                    actor_user_id,
+                    worker.owner_user_id,
+                    "claim jobs for this worker",
+                )
             assignment = self.coordinator.claim_job_for_worker(
                 worker_id,
                 allow_own_jobs=allow_own_jobs,
@@ -204,7 +224,12 @@ class NetworkService:
             self._persist_locked()
             return self._assignment_payload(assignment)
 
-    def complete_job(self, payload: dict[str, object]) -> dict[str, object]:
+    def complete_job(
+        self,
+        payload: dict[str, object],
+        actor_user_id: str | None = None,
+        actor_email: str = "",
+    ) -> dict[str, object]:
         result = JobResult(
             job_id=str(payload["job_id"]),
             worker_id=str(payload["worker_id"]),
@@ -217,6 +242,15 @@ class NetworkService:
             error_message=str(payload.get("error_message", "")),
         )
         with self._lock:
+            worker = self.coordinator.workers.get(result.worker_id)
+            if worker is None:
+                raise KeyError(result.worker_id)
+            if not self.is_admin_email(actor_email):
+                self._assert_actor_matches(
+                    actor_user_id,
+                    worker.owner_user_id,
+                    "complete jobs for this worker",
+                )
             record = self.coordinator.complete_job(result)
             conversation_id = record.request.conversation_id
             if conversation_id:
@@ -603,6 +637,113 @@ class NetworkService:
                 "wallet": self.coordinator.ledger.wallet_snapshot(actor_user_id),
             }
 
+    def issue_worker_token(
+        self,
+        actor_user_id: str,
+        label: str = "",
+    ) -> dict[str, object]:
+        normalized_user_id = str(actor_user_id or "").strip()
+        if not normalized_user_id:
+            raise ValueError("actor_user_id is required.")
+        with self._lock:
+            if not self.coordinator.ledger.has_user(normalized_user_id):
+                raise KeyError(normalized_user_id)
+            token_id = f"wkt_{uuid4().hex[:12]}"
+            secret = secrets.token_urlsafe(24)
+            raw_token = f"{token_id}.{secret}"
+            registry = self._worker_tokens_locked()
+            registry[token_id] = {
+                "token_id": token_id,
+                "user_id": normalized_user_id,
+                "label": label.strip(),
+                "secret_hash": self._hash_worker_token_secret(secret),
+                "created_at_unix": time(),
+                "last_used_unix": 0.0,
+                "revoked_at_unix": 0.0,
+            }
+            self._persist_locked()
+            return {
+                "token": raw_token,
+                "token_record": self._worker_token_public_locked(dict(registry[token_id])),
+            }
+
+    def list_worker_tokens(self, actor_user_id: str) -> dict[str, object]:
+        normalized_user_id = str(actor_user_id or "").strip()
+        if not normalized_user_id:
+            raise ValueError("actor_user_id is required.")
+        with self._lock:
+            tokens = [
+                self._worker_token_public_locked(dict(record))
+                for record in self._worker_tokens_locked().values()
+                if str(record.get("user_id", "")) == normalized_user_id
+            ]
+            tokens.sort(
+                key=lambda item: (
+                    float(item.get("revoked_at_unix", 0.0)),
+                    float(item.get("created_at_unix", 0.0)),
+                    str(item.get("token_id", "")),
+                ),
+                reverse=True,
+            )
+            return {
+                "user_id": normalized_user_id,
+                "tokens": tokens,
+            }
+
+    def revoke_worker_token(self, actor_user_id: str, token_id: str) -> dict[str, object]:
+        normalized_user_id = str(actor_user_id or "").strip()
+        normalized_token_id = str(token_id or "").strip()
+        if not normalized_user_id:
+            raise ValueError("actor_user_id is required.")
+        if not normalized_token_id:
+            raise ValueError("token_id is required.")
+        with self._lock:
+            registry = self._worker_tokens_locked()
+            record = dict(registry.get(normalized_token_id, {}))
+            if not record:
+                raise KeyError(normalized_token_id)
+            self._assert_actor_matches(
+                normalized_user_id,
+                str(record.get("user_id", "")),
+                "revoke this worker token",
+            )
+            if float(record.get("revoked_at_unix", 0.0)) <= 0:
+                record["revoked_at_unix"] = time()
+                registry[normalized_token_id] = record
+                self._persist_locked()
+            return self._worker_token_public_locked(record)
+
+    def authenticate_worker_token(self, raw_token: str) -> dict[str, object]:
+        token = str(raw_token or "").strip()
+        if not token or "." not in token:
+            raise AuthenticationError("A valid worker token is required.")
+        token_id, secret = token.split(".", maxsplit=1)
+        if not token_id or not secret:
+            raise AuthenticationError("A valid worker token is required.")
+        with self._lock:
+            record = dict(self._worker_tokens_locked().get(token_id, {}))
+            if not record:
+                raise AuthenticationError("That worker token is not recognized.")
+            if float(record.get("revoked_at_unix", 0.0)) > 0:
+                raise AuthenticationError("That worker token has been revoked.")
+            expected_hash = str(record.get("secret_hash", ""))
+            if not expected_hash or not hmac.compare_digest(
+                expected_hash,
+                self._hash_worker_token_secret(secret),
+            ):
+                raise AuthenticationError("That worker token is invalid.")
+            user_id = str(record.get("user_id", "")).strip()
+            if not user_id or not self.coordinator.ledger.has_user(user_id):
+                raise AuthenticationError("That worker token is no longer bound to a valid user.")
+            record["last_used_unix"] = time()
+            self._worker_tokens_locked()[token_id] = record
+            self._persist_locked()
+            return {
+                "token_id": token_id,
+                "user_id": user_id,
+                "label": str(record.get("label", "")),
+            }
+
     def get_identity_context(self, actor_user_id: str | None = None) -> dict[str, object]:
         with self._lock:
             wallets = self.coordinator.ledger.export_state().get("wallets", {})
@@ -619,6 +760,7 @@ class NetworkService:
             wallets = self.coordinator.ledger.export_state().get("wallets", {})
             known_ids = sorted(str(user_id) for user_id in wallets.keys() if user_id != "platform_treasury")
             selected_user_id = actor_user_id or self._auto_selected_user_id_locked(known_ids) or ""
+            suggested_worker_id = self._suggested_worker_id_locked(selected_user_id)
             model_detection = self._model_detector.detect()
             hardware = self._hardware_detector.detect()
             available_vram_gb = hardware.primary_vram_gb if hardware.detected else 0.0
@@ -646,7 +788,7 @@ class NetworkService:
                         }
                     )
             return {
-                "suggested_worker_id": selected_user_id,
+                "suggested_worker_id": suggested_worker_id,
                 "suggested_owner_user_id": selected_user_id,
                 "suggested_gpu_name": hardware.primary_gpu_name,
                 "suggested_vram_gb": hardware.primary_vram_gb,
@@ -830,6 +972,7 @@ class NetworkService:
         self,
         worker_id: str,
         executor: object | None = None,
+        actor_user_id: str | None = None,
         actor_email: str = "",
         allow_admin_self_serve: bool = False,
     ) -> dict[str, object] | None:
@@ -838,6 +981,15 @@ class NetworkService:
             self._assert_admin_email(actor_email)
             allow_own_jobs = True
         with self._lock:
+            worker = self.coordinator.workers.get(worker_id)
+            if worker is None:
+                raise KeyError(worker_id)
+            if not self.is_admin_email(actor_email):
+                self._assert_actor_matches(
+                    actor_user_id,
+                    worker.owner_user_id,
+                    "run this worker",
+                )
             assignment = self.coordinator.claim_job_for_worker(
                 worker_id,
                 allow_own_jobs=allow_own_jobs,
@@ -871,11 +1023,12 @@ class NetworkService:
             "output_text": execution.output_text,
             "error_message": execution.error_message,
         }
-        return self.complete_job(result_payload)
+        return self.complete_job(result_payload, actor_user_id=actor_user_id, actor_email=actor_email)
 
     def inspect_worker_queue(
         self,
         worker_id: str,
+        actor_user_id: str | None = None,
         actor_email: str = "",
         allow_admin_self_serve: bool = False,
     ) -> dict[str, object]:
@@ -884,6 +1037,15 @@ class NetworkService:
             self._assert_admin_email(actor_email)
             allow_own_jobs = True
         with self._lock:
+            worker = self.coordinator.workers.get(worker_id)
+            if worker is None:
+                raise KeyError(worker_id)
+            if not self.is_admin_email(actor_email):
+                self._assert_actor_matches(
+                    actor_user_id,
+                    worker.owner_user_id,
+                    "inspect this worker queue",
+                )
             return self.coordinator.explain_worker_queue(
                 worker_id,
                 allow_own_jobs=allow_own_jobs,
@@ -1083,6 +1245,29 @@ class NetworkService:
             threads = {}
             self._meta["conversations"] = threads
         return threads
+
+    def _worker_tokens_locked(self) -> dict[str, dict[str, object]]:
+        tokens = self._meta.setdefault("worker_tokens", {})
+        if not isinstance(tokens, dict):
+            tokens = {}
+            self._meta["worker_tokens"] = tokens
+        return tokens
+
+    @staticmethod
+    def _hash_worker_token_secret(secret: str) -> str:
+        return hashlib.sha256(str(secret).encode("utf-8")).hexdigest()
+
+    @staticmethod
+    def _worker_token_public_locked(record: dict[str, object]) -> dict[str, object]:
+        return {
+            "token_id": str(record.get("token_id", "")),
+            "user_id": str(record.get("user_id", "")),
+            "label": str(record.get("label", "")),
+            "created_at_unix": float(record.get("created_at_unix", 0.0)),
+            "last_used_unix": float(record.get("last_used_unix", 0.0)),
+            "revoked_at_unix": float(record.get("revoked_at_unix", 0.0)),
+            "is_revoked": float(record.get("revoked_at_unix", 0.0)) > 0,
+        }
 
     def _prepare_conversation_prompt_locked(
         self,
@@ -1284,6 +1469,19 @@ class NetworkService:
         if len(known_ids) == 1:
             return known_ids[0]
         return None
+
+    def _suggested_worker_id_locked(self, owner_user_id: str) -> str:
+        if not owner_user_id:
+            return ""
+        existing = sorted(
+            worker.worker_id
+            for worker in self.coordinator.workers.values()
+            if worker.owner_user_id == owner_user_id
+        )
+        if existing:
+            return existing[0]
+        normalized_owner = owner_user_id.replace("_", "-")
+        return f"worker-{normalized_owner}"
 
     def _local_worker_statuses_locked(self) -> dict[str, dict[str, object]]:
         statuses: dict[str, dict[str, object]] = {}
