@@ -29,6 +29,8 @@ LLM Network lets one machine run the coordinator and dashboard while other machi
 - `scripts/bootstrap_linux.sh` GitHub-served Linux installer
 - `start_network_server.bat` Windows launcher for the coordinator
 - `start_dashboard.bat` Windows launcher for the dashboard
+- `start_tunnel.bat` Windows launcher for a public Cloudflare quick tunnel
+- `start_worker_daemon.bat` Windows launcher for a local worker daemon with auto-detected hardware
 
 ## Requirements
 
@@ -100,6 +102,26 @@ Open the dashboard:
 ```bat
 start_dashboard.bat
 ```
+
+Expose the server to another PC:
+
+```bat
+start_tunnel.bat
+```
+
+This opens a Cloudflare quick tunnel to `http://localhost:8000` and prints a public `trycloudflare.com` URL.
+If you plan to sign in with Google through that URL, add the generated tunnel hostname to Firebase
+Authentication authorized domains before testing from the other machine.
+
+Start a worker on the current PC:
+
+```bat
+start_worker_daemon.bat
+```
+
+The launcher prompts for the owner user id and long-lived worker token, then auto-detects the local GPU,
+system RAM, and installed Ollama models on the machine where it runs. Use this on the worker PC itself,
+not on the coordinator host, when you want each worker to advertise its own hardware.
 
 ### Manual Server Startup
 
