@@ -398,6 +398,32 @@ class OllamaNetworkCoordinator:
         record.assigned_at_unix = 0.0
         return record
 
+    def restart_failed_job(self, job_id: str) -> JobRecord:
+        record = self.jobs[job_id]
+        if record.status is not JobStatus.FAILED:
+            raise PolicyError("Only failed jobs can be restarted.")
+        requester_user_id = record.request.requester_user_id
+        self.ledger.reserve(
+            user_id=requester_user_id,
+            job_id=job_id,
+            amount=record.reserved_credits,
+        )
+        self._queued_job_ids = deque(queued_id for queued_id in self._queued_job_ids if queued_id != job_id)
+        record.status = JobStatus.QUEUED
+        record.assigned_worker_id = None
+        record.resolved_model_tag = None
+        record.assigned_at_unix = 0.0
+        record.completed_at_unix = 0.0
+        record.actual_credits = 0
+        record.prompt_tokens_used = 0
+        record.billed_tokens = 0
+        record.worker_earned_credits = 0
+        record.platform_fee_credits = 0
+        record.refunded_credits = 0
+        record.result = None
+        self._queued_job_ids.appendleft(job_id)
+        return record
+
     def _known_users(self) -> set[str]:
         known = {
             user_id

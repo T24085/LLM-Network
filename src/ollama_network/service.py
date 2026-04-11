@@ -617,6 +617,20 @@ class NetworkService:
                 "actor_email": normalized_email,
             }
 
+    def admin_restart_failed_job(
+        self,
+        job_id: str,
+        actor_email: str,
+    ) -> dict[str, object]:
+        normalized_email = self._assert_admin_email(actor_email)
+        with self._lock:
+            record = self.coordinator.restart_failed_job(job_id=job_id)
+            self._persist_locked()
+            return {
+                "job": self.coordinator.job_snapshot(record.request.job_id),
+                "actor_email": normalized_email,
+            }
+
     def purchase_credits(self, usd_amount: float, actor_user_id: str) -> dict[str, object]:
         credits = int(round(usd_amount * 100))
         if usd_amount <= 0 or credits <= 0:

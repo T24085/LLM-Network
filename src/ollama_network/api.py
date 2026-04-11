@@ -281,6 +281,22 @@ class NetworkAPIHandler(BaseHTTPRequestHandler):
                     ),
                 )
                 return
+            if path.startswith("/admin/jobs/") and path.endswith("/restart"):
+                if not actor_email:
+                    raise AuthenticationError("Sign in with Google to use the network.")
+                parts = path.strip("/").split("/")
+                if len(parts) != 4:
+                    self._write_json(HTTPStatus.NOT_FOUND, {"error": "not found"})
+                    return
+                job_id = parts[2]
+                self._write_json(
+                    HTTPStatus.OK,
+                    self.server.service.admin_restart_failed_job(
+                        job_id=job_id,
+                        actor_email=actor_email,
+                    ),
+                )
+                return
             if path.startswith("/jobs/") and path.endswith("/artifacts/create"):
                 if not actor_user_id and not actor_email:
                     raise AuthenticationError("Sign in with Google to use the network.")

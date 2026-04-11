@@ -1455,6 +1455,15 @@ HTML = """<!doctype html>
           actions.appendChild(reroute);
           actions.appendChild(cancel);
           body.appendChild(actions);
+        } else if (job.status === "failed") {
+          const actions = document.createElement("div");
+          actions.className = "actions";
+          const restart = document.createElement("button");
+          restart.className = "button secondary";
+          restart.textContent = "Restart failed job";
+          restart.addEventListener("click", () => adminRestartFailedJob(job.job_id).catch((error) => setStatus("admin-status", error.message, "error")));
+          actions.appendChild(restart);
+          body.appendChild(actions);
         }
         details.appendChild(summaryRow);
         details.appendChild(body);
@@ -1605,6 +1614,18 @@ HTML = """<!doctype html>
         body: JSON.stringify({ model_tag: modelTag }),
       });
       setStatus("admin-status", `Rerouted ${payload.job.job_id} to ${payload.job.model_tag}.`, "ok");
+      await refreshAdminOverview();
+      await refreshNetwork();
+      await refreshPromptHistory();
+      if (state.lastJobId === jobId) renderTrackedJob(payload.job);
+    }
+
+    async function adminRestartFailedJob(jobId) {
+      const payload = await api(`/admin/jobs/${encodeURIComponent(jobId)}/restart`, {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+      setStatus("admin-status", `Restarted ${payload.job.job_id}.`, "ok");
       await refreshAdminOverview();
       await refreshNetwork();
       await refreshPromptHistory();
