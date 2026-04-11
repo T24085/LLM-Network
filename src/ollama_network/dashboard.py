@@ -1632,7 +1632,7 @@ pause
       });
       const launcher = buildRemoteWorkerLauncher(tokenPayload.token);
       await downloadTextFile(launcher.filename, launcher.content);
-      setStatus("worker-status", `Downloaded ${launcher.filename}. Run that file on the other PC and enter the coordinator URL once if prompted.`, "ok");
+      setStatus("worker-status", `Downloaded ${launcher.filename}. Run that file on the other PC and enter the coordinator URL once if prompted. For off-network workers, use the coordinator's WireGuard IP or DNS name.`, "ok");
     }
 
     async function startWorker() {

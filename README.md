@@ -217,6 +217,10 @@ python -m ollama_network.cli --server-url http://localhost:8000 submit-job --req
 
 Remote workers should authenticate with long-lived worker tokens, not Firebase browser tokens.
 
+For workers on different networks, WireGuard is the recommended transport. Put the coordinator host
+and the worker host on the same WireGuard network, then use the coordinator's WireGuard IP or DNS name
+as the worker `--server-url` / coordinator URL.
+
 Issue a worker token on the coordinator host:
 
 ```bash
@@ -244,6 +248,14 @@ python -m ollama_network.worker_daemon \
   --worker-token YOUR_WORKER_TOKEN
 ```
 
+WireGuard example workflow:
+
+1. Install WireGuard on the coordinator PC and each worker PC.
+2. Put both machines on the same WireGuard tunnel.
+3. Make sure the coordinator server listens on `0.0.0.0:8000` or on the WireGuard interface.
+4. Use the coordinator's WireGuard IP in the worker launcher or `OLLAMA_NETWORK_SERVER_URL`.
+5. Run the downloaded worker launcher on the remote PC.
+
 ## Worker Model Selection
 
 Workers detect local Ollama models and can choose which of those models to advertise to the network.
@@ -265,7 +277,7 @@ For a real internet-facing deployment:
 - Put the coordinator behind HTTPS
 - Use a real hostname
 - Add that hostname to Firebase authorized domains
-- Prefer a reverse proxy or tunnel instead of exposing raw port `8000`
+- Prefer WireGuard, a reverse proxy, or a tunnel instead of exposing raw port `8000`
 - Keep Firebase secrets and service-account credentials out of the repository
 
 ## Testing

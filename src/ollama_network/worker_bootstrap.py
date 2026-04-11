@@ -169,7 +169,8 @@ def _resolve_server_url(config: dict[str, object], override: Optional[str], no_p
         return ""
     print()
     print("Enter the coordinator URL for this worker PC.")
-    print("Use the dashboard host's reachable URL, not localhost unless the worker runs on that same machine.")
+    print("Use the dashboard host's reachable URL, such as its WireGuard IP or tunnel address.")
+    print("Do not use localhost unless the worker runs on that same machine.")
     return validate(_prompt_value("Coordinator URL", required=True))
 
 
@@ -191,7 +192,8 @@ def _probe_server_url(server_url: str) -> None:
             raise ValueError(
                 f"The coordinator at {normalized} rejected the health check with 403 error code 1010.\n"
                 "That usually means this URL is being blocked upstream, often by Cloudflare or another edge firewall.\n"
-                "Use a direct coordinator URL that the worker PC can reach, such as the dashboard host's LAN address or a tunnel URL."
+                "If you are using WireGuard, enter the coordinator's WireGuard IP or DNS name instead of the public dashboard URL.\n"
+                "Otherwise use a direct coordinator URL that the worker PC can reach, such as a LAN address or tunnel URL."
             ) from http_error
         raise ValueError(f"The coordinator at {normalized} returned HTTP {http_error.code} while checking /health: {summary}") from http_error
     except error.URLError as url_error:
