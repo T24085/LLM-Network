@@ -383,7 +383,7 @@ HTML = """<!doctype html>
               <div class="worker-panel-head">
                 <div>
                   <h3>Worker setup</h3>
-                  <p>Auto-detected hardware and Ollama tags are filled in from this machine.</p>
+                  <p>This tab controls the worker process on the machine serving the dashboard. For another PC, run <code>start_worker_daemon.bat</code> on that PC.</p>
                 </div>
               </div>
               <div class="two">
@@ -395,8 +395,8 @@ HTML = """<!doctype html>
                 <label>Poll interval seconds<input id="worker-poll-interval" type="number" min="0.5" step="0.5" value="2"></label>
               </div>
               <div class="actions">
-                <button id="start-worker" class="button primary">Start worker</button>
-                <button id="stop-worker" class="button secondary">Stop worker</button>
+                <button id="start-worker" class="button primary">Start this machine's worker</button>
+                <button id="stop-worker" class="button secondary">Stop this worker</button>
                 <button id="run-worker-once" class="button secondary">Run one cycle now</button>
                 <button id="open-worker-drawer" class="button secondary">Open worker panel</button>
               </div>
@@ -1588,7 +1588,7 @@ HTML = """<!doctype html>
         : " This worker will only claim jobs from other users.";
       setWorkspaceTab("worker");
       openDrawer("worker");
-      setStatus("worker-status", `Worker ${payload.worker.worker_id} is polling locally in the background.${adminNote}`, "ok");
+      setStatus("worker-status", `Worker ${payload.worker.worker_id} is running on this dashboard host and waiting for compatible jobs.${adminNote}`, "ok");
       await refreshNetwork();
     }
 
