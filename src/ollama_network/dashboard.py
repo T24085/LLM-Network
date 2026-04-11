@@ -1569,14 +1569,12 @@ HTML = """<!doctype html>
     function allowAdminSelfServe() { return Boolean(state.session?.is_admin && el("worker-admin-override").checked); }
 
     function buildRemoteWorkerLauncher(workerToken) {
-      const serverUrl = window.location.origin;
       const ownerUserId = el("worker-owner").value.trim() || state.session?.user_id || "";
       const filename = `start_llm_network_worker.bat`;
       const content = `@echo off
 setlocal
 cd /d "%~dp0"
 
-set "SERVER_URL=${batchEscape(serverUrl)}"
 set "OWNER_USER_ID=${batchEscape(ownerUserId)}"
 set "WORKER_TOKEN=${batchEscape(workerToken)}"
 
@@ -1587,23 +1585,19 @@ if errorlevel 1 (
   exit /b 1
 )
 
-py -3 -c "import ollama_network" >nul 2>nul
+echo Updating the worker package to the latest version...
+py -3 -m pip install --user --upgrade "https://github.com/T24085/LLM-Network/archive/refs/heads/main.zip"
 if errorlevel 1 (
-  echo Installing LLM Network worker package...
-  py -3 -m pip install --user --upgrade "https://github.com/T24085/LLM-Network/archive/refs/heads/main.zip"
-  if errorlevel 1 (
-    echo Failed to install the worker package.
-    pause
-    exit /b 1
-  )
+  echo Failed to install or update the worker package.
+  pause
+  exit /b 1
 )
 
 echo.
 echo Starting worker on this PC.
 echo Owner user ID: %OWNER_USER_ID%
-echo Server URL: %SERVER_URL%
 echo.
-py -3 -m ollama_network.worker_bootstrap --server-url "%SERVER_URL%" --owner-user-id "%OWNER_USER_ID%" --worker-token "%WORKER_TOKEN%"
+py -3 -m ollama_network.worker_bootstrap --owner-user-id "%OWNER_USER_ID%" --worker-token "%WORKER_TOKEN%"
 if errorlevel 1 (
   echo.
   echo The worker stopped with an error.
@@ -1638,7 +1632,7 @@ pause
       });
       const launcher = buildRemoteWorkerLauncher(tokenPayload.token);
       await downloadTextFile(launcher.filename, launcher.content);
-      setStatus("worker-status", `Downloaded ${launcher.filename}. Run that file on the other PC to start its worker locally.`, "ok");
+      setStatus("worker-status", `Downloaded ${launcher.filename}. Run that file on the other PC and enter the coordinator URL once if prompted.`, "ok");
     }
 
     async function startWorker() {

@@ -7,6 +7,7 @@ import socket
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
+from urllib import error, request
 
 from .local_hardware import LocalHardwareDetector
 from .ollama_local import LocalOllamaModelDetector
@@ -142,6 +143,62 @@ def _resolve_owner_user_id(config: dict[str, object], override: Optional[str], n
     return _prompt_value("Enter the network user id that owns this worker", required=True)
 
 
+def _resolve_server_url(config: dict[str, object], override: Optional[str], no_prompt: bool) -> str:
+    def validate(candidate: str) -> str:
+        if no_prompt:
+            return candidate
+        while True:
+            try:
+                _probe_server_url(candidate)
+                return candidate
+            except ValueError as exc:
+                print()
+                print(exc)
+                print("Use the dashboard host's reachable URL, not localhost unless the worker runs on that same machine.")
+                candidate = _prompt_value("Coordinator URL", required=True)
+
+    if override:
+        return validate(override.strip())
+    cached = str(config.get("server_url", "")).strip()
+    if cached:
+        return validate(cached)
+    env_server_url = os.environ.get("OLLAMA_NETWORK_SERVER_URL", "").strip()
+    if env_server_url:
+        return validate(env_server_url)
+    if no_prompt:
+        return ""
+    print()
+    print("Enter the coordinator URL for this worker PC.")
+    print("Use the dashboard host's reachable URL, not localhost unless the worker runs on that same machine.")
+    return validate(_prompt_value("Coordinator URL", required=True))
+
+
+def _probe_server_url(server_url: str) -> None:
+    normalized = server_url.strip().rstrip("/")
+    if not normalized:
+        raise ValueError("Coordinator URL is required.")
+    probe = request.Request(f"{normalized}/health", headers={"Accept": "application/json"}, method="GET")
+    try:
+        with request.urlopen(probe, timeout=10) as response:
+            if getattr(response, "status", 200) != 200:
+                raise ValueError(
+                    f"The coordinator at {normalized} returned HTTP {getattr(response, 'status', 'unknown')} when checking /health."
+                )
+    except error.HTTPError as http_error:
+        detail = http_error.read().decode("utf-8", errors="replace").strip()
+        summary = detail or http_error.reason or "no response body"
+        if http_error.code == 403 and "1010" in summary:
+            raise ValueError(
+                f"The coordinator at {normalized} rejected the health check with 403 error code 1010.\n"
+                "That usually means this URL is being blocked upstream, often by Cloudflare or another edge firewall.\n"
+                "Use a direct coordinator URL that the worker PC can reach, such as the dashboard host's LAN address or a tunnel URL."
+            ) from http_error
+        raise ValueError(f"The coordinator at {normalized} returned HTTP {http_error.code} while checking /health: {summary}") from http_error
+    except error.URLError as url_error:
+        reason = getattr(url_error, "reason", url_error)
+        raise ValueError(f"Unable to reach the coordinator at {normalized}: {reason}") from url_error
+
+
 def _resolve_worker_token(config: dict[str, object], override: Optional[str], no_prompt: bool) -> str:
     if override:
         return override.strip()
@@ -203,11 +260,10 @@ def build_profile(
     config = load_profile(path)
     env = os.environ
 
-    resolved_server_url = (
-        (server_url or "").strip()
-        or env.get("OLLAMA_NETWORK_SERVER_URL", "").strip()
-        or str(config.get("server_url", "")).strip()
-        or DEFAULT_SERVER_URL
+    resolved_server_url = _resolve_server_url(
+        config,
+        server_url or env.get("OLLAMA_NETWORK_SERVER_URL"),
+        no_prompt=no_prompt,
     )
     resolved_worker_id = _resolve_worker_id(config, worker_id or env.get("OLLAMA_NETWORK_WORKER_ID"))
     resolved_owner_user_id = _resolve_owner_user_id(
@@ -262,6 +318,8 @@ def build_profile(
 
     if not resolved_owner_user_id:
         raise ValueError("owner_user_id is required.")
+    if not resolved_server_url:
+        raise ValueError("server_url is required.")
     if not resolved_worker_token:
         raise ValueError("worker_token is required.")
 

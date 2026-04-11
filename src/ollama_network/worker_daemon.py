@@ -106,7 +106,20 @@ class WorkerDaemon:
                 return json.loads(response.read().decode("utf-8"))
         except error.HTTPError as http_error:
             detail = http_error.read().decode("utf-8")
-            raise RuntimeError(f"API request failed: {http_error.code} {detail}") from http_error
+            raise RuntimeError(self._format_http_error(http_error, detail)) from http_error
+
+    def _format_http_error(self, http_error: error.HTTPError, detail: str) -> str:
+        summary = detail.strip() or http_error.reason or "no response body"
+        if len(summary) > 400:
+            summary = f"{summary[:397]}..."
+        if http_error.code == 403 and "1010" in summary:
+            return (
+                f"API request failed: {http_error.code} {summary}. "
+                f"The coordinator at {self.config.server_url} blocked this worker's request. "
+                "That usually means the worker is pointed at a Cloudflare-protected or otherwise filtered URL. "
+                "Use a direct coordinator address that the worker PC can reach, such as the dashboard host's LAN IP or a tunnel URL."
+            )
+        return f"API request failed: {http_error.code} {summary}"
 
 
 def build_parser() -> argparse.ArgumentParser:
