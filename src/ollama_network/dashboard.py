@@ -194,6 +194,9 @@ HTML = """<!doctype html>
     .worker-panel-controls{display:grid;gap:14px}
     .worker-panel-note{padding:12px 14px;border-radius:14px;background:rgba(10,143,131,.06);border:1px solid rgba(10,143,131,.1);color:var(--deep);font-size:.9rem;line-height:1.45}
     .worker-override-card{padding:12px 14px;border-radius:14px;background:rgba(23,33,38,.03);border:1px solid rgba(23,33,38,.08)}
+    .worker-advanced details{padding:0;border:none;background:transparent}
+    .worker-advanced summary{padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:#fff}
+    .worker-advanced-body{display:grid;gap:12px;padding-top:12px}
     @keyframes networkFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-56}}
     @keyframes networkPulse{0%,100%{transform:scale(1);opacity:.18}50%{transform:scale(1.22);opacity:.34}}
     details{border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px}
@@ -391,19 +394,6 @@ HTML = """<!doctype html>
                 <label>Host RAM GB<input id="worker-system-ram" readonly></label>
                 <label>Poll interval seconds<input id="worker-poll-interval" type="number" min="0.5" step="0.5" value="2"></label>
               </div>
-              <label>Models to advertise<input id="worker-models"></label>
-              <label>Estimated throughput<input id="worker-throughput" readonly></label>
-              <div id="worker-excluded-models" class="job-meta-strip subtle hidden"></div>
-              <div class="worker-panel-note">Remove any model you do not want this worker to advertise to the network. The launcher saves this profile after the first run, so later launches are one click.</div>
-              <div id="admin-override-wrap" class="hidden worker-override-card">
-                <label class="checkline" style="text-transform:none;letter-spacing:0;color:var(--text);font-size:.94rem;font-weight:600;border:none;padding:0;background:transparent">
-                  <input id="worker-admin-override" type="checkbox">
-                  <span>
-                    Allow this admin worker to claim any queued prompt, including my own.
-                    <div class="subtle">Use this when you want to inspect prompt flow through the same worker path.</div>
-                  </span>
-                </label>
-              </div>
               <div class="actions">
                 <button id="start-worker" class="button primary">Start worker</button>
                 <button id="stop-worker" class="button secondary">Stop worker</button>
@@ -412,6 +402,24 @@ HTML = """<!doctype html>
               </div>
               <div id="worker-status" class="status"></div>
               <div id="worker-queue-status" class="job-meta-strip subtle hidden"></div>
+              <details class="worker-advanced">
+                <summary>Advanced worker settings</summary>
+                <div class="worker-advanced-body">
+                  <div class="worker-panel-note">These settings rarely need to change after setup. The launcher saves the chosen profile locally, so this section stays out of the way on later runs.</div>
+                  <label>Models to advertise<input id="worker-models"></label>
+                  <label>Estimated throughput<input id="worker-throughput" readonly></label>
+                  <div id="worker-excluded-models" class="job-meta-strip subtle hidden"></div>
+                  <div id="admin-override-wrap" class="hidden worker-override-card">
+                    <label class="checkline" style="text-transform:none;letter-spacing:0;color:var(--text);font-size:.94rem;font-weight:600;border:none;padding:0;background:transparent">
+                      <input id="worker-admin-override" type="checkbox">
+                      <span>
+                        Allow this admin worker to claim any queued prompt, including my own.
+                        <div class="subtle">Use this when you want to inspect prompt flow through the same worker path.</div>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </details>
             </section>
             </div>
             </div>
