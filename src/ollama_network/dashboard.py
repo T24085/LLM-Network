@@ -182,6 +182,18 @@ HTML = """<!doctype html>
     .network-map .worker-halo.waiting{fill:#ffd166;animation:networkPulse 4s ease-in-out infinite}
     .network-map .worker-label{fill:#eef7f6;font-size:11px;font-weight:600}
     .network-map .worker-sub{fill:rgba(222,235,237,.68);font-size:9px}
+    .worker-panel{display:grid;gap:14px}
+    .worker-panel-card{display:grid;gap:14px;padding:18px;border:1px solid var(--line);border-radius:20px;background:#fff;box-shadow:0 10px 24px rgba(23,33,38,.05)}
+    .worker-panel-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap}
+    .worker-panel-head h3{margin:0;font-size:1.04rem}
+    .worker-panel-head p{margin:4px 0 0;color:var(--muted)}
+    .worker-panel-preview{padding:16px;background:linear-gradient(180deg,rgba(10,143,131,.06),rgba(255,255,255,.98));border-color:rgba(10,143,131,.16)}
+    .worker-panel-preview .network-map-card{padding:16px}
+    .worker-panel-preview .network-map{max-height:330px}
+    .worker-panel-preview .network-lane-grid,.worker-panel-preview .network-raw{display:none}
+    .worker-panel-controls{display:grid;gap:14px}
+    .worker-panel-note{padding:12px 14px;border-radius:14px;background:rgba(10,143,131,.06);border:1px solid rgba(10,143,131,.1);color:var(--deep);font-size:.9rem;line-height:1.45}
+    .worker-override-card{padding:12px 14px;border-radius:14px;background:rgba(23,33,38,.03);border:1px solid rgba(23,33,38,.08)}
     @keyframes networkFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-56}}
     @keyframes networkPulse{0%,100%{transform:scale(1);opacity:.18}50%{transform:scale(1.22);opacity:.34}}
     details{border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px}
@@ -353,39 +365,54 @@ HTML = """<!doctype html>
             </details>
             </div>
 
-            <div id="tab-panel-worker" class="tab-panel hidden" hidden role="tabpanel" aria-labelledby="tab-worker">
-            <h3 style="margin:0">Operate a worker</h3>
-            <div id="worker-detection-summary" class="chips"></div>
-            <div class="two">
-              <label>Worker ID<input id="worker-id" readonly></label>
-              <label>Owner user ID<input id="worker-owner" readonly></label>
-              <label>GPU name<input id="worker-gpu" readonly></label>
-              <label>Dedicated VRAM GB<input id="worker-vram" readonly></label>
-              <label>Host RAM GB<input id="worker-system-ram" readonly></label>
+            <div id="tab-panel-worker" class="tab-panel hidden worker-panel" hidden role="tabpanel" aria-labelledby="tab-worker">
+            <section class="worker-panel-card worker-panel-preview">
+              <div class="worker-panel-head">
+                <div>
+                  <h3>Network placement</h3>
+                  <p>Your worker still participates in the shared mesh. This preview keeps the live graph close to the worker controls.</p>
+                </div>
+                <div id="worker-detection-summary" class="chips"></div>
+              </div>
+              <div id="worker-network-preview"></div>
+            </section>
+            <section class="worker-panel-card worker-panel-controls">
+              <div class="worker-panel-head">
+                <div>
+                  <h3>Worker setup</h3>
+                  <p>Auto-detected hardware and Ollama tags are filled in from this machine.</p>
+                </div>
+              </div>
+              <div class="two">
+                <label>Worker ID<input id="worker-id" readonly></label>
+                <label>Owner user ID<input id="worker-owner" readonly></label>
+                <label>GPU name<input id="worker-gpu" readonly></label>
+                <label>Dedicated VRAM GB<input id="worker-vram" readonly></label>
+                <label>Host RAM GB<input id="worker-system-ram" readonly></label>
+                <label>Poll interval seconds<input id="worker-poll-interval" type="number" min="0.5" step="0.5" value="2"></label>
+              </div>
               <label>Models to advertise<input id="worker-models"></label>
               <label>Estimated throughput<input id="worker-throughput" readonly></label>
-              <label>Poll interval seconds<input id="worker-poll-interval" type="number" min="0.5" step="0.5" value="2"></label>
-            </div>
-            <div id="worker-excluded-models" class="job-meta-strip subtle hidden"></div>
-            <div class="subtle">Detected local models are prefilled here. Remove any model you do not want this worker to advertise to the network.</div>
-            <div id="admin-override-wrap" class="hidden">
-              <label class="checkline" style="text-transform:none;letter-spacing:0;color:var(--text);font-size:.94rem;font-weight:600">
-                <input id="worker-admin-override" type="checkbox">
-                <span>
-                  Allow this admin worker to claim any queued prompt, including my own.
-                  <div class="subtle">Use this when you want to inspect how prompts resolve for users or preview your own prompts through the same worker path.</div>
-                </span>
-              </label>
-            </div>
-            <div class="subtle">Standard workers only pick up jobs from other users. If you queue your own prompt and your worker has the same owner id, it will stay queued unless admin self-serve is enabled.</div>
-            <div class="actions">
-              <button id="start-worker" class="button primary">Start worker</button>
-              <button id="stop-worker" class="button secondary">Stop worker</button>
-              <button id="run-worker-once" class="button secondary">Run one cycle now</button>
-              <button id="open-worker-drawer" class="button secondary">Open worker panel</button>
-            </div>
-            <div id="worker-status" class="status"></div>
-            <div id="worker-queue-status" class="job-meta-strip subtle hidden"></div>
+              <div id="worker-excluded-models" class="job-meta-strip subtle hidden"></div>
+              <div class="worker-panel-note">Remove any model you do not want this worker to advertise to the network. The launcher saves this profile after the first run, so later launches are one click.</div>
+              <div id="admin-override-wrap" class="hidden worker-override-card">
+                <label class="checkline" style="text-transform:none;letter-spacing:0;color:var(--text);font-size:.94rem;font-weight:600;border:none;padding:0;background:transparent">
+                  <input id="worker-admin-override" type="checkbox">
+                  <span>
+                    Allow this admin worker to claim any queued prompt, including my own.
+                    <div class="subtle">Use this when you want to inspect prompt flow through the same worker path.</div>
+                  </span>
+                </label>
+              </div>
+              <div class="actions">
+                <button id="start-worker" class="button primary">Start worker</button>
+                <button id="stop-worker" class="button secondary">Stop worker</button>
+                <button id="run-worker-once" class="button secondary">Run one cycle now</button>
+                <button id="open-worker-drawer" class="button secondary">Open worker panel</button>
+              </div>
+              <div id="worker-status" class="status"></div>
+              <div id="worker-queue-status" class="job-meta-strip subtle hidden"></div>
+            </section>
             </div>
             </div>
           </section>
@@ -1047,7 +1074,8 @@ HTML = """<!doctype html>
         workerState.key === "offline" ? "offline" : "",
       );
     }
-    function networkMapMarkup(payload) {
+    function networkMapMarkup(payload, options = {}) {
+      const compact = Boolean(options.compact);
       if (!payload) {
         return `<div class="network-visual"><div class="network-empty"><strong>Network view is waiting for data.</strong><div class="subtle" style="margin-top:8px;color:inherit">Refresh the network after signing in to light up the live worker graph.</div></div></div>`;
       }
@@ -1161,8 +1189,7 @@ HTML = """<!doctype html>
         ? `Showing ${pluralize(workerPoints.length, "worker node")} and ${pluralize(queueNodes.length, "queued prompt node")}. ${labelAllWorkers ? "Every visible node is labeled." : "A highlighted subset is labeled to keep dense meshes readable."} ${runningLoops ? `${pluralize(runningLoops, "local loop")} actively polling.` : "No local polling loops are running yet."}`
         : "No workers have joined the mesh yet. Start a worker to populate the live graph.";
 
-      return `
-        <div class="network-visual">
+      const previewBody = `
           <div class="network-map-card">
             <div class="network-map-head">
               <div class="network-map-title">
@@ -1177,7 +1204,7 @@ HTML = """<!doctype html>
               </div>
             </div>
             <div class="network-summary-grid">${metrics}</div>
-            <svg class="network-map" viewBox="0 0 660 460" role="img" aria-label="Live network map showing queued prompts and worker connectivity">
+            <svg class="network-map${compact ? " compact" : ""}" viewBox="0 0 660 460" role="img" aria-label="Live network map showing queued prompts and worker connectivity">
               <defs>
                 <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
                   <stop offset="0%" stop-color="#49f7df" stop-opacity=".42"></stop>
@@ -1218,6 +1245,17 @@ HTML = """<!doctype html>
               ${workerNodeMarkup}
             </svg>
           </div>
+      `;
+      if (compact) {
+        return `
+          <div class="network-visual">
+            ${previewBody}
+          </div>
+        `;
+      }
+      return `
+        <div class="network-visual">
+          ${previewBody}
           <div class="network-lane-grid">
             <section class="network-lane">
               <h3>Worker pulse</h3>
@@ -1237,6 +1275,11 @@ HTML = """<!doctype html>
           </div>
         </div>
       `;
+    }
+    function renderWorkerNetworkPreview() {
+      const node = el("worker-network-preview");
+      if (!node) return;
+      node.innerHTML = networkMapMarkup(state.networkSnapshot, { compact: true });
     }
     function renderDrawer() {
       const panel = DRAWER_PANELS[state.activeDrawer];
@@ -1351,6 +1394,7 @@ HTML = """<!doctype html>
       state.networkSnapshot = payload;
       writeJson("network-json", payload);
       writeJson("local-worker-json", payload.local_workers || {});
+      renderWorkerNetworkPreview();
       el("metric-queue").textContent = payload.queued_jobs.length;
       el("metric-workers").textContent = Object.keys(payload.workers).length;
       el("metric-users").textContent = payload.user_count;
@@ -1689,7 +1733,7 @@ HTML = """<!doctype html>
       stopPolling();
       state.session = null; state.lastJobId = ""; state.trackedJob = null; state.activeConversationId = ""; state.conversationCache = {}; state.networkSnapshot = null;
       ["user-id","user-balance","job-user-id","worker-id","worker-owner","worker-gpu","worker-vram","worker-system-ram","worker-models","worker-throughput"].forEach((id) => { const node = el(id); if (node) node.value = ""; });
-      closeDrawer(); setRailVisible(false); toggleDashboard(false); setAdminVisible(false); setWorkspaceTab("network"); renderSessionPill(); renderTrackedJob({}); renderPromptHistory({ conversations: [], archived_conversations: [] }); renderConversationList({ conversations: [] }); renderConversationDetail({ messages: [] }); renderWorkerQueueState(null); writeJson("network-json", {}); writeJson("local-worker-json", {}); setStatus("auth-status", "Waiting for sign-in.", "ok");
+      closeDrawer(); setRailVisible(false); toggleDashboard(false); setAdminVisible(false); setWorkspaceTab("network"); renderSessionPill(); renderTrackedJob({}); renderPromptHistory({ conversations: [], archived_conversations: [] }); renderConversationList({ conversations: [] }); renderConversationDetail({ messages: [] }); renderWorkerQueueState(null); renderWorkerNetworkPreview(); writeJson("network-json", {}); writeJson("local-worker-json", {}); setStatus("auth-status", "Waiting for sign-in.", "ok");
     }
 
     bind();
