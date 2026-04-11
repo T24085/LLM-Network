@@ -14,6 +14,7 @@ dependencies = ["google-auth[requests]>=2.38", "google-cloud-firestore>=2.21"]
 ollama-network-server = "ollama_network.server:main"
 ollama-network-cli = "ollama_network.cli:main"
 ollama-network-worker = "ollama_network.worker_daemon:main"
+ollama-network-worker-launch = "ollama_network.worker_bootstrap:main"
 
 [project.optional-dependencies]
 dev = ["pytest>=8.2"]

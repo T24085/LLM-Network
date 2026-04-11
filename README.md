@@ -30,7 +30,7 @@ LLM Network lets one machine run the coordinator and dashboard while other machi
 - `start_network_server.bat` Windows launcher for the coordinator
 - `start_dashboard.bat` Windows launcher for the dashboard
 - `start_tunnel.bat` Windows launcher for a public Cloudflare quick tunnel
-- `start_worker_daemon.bat` Windows launcher for a local worker daemon with auto-detected hardware
+- `start_worker_daemon.bat` Windows launcher for a local worker daemon with auto-detected hardware and cached setup
 
 ## Requirements
 
@@ -119,9 +119,12 @@ Start a worker on the current PC:
 start_worker_daemon.bat
 ```
 
-The launcher prompts for the owner user id and long-lived worker token, then auto-detects the local GPU,
-system RAM, and installed Ollama models on the machine where it runs. Use this on the worker PC itself,
-not on the coordinator host, when you want each worker to advertise its own hardware.
+The first launch prompts for the owner user id and long-lived worker token, then auto-detects the local GPU,
+system RAM, and installed Ollama models on the machine where it runs. The launcher saves that setup to
+`.runtime/worker.local.json`, so later launches are basically a single double-click.
+
+Use this on the worker PC itself, not on the coordinator host, when you want each worker to advertise its
+own hardware.
 
 ### Manual Server Startup
 
