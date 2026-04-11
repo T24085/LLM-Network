@@ -383,7 +383,7 @@ HTML = """<!doctype html>
               <div class="worker-panel-head">
                 <div>
                   <h3>Worker setup</h3>
-                  <p>This tab controls the worker process on the machine serving the dashboard. For another PC, run <code>start_worker_daemon.bat</code> on that PC.</p>
+                  <p>This tab controls the worker process on the machine serving the dashboard. For another PC, download a remote launcher and run it there.</p>
                 </div>
               </div>
               <div class="two">
@@ -398,10 +398,12 @@ HTML = """<!doctype html>
                 <button id="start-worker" class="button primary">Start this machine's worker</button>
                 <button id="stop-worker" class="button secondary">Stop this worker</button>
                 <button id="run-worker-once" class="button secondary">Run one cycle now</button>
+                <button id="download-worker-launcher" class="button secondary">Download remote worker launcher</button>
                 <button id="open-worker-drawer" class="button secondary">Open worker panel</button>
               </div>
               <div id="worker-status" class="status"></div>
               <div id="worker-queue-status" class="job-meta-strip subtle hidden"></div>
+              <div class="worker-panel-note">Use <strong>Start this machine's worker</strong> only on the dashboard host. For another PC, download the remote launcher and run it there; that PC will auto-detect its own GPU and Ollama models on first launch.</div>
               <details class="worker-advanced">
                 <summary>Advanced worker settings</summary>
                 <div class="worker-advanced-body">
@@ -523,6 +525,7 @@ HTML = """<!doctype html>
     function parseThroughput(text) { return parseCsv(text).reduce((acc, entry) => { const [model, value] = entry.split("="); if (model && value) acc[model.trim()] = Number(value.trim()); return acc; }, {}); }
     function chip(label, kind = "") { const node = document.createElement("span"); node.className = `chip ${kind}`.trim(); node.textContent = label; return node; }
     function escapeHtml(value) { return String(value || "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); }
+    function batchEscape(value) { return String(value || "").replaceAll('"', '""'); }
     function formatTimestamp(unix) {
       const numeric = Number(unix || 0);
       if (!numeric) return "";
@@ -1565,6 +1568,79 @@ HTML = """<!doctype html>
 
     function allowAdminSelfServe() { return Boolean(state.session?.is_admin && el("worker-admin-override").checked); }
 
+    function buildRemoteWorkerLauncher(workerToken) {
+      const serverUrl = window.location.origin;
+      const ownerUserId = el("worker-owner").value.trim() || state.session?.user_id || "";
+      const filename = `start_llm_network_worker.bat`;
+      const content = `@echo off
+setlocal
+cd /d "%~dp0"
+
+set "SERVER_URL=${batchEscape(serverUrl)}"
+set "OWNER_USER_ID=${batchEscape(ownerUserId)}"
+set "WORKER_TOKEN=${batchEscape(workerToken)}"
+
+where py >nul 2>nul
+if errorlevel 1 (
+  echo Python 3.8+ is required to run this worker launcher.
+  pause
+  exit /b 1
+)
+
+py -3 -c "import ollama_network" >nul 2>nul
+if errorlevel 1 (
+  echo Installing LLM Network worker package...
+  py -3 -m pip install --user --upgrade "https://github.com/T24085/LLM-Network/archive/refs/heads/main.zip"
+  if errorlevel 1 (
+    echo Failed to install the worker package.
+    pause
+    exit /b 1
+  )
+)
+
+echo.
+echo Starting worker on this PC.
+echo Owner user ID: %OWNER_USER_ID%
+echo Server URL: %SERVER_URL%
+echo.
+py -3 -m ollama_network.worker_bootstrap --server-url "%SERVER_URL%" --owner-user-id "%OWNER_USER_ID%" --worker-token "%WORKER_TOKEN%"
+if errorlevel 1 (
+  echo.
+  echo The worker stopped with an error.
+)
+pause
+`;
+      return { filename, content };
+    }
+
+    async function downloadTextFile(filename, content) {
+      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }
+
+    async function downloadWorkerLauncher() {
+      const workerId = el("worker-id").value.trim();
+      const ownerUserId = el("worker-owner").value.trim();
+      if (!workerId || !ownerUserId) {
+        setStatus("worker-status", "Load the worker context first so the launcher can be generated.", "error");
+        return;
+      }
+      const tokenPayload = await api("/workers/tokens", {
+        method: "POST",
+        body: JSON.stringify({ label: `${workerId} remote launcher` }),
+      });
+      const launcher = buildRemoteWorkerLauncher(tokenPayload.token);
+      await downloadTextFile(launcher.filename, launcher.content);
+      setStatus("worker-status", `Downloaded ${launcher.filename}. Run that file on the other PC to start its worker locally.`, "ok");
+    }
+
     async function startWorker() {
       const payload = await api("/workers/start-local", {
         method: "POST",
@@ -1708,6 +1784,7 @@ HTML = """<!doctype html>
       el("start-worker").addEventListener("click", () => startWorker().catch((error) => setStatus("worker-status", error.message, "error")));
       el("stop-worker").addEventListener("click", () => stopWorker().catch((error) => setStatus("worker-status", error.message, "error")));
       el("run-worker-once").addEventListener("click", () => runWorkerOnce().catch((error) => setStatus("worker-status", error.message, "error")));
+      el("download-worker-launcher").addEventListener("click", () => downloadWorkerLauncher().catch((error) => setStatus("worker-status", error.message, "error")));
       el("admin-refresh").addEventListener("click", () => refreshAdminOverview().catch((error) => setStatus("admin-status", error.message, "error")));
       el("admin-adjust-credits").addEventListener("click", () => adjustCredits().catch((error) => setStatus("admin-status", error.message, "error")));
       document.querySelectorAll("[data-admin-job-tab]").forEach((node) => node.addEventListener("click", () => { setAdminJobTab(node.dataset.adminJobTab); refreshAdminOverview().catch((error) => setStatus("admin-status", error.message, "error")); }));
