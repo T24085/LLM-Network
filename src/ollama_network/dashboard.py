@@ -458,12 +458,11 @@ HTML = """<!doctype html>
               <div class="worker-launcher-card">
                 <div class="worker-launcher-head">
                   <div>
-                    <h3>Worker launcher for this PC</h3>
-                    <div class="subtle">Run this on the worker machine, not in the browser. It auto-detects that PC's GPU, RAM, and local Ollama models.</div>
+                    <h3>Download worker launcher</h3>
+                    <div class="subtle">Download the versioned .bat file and place it next to llm-network-worker.json on the worker PC.</div>
                   </div>
-                  <button id="copy-worker-launcher" class="button secondary">Copy launcher</button>
+                  <button id="download-worker-launcher" class="button secondary">Download launcher</button>
                 </div>
-                <textarea id="worker-launcher-command" class="worker-launcher-command" readonly spellcheck="false"></textarea>
               </div>
               <div id="worker-excluded-models" class="job-meta-strip subtle hidden"></div>
               <div class="subtle">Detected local models are prefilled here. Remove any model you do not want this worker to advertise to the network.</div>
@@ -1047,19 +1046,22 @@ HTML = """<!doctype html>
       if (!workerId) return state.currentWorkerLoop || null;
       return state.networkSnapshot?.local_workers?.[workerId] || state.currentWorkerLoop || null;
     }
-    function workerLauncherCommand() {
-      return [
-        "py -3 -m ollama_network.worker_daemon --config llm-network-worker.json",
-      ].join("\\r\\n");
-    }
-    function refreshWorkerLauncherCommand() {
-      const node = el("worker-launcher-command");
-      if (!node) return;
-      node.value = workerLauncherCommand();
-    }
     function workerEnrollmentConfigText(payload) {
       const config = payload?.config || payload;
       return JSON.stringify(config || {}, null, 2);
+    }
+    async function downloadWorkerLauncherFile() {
+      const response = await apiBlob("/worker-launcher-download");
+      const url = URL.createObjectURL(response.blob);
+      const anchor = document.createElement("a");
+      const filenameMatch = /filename=\"?([^\";]+)\"?/.exec(response.disposition || "");
+      anchor.href = url;
+      anchor.download = filenameMatch?.[1] || "start_llm_network_worker_v0_1_1.bat";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+      return anchor.download;
     }
     function renderWorkerEnrollmentDrawer() {
       const enrollment = state.pendingWorkerEnrollment;
@@ -1069,7 +1071,7 @@ HTML = """<!doctype html>
       const configText = workerEnrollmentConfigText(enrollment);
       return `
         <div class="worker-config-card">
-          <div class="subtle">Create an enrollment record, download the config file, then run the worker daemon from the folder that contains <code>llm-network-worker.json</code>.</div>
+          <div class="subtle">Create an enrollment record, download the config file and launcher, then run them together from the folder that contains <code>llm-network-worker.json</code>.</div>
           <div class="two">
             <label>Worker nickname<input id="new-worker-name" value="${escapeHtml(workerName)}" placeholder="Home PC"></label>
             <label>Coordinator URL<input value="${DEFAULT_SERVER_URL}" readonly></label>
@@ -1077,14 +1079,15 @@ HTML = """<!doctype html>
           <div class="actions">
             <button id="create-worker-enrollment" class="button primary">Create enrollment</button>
             <button id="download-worker-config" class="button secondary ${workerId ? "" : "hidden"}">Download config</button>
+            <button id="download-worker-launcher" class="button secondary">Download launcher</button>
           </div>
-          <div id="worker-enrollment-status" class="status">${workerId ? "Enrollment created. Download the config and run the worker launcher on the target PC." : "Enter a worker nickname to generate the enrollment."}</div>
+          <div id="worker-enrollment-status" class="status">${workerId ? "Enrollment created. Download the config and launcher, then place them side by side on the target PC." : "Enter a worker nickname to generate the enrollment."}</div>
           <details ${workerId ? "open" : ""}>
             <summary>Config preview</summary>
             <div style="height:10px"></div>
             <pre class="worker-config-code">${escapeHtml(configText)}</pre>
           </details>
-          <div class="worker-note">If the worker PC does not have Ollama installed, the launcher will stop with a clean message instead of a traceback.</div>
+          <div class="worker-note">The config stays tied to your logged-in account so credits and worker activity stay tracked correctly.</div>
           <div class="worker-note">Worker token: <code>${escapeHtml(workerToken || "Generated after enrollment")}</code></div>
         </div>
       `;
@@ -1119,8 +1122,7 @@ HTML = """<!doctype html>
             <div class="worker-list-actions">
               <button class="button secondary" data-worker-details="${escapeHtml(enrollment.worker_id || "")}">View details</button>
               <button class="button secondary" data-worker-config-download="${escapeHtml(enrollment.worker_id || "")}">Download config</button>
-              <button class="button secondary" data-worker-token-rotate="${escapeHtml(enrollment.worker_id || "")}">Rotate token</button>
-              <button class="button secondary" data-worker-token-revoke="${escapeHtml(enrollment.worker_id || "")}">Revoke token</button>
+              <button class="button secondary" data-worker-launcher-download>Download launcher</button>
             </div>
           </div>
         </div>
@@ -1142,7 +1144,7 @@ HTML = """<!doctype html>
         const worker = enrollment.worker || state.networkSnapshot?.workers?.[enrollment.worker_id] || null;
         return `
           <div class="worker-config-card">
-            <div class="worker-note">This drawer is for enrollment management. Use the buttons below to rotate or revoke the token, or download a fresh config file.</div>
+            <div class="worker-note">This drawer is for enrollment management. Download the config and launcher here, or rotate/revoke the token if needed.</div>
             <div class="worker-list-item">
               <div class="worker-list-top">
             <div class="worker-list-title">
@@ -1158,6 +1160,7 @@ HTML = """<!doctype html>
           </div>
               <div class="worker-list-actions">
                 <button class="button secondary" id="drawer-worker-download">Download config</button>
+                <button class="button secondary" id="drawer-worker-launcher">Download launcher</button>
                 <button class="button secondary" id="drawer-worker-rotate">Rotate token</button>
                 <button class="button secondary" id="drawer-worker-revoke">Revoke token</button>
               </div>
@@ -1622,7 +1625,6 @@ HTML = """<!doctype html>
       setAdminVisible(Boolean(payload.is_admin));
       setStatus("auth-status", payload.issued ? `Signed in. Created network account ${payload.user_id}.` : `Signed in. Using network account ${payload.user_id}.`, "ok");
       setStatus("user-status", `Authenticated as ${payload.display_name || payload.email || payload.user_id}. Balance: ${Number(payload.balance).toFixed(4)} credits.`, "ok");
-      refreshWorkerLauncherCommand();
       return payload;
     }
 
@@ -1664,7 +1666,6 @@ HTML = """<!doctype html>
       el("worker-system-ram").value = payload.suggested_system_ram_gb || "";
       el("worker-models").value = (payload.suggested_installed_models || []).join(", ");
       el("worker-throughput").value = Object.entries(payload.suggested_benchmark_tokens_per_second || {}).map(([model, value]) => `${model}=${value}`).join(", ");
-      refreshWorkerLauncherCommand();
       const contextNode = el("worker-context-note");
       if (contextNode) {
         const scope = payload.detection_scope === "api-server-host"
@@ -2114,15 +2115,15 @@ HTML = """<!doctype html>
       el("start-worker").addEventListener("click", () => startWorker().catch((error) => setStatus("worker-status", error.message, "error")));
       el("stop-worker").addEventListener("click", () => stopWorker().catch((error) => setStatus("worker-status", error.message, "error")));
       el("run-worker-once").addEventListener("click", () => runWorkerOnce().catch((error) => setStatus("worker-status", error.message, "error")));
-      el("copy-worker-launcher").addEventListener("click", async () => {
-        const command = workerLauncherCommand();
-        await navigator.clipboard.writeText(command);
-        setStatus("worker-status", "Copied the worker launcher for this PC.", "ok");
-      });
+      el("download-worker-launcher").addEventListener("click", () => downloadWorkerLauncherFile().catch((error) => setStatus("worker-status", error.message, "error")));
       el("worker-enrollment-list").addEventListener("click", (event) => {
         const target = event.target.closest("button");
         if (!target) return;
         const workerId = target.dataset.workerDetails || target.dataset.workerConfigDownload || target.dataset.workerTokenRotate || target.dataset.workerTokenRevoke;
+        if (target.dataset.workerLauncherDownload) {
+          downloadWorkerLauncherFile().catch((error) => setStatus("worker-status", error.message, "error"));
+          return;
+        }
         if (!workerId) return;
         if (target.dataset.workerDetails) {
           openWorkerDetailsDrawer(workerId);
@@ -2142,9 +2143,13 @@ HTML = """<!doctype html>
         } else if (target.id === "download-worker-config") {
           const workerId = state.pendingWorkerEnrollment?.worker_id;
           if (workerId) downloadWorkerConfigFile(workerId).catch((error) => setStatus("worker-status", error.message, "error"));
+        } else if (target.id === "download-worker-launcher") {
+          downloadWorkerLauncherFile().catch((error) => setStatus("worker-status", error.message, "error"));
         } else if (target.id === "drawer-worker-download") {
           const workerId = state.selectedWorkerEnrollmentId;
           if (workerId) downloadWorkerConfigFile(workerId).catch((error) => setStatus("worker-status", error.message, "error"));
+        } else if (target.id === "drawer-worker-launcher") {
+          downloadWorkerLauncherFile().catch((error) => setStatus("worker-status", error.message, "error"));
         } else if (target.id === "drawer-worker-rotate") {
           const workerId = state.selectedWorkerEnrollmentId;
           if (workerId) rotateWorkerEnrollmentToken(workerId).catch((error) => setStatus("worker-status", error.message, "error"));
@@ -2165,7 +2170,6 @@ HTML = """<!doctype html>
       document.querySelectorAll("[data-drawer-target]").forEach((node) => node.addEventListener("click", () => openDrawer(node.dataset.drawerTarget)));
       document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeDrawer(); });
       window.addEventListener("resize", () => refreshElasticTabs());
-      refreshWorkerLauncherCommand();
     }
 
     function bootAuth() {

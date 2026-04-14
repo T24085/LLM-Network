@@ -175,6 +175,17 @@ class NetworkAPIHandler(BaseHTTPRequestHandler):
                     filename=filename,
                 )
                 return
+            if path == "/worker-launcher-download":
+                if not actor_user_id:
+                    raise AuthenticationError("Sign in with Google to manage workers.")
+                filename, content = self.server.service.download_worker_launcher(actor_user_id)
+                self._write_bytes(
+                    HTTPStatus.OK,
+                    content,
+                    content_type="application/octet-stream",
+                    filename=filename,
+                )
+                return
             if path.startswith("/jobs/") and path.endswith("/artifacts/download"):
                 if not actor_user_id and not actor_email:
                     raise AuthenticationError("Sign in with Google to use the network.")

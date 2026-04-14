@@ -119,21 +119,35 @@ Add a worker from the dashboard:
 2. Click `Add Worker`
 3. Enter a worker nickname
 4. Download `llm-network-worker.json`
-5. Move the file next to `start_worker_daemon.bat` on the worker PC and run it
+5. Download `start_llm_network_worker_v0_1_1.bat`
+6. Put both files in the same folder on the worker PC and run the `.bat`
 
-The worker launcher will read the downloaded config, auto-detect the local GPU, host RAM, and Ollama models,
+The launcher will read the downloaded config, auto-detect the local GPU, host RAM, and Ollama models,
 then register itself against the production coordinator at `https://llm-network.websitesolutions.shop`.
 
 If a remote PC still has an older worker install, run `repair_worker_install_v0_1_1.bat` first so the old package
 and launcher aliases are removed before reinstalling the tagged `v0.1.1` release from GitHub.
 
-Start a worker on the current PC for local testing:
+One-click same-machine quickstart:
 
 ```bat
 start_worker_daemon.bat
 ```
 
-The launcher now reads `llm-network-worker.json` or `.runtime/worker.local.json` automatically instead of prompting
+That launcher starts the local server, waits for `/health`, then starts the worker daemon with
+`llm-network-worker.json` or `.runtime/worker.local.json` if present.
+
+Remote worker daemon:
+
+```bat
+start_llm_network_worker_v0_1_1.bat
+```
+
+Use that launcher on the worker PC next to `llm-network-worker.json`. It starts the worker daemon only.
+
+If you want the combined same-machine quickstart, use `start_worker_daemon.bat` instead.
+
+The launcher reads `llm-network-worker.json` or `.runtime/worker.local.json` automatically instead of prompting
 for the server URL, owner user id, or worker token. Use the manual CLI flags only when you are debugging a custom setup.
 
 ### Manual Server Startup
