@@ -3,6 +3,7 @@ setlocal
 
 cd /d "%~dp0"
 
+set "APP_VERSION=0.1.1"
 set "PYTHON_CMD="
 if exist ".venv\Scripts\python.exe" set "PYTHON_CMD=""%CD%\.venv\Scripts\python.exe"""
 if not defined PYTHON_CMD (
@@ -22,11 +23,17 @@ call "%~dp0uninstall_worker.bat"
 if errorlevel 1 exit /b 1
 
 echo.
-echo Reinstalling LLM Network from GitHub.
+echo Reinstalling LLM Network v%APP_VERSION% from GitHub.
 echo.
 
 %PYTHON_CMD% -m pip install --upgrade --force-reinstall https://github.com/T24085/LLM-Network/archive/refs/heads/main.zip
 if errorlevel 1 exit /b 1
+
+for /f "usebackq delims=" %%V in (`%PYTHON_CMD% -c "import importlib.metadata as m; print(m.version('ollama-network'))"`) do set "INSTALLED_VERSION=%%V"
+echo Installed package version: %INSTALLED_VERSION%
+if /I not "%INSTALLED_VERSION%"=="%APP_VERSION%" (
+  echo Warning: installed version does not match expected v%APP_VERSION%.
+)
 
 echo.
 echo Reinstall complete. Start the worker with start_worker_daemon.bat.

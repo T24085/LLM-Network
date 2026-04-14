@@ -3,6 +3,7 @@ setlocal
 
 cd /d "%~dp0"
 
+set "APP_VERSION=0.1.1"
 set "PYTHON_CMD="
 if exist ".venv\Scripts\python.exe" set "PYTHON_CMD=""%CD%\.venv\Scripts\python.exe"""
 if not defined PYTHON_CMD (
@@ -19,7 +20,7 @@ if not defined PYTHON_CMD (
 )
 
 echo.
-echo Removing the installed ollama-network package and old worker launchers.
+echo Removing the installed ollama-network v%APP_VERSION% package and old worker launchers.
 echo.
 
 %PYTHON_CMD% -m pip uninstall -y ollama-network
