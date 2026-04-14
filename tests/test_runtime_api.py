@@ -532,6 +532,18 @@ def test_worker_enrollment_config_download_and_daemon_registration(tmp_path) -> 
         assert download["worker_id"] == created["worker_id"]
         assert download["worker_token"] == created["worker_token"]
 
+        req = request.Request(
+            url=f"{base_url}/worker-launcher-download",
+            headers=headers,
+            method="GET",
+        )
+        with request.urlopen(req, timeout=10) as response:
+            disposition = response.headers.get("Content-Disposition", "")
+            launcher_body = response.read().decode("utf-8")
+        assert "filename=" in disposition
+        assert "v0_1_1" in disposition
+        assert launcher_body.startswith("@echo off")
+
         daemon = WorkerDaemon(
             config=WorkerConfig(
                 server_url=download["server_url"],
