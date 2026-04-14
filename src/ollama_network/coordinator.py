@@ -245,6 +245,8 @@ class OllamaNetworkCoordinator:
         worker = self.workers[worker_id]
         payload = asdict(worker)
         payload["installed_models"] = sorted(worker.installed_models)
+        payload["online"] = worker.online and worker.is_recently_seen()
+        payload["heartbeat_stale"] = not worker.is_recently_seen()
         return payload
 
     def job_snapshot(self, job_id: str) -> dict[str, object]:
@@ -546,6 +548,13 @@ class OllamaNetworkCoordinator:
                 max_concurrent_jobs=int(worker_payload.get("max_concurrent_jobs", 1)),
                 runtime=str(worker_payload.get("runtime", "ollama")),
                 allows_cloud_fallback=bool(worker_payload.get("allows_cloud_fallback", False)),
+                worker_name=str(worker_payload.get("worker_name", "")),
+                machine_name=str(worker_payload.get("machine_name", "")),
+                platform=str(worker_payload.get("platform", "")),
+                server_url=str(worker_payload.get("server_url", "")),
+                enrollment_status=str(worker_payload.get("enrollment_status", "pending")),
+                enrollment_created_at_unix=float(worker_payload.get("enrollment_created_at_unix", 0.0)),
+                enrollment_registered_at_unix=float(worker_payload.get("enrollment_registered_at_unix", 0.0)),
                 active_jobs=int(worker_payload.get("active_jobs", 0)),
                 last_heartbeat_unix=(
                     float(worker_payload["last_heartbeat_unix"])

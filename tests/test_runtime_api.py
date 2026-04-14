@@ -8,6 +8,7 @@ from urllib import request
 
 from ollama_network.api import NetworkHTTPServer
 from ollama_network.auth import AuthenticationError
+from ollama_network.constants import DEFAULT_PUBLIC_SERVER_URL
 from ollama_network.local_hardware import LocalGPUDevice, LocalHardwareDetection
 from ollama_network.ollama_local import LocalModelDetection
 from ollama_network.models import ExecutorResult, WorkerNode
@@ -685,6 +686,89 @@ def test_protected_api_accepts_long_lived_worker_token_for_remote_daemon(tmp_pat
         listed = service.list_worker_tokens(owner_session["user_id"])
         assert listed["tokens"][0]["label"] == "jetson-nano"
         assert listed["tokens"][0]["last_used_unix"] > 0
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
+
+def test_worker_enrollment_config_download_and_daemon_registration(tmp_path) -> None:
+    service = NetworkService(
+        executor_factory=lambda _worker_id: FakeExecutor("enrollment executor"),
+        state_store=LocalStateStore(tmp_path / "private_state.json"),
+    )
+    server = NetworkHTTPServer(
+        ("127.0.0.1", 0),
+        service=service,
+        auth_verifier=FakeAuthVerifier(),
+        firebase_client_config={"projectId": "llm-network"},
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base_url = f"http://127.0.0.1:{server.server_address[1]}"
+
+    try:
+        headers = {"Authorization": "Bearer valid-token"}
+        session = api_get(base_url, "/auth/session", headers=headers)
+        service.coordinator.register_user("requester", starting_credits=50.0)
+
+        created = api_post(
+            base_url,
+            "/workers/create-enrollment",
+            {"worker_name": "Home PC"},
+            headers=headers,
+        )
+        assert created["worker_id"].startswith("wrk_")
+        assert created["server_url"] == DEFAULT_PUBLIC_SERVER_URL
+
+        download = api_get(
+            base_url,
+            f"/workers/{created['worker_id']}/config-download",
+            headers=headers,
+        )
+        assert download["worker_id"] == created["worker_id"]
+        assert download["worker_token"] == created["worker_token"]
+
+        daemon = WorkerDaemon(
+            config=WorkerConfig(
+                server_url=download["server_url"],
+                worker_id=download["worker_id"],
+                owner_user_id=download["owner_user_id"],
+                worker_name=download["worker_name"],
+                gpu_name="RTX 4090",
+                vram_gb=24.0,
+                installed_models=("llama3.1:8b",),
+                benchmark_tokens_per_second={"llama3.1:8b": 72.0},
+                worker_token=download["worker_token"],
+                machine_name="Home-PC",
+                platform="windows",
+            ),
+            executor=FakeExecutor(),
+        )
+        registered = daemon.register()
+        assert registered["worker_id"] == created["worker_id"]
+        assert registered["enrollment"]["status"] == "active"
+
+        service.submit_job(
+            {
+                "requester_user_id": "requester",
+                "model_tag": "llama3.1:8b",
+                "prompt": "Use the enrollment config worker.",
+                "max_output_tokens": 120,
+                "prompt_tokens": 16,
+            },
+            actor_user_id="requester",
+        )
+        completed = daemon.run_once()
+        assert completed is not None
+        assert completed["status"] == "completed"
+
+        heartbeat = daemon.heartbeat()
+        assert heartbeat["enrollment"]["status"] == "active"
+
+        enrollments = api_get(base_url, "/workers/enrollments", headers=headers)
+        assert enrollments["worker_enrollments"][0]["worker_id"] == created["worker_id"]
+        assert enrollments["worker_enrollments"][0]["worker"]["online"] is True
     finally:
         server.shutdown()
         server.server_close()

@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from math import ceil
+from time import time
 from typing import Optional
 
 
@@ -80,8 +81,20 @@ class WorkerNode:
     max_concurrent_jobs: int = 1
     runtime: str = "ollama"
     allows_cloud_fallback: bool = False
+    worker_name: str = ""
+    machine_name: str = ""
+    platform: str = ""
+    server_url: str = ""
+    enrollment_status: str = "pending"
+    enrollment_created_at_unix: float = 0.0
+    enrollment_registered_at_unix: float = 0.0
     active_jobs: int = 0
     last_heartbeat_unix: Optional[float] = None
+
+    def is_recently_seen(self, stale_after_seconds: float = 120.0) -> bool:
+        if self.last_heartbeat_unix is None:
+            return self.online
+        return (time() - self.last_heartbeat_unix) <= stale_after_seconds
 
     def effective_host_ram_gb(self) -> float:
         return self.system_ram_gb if self.system_ram_gb > 0.0 else self.vram_gb
@@ -91,6 +104,7 @@ class WorkerNode:
         available_host_ram_gb = self.effective_host_ram_gb()
         return (
             self.online
+            and self.is_recently_seen()
             and self.public_pool
             and self.runtime == "ollama"
             and not self.allows_cloud_fallback

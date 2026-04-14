@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import hashlib
 import hmac
 import os
@@ -13,6 +14,7 @@ from uuid import uuid4
 
 from .auth import AuthenticationError
 from .artifacts import extract_job_artifacts, materialize_artifacts, zip_artifacts
+from .constants import DEFAULT_PUBLIC_SERVER_URL
 from .coordinator import OllamaNetworkCoordinator
 from .executor import OllamaCommandExecutor
 from .local_hardware import LocalHardwareDetector
@@ -122,23 +124,201 @@ class NetworkService:
                 "wallet": self.coordinator.ledger.wallet_snapshot(user_id),
             }
 
+    def create_worker_enrollment(
+        self,
+        actor_user_id: str,
+        worker_name: str = "",
+        server_url: str = DEFAULT_PUBLIC_SERVER_URL,
+    ) -> dict[str, object]:
+        owner_user_id = str(actor_user_id or "").strip()
+        if not owner_user_id:
+            raise ValueError("actor_user_id is required.")
+        normalized_worker_name = str(worker_name or "").strip() or "New worker"
+        normalized_server_url = str(server_url or DEFAULT_PUBLIC_SERVER_URL).strip() or DEFAULT_PUBLIC_SERVER_URL
+        with self._lock:
+            self.coordinator.register_user(owner_user_id)
+            worker_id = f"wrk_{uuid4().hex[:12]}"
+            token_id = f"wkt_{uuid4().hex[:12]}"
+            secret = secrets.token_urlsafe(24)
+            raw_token = f"{token_id}.{secret}"
+            record = {
+                "worker_id": worker_id,
+                "owner_user_id": owner_user_id,
+                "worker_name": normalized_worker_name,
+                "server_url": normalized_server_url,
+                "token_id": token_id,
+                "secret_hash": self._hash_worker_token_secret(secret),
+                "status": "pending",
+                "created_at_unix": time(),
+                "registered_at_unix": 0.0,
+                "last_seen_at_unix": 0.0,
+                "revoked_at_unix": 0.0,
+                "machine_name": "",
+                "platform": "",
+                "gpu_name": "",
+                "vram_gb": 0.0,
+                "system_ram_gb": 0.0,
+                "installed_models": [],
+                "benchmark_tokens_per_second": {},
+                "worker_token": raw_token,
+            }
+            self._worker_enrollments_locked()[worker_id] = record
+            self._persist_locked()
+            return {
+                "worker_id": worker_id,
+                "worker_name": normalized_worker_name,
+                "server_url": normalized_server_url,
+                "worker_token": raw_token,
+                "config": self._worker_config_payload_locked(record, raw_token),
+                "enrollment": self._worker_enrollment_public_locked(dict(record)),
+            }
+
+    def list_worker_enrollments(self, actor_user_id: str) -> dict[str, object]:
+        normalized_user_id = str(actor_user_id or "").strip()
+        if not normalized_user_id:
+            raise ValueError("actor_user_id is required.")
+        with self._lock:
+            enrollments = [
+                self._worker_enrollment_public_locked(dict(record))
+                for record in self._worker_enrollments_locked().values()
+                if str(record.get("owner_user_id", "")) == normalized_user_id
+            ]
+            enrollments.sort(
+                key=lambda item: (
+                    float(item.get("created_at_unix", 0.0)),
+                    str(item.get("worker_id", "")),
+                ),
+                reverse=True,
+            )
+            for item in enrollments:
+                worker_id = str(item.get("worker_id", ""))
+                worker = self.coordinator.workers.get(worker_id)
+                if worker is not None:
+                    snapshot = self.coordinator.worker_snapshot(worker_id)
+                    item["worker"] = snapshot
+                    item["connection_status"] = "online" if snapshot.get("online") else "offline"
+                else:
+                    item["worker"] = None
+                    item["connection_status"] = "offline"
+            return {"worker_enrollments": enrollments}
+
+    def download_worker_config(
+        self,
+        actor_user_id: str,
+        worker_id: str,
+        server_url_override: Optional[str] = None,
+    ) -> tuple[str, bytes]:
+        normalized_user_id = str(actor_user_id or "").strip()
+        normalized_worker_id = str(worker_id or "").strip()
+        if not normalized_user_id:
+            raise ValueError("actor_user_id is required.")
+        if not normalized_worker_id:
+            raise ValueError("worker_id is required.")
+        with self._lock:
+            record = dict(self._worker_enrollments_locked().get(normalized_worker_id, {}))
+            if not record:
+                raise KeyError(normalized_worker_id)
+            self._assert_actor_matches(
+                normalized_user_id,
+                str(record.get("owner_user_id", "")),
+                "download this worker config",
+            )
+            raw_token = self._raw_worker_token_from_record_locked(record)
+            config = self._worker_config_payload_locked(record, raw_token)
+            if server_url_override:
+                config["server_url"] = server_url_override
+            return "llm-network-worker.json", json.dumps(config, indent=2).encode("utf-8")
+
+    def rotate_worker_enrollment_token(self, actor_user_id: str, worker_id: str) -> dict[str, object]:
+        normalized_user_id = str(actor_user_id or "").strip()
+        normalized_worker_id = str(worker_id or "").strip()
+        if not normalized_user_id:
+            raise ValueError("actor_user_id is required.")
+        if not normalized_worker_id:
+            raise ValueError("worker_id is required.")
+        with self._lock:
+            registry = self._worker_enrollments_locked()
+            record = dict(registry.get(normalized_worker_id, {}))
+            if not record:
+                raise KeyError(normalized_worker_id)
+            self._assert_actor_matches(
+                normalized_user_id,
+                str(record.get("owner_user_id", "")),
+                "rotate this worker token",
+            )
+            token_id = f"wkt_{uuid4().hex[:12]}"
+            secret = secrets.token_urlsafe(24)
+            raw_token = f"{token_id}.{secret}"
+            record["token_id"] = token_id
+            record["secret_hash"] = self._hash_worker_token_secret(secret)
+            record["worker_token"] = raw_token
+            record["revoked_at_unix"] = 0.0
+            record["status"] = "pending"
+            registry[normalized_worker_id] = record
+            self._persist_locked()
+            return {
+                "worker_id": normalized_worker_id,
+                "worker_token": raw_token,
+                "config": self._worker_config_payload_locked(record, raw_token),
+                "enrollment": self._worker_enrollment_public_locked(record),
+            }
+
+    def revoke_worker_enrollment(self, actor_user_id: str, worker_id: str) -> dict[str, object]:
+        normalized_user_id = str(actor_user_id or "").strip()
+        normalized_worker_id = str(worker_id or "").strip()
+        if not normalized_user_id:
+            raise ValueError("actor_user_id is required.")
+        if not normalized_worker_id:
+            raise ValueError("worker_id is required.")
+        with self._lock:
+            registry = self._worker_enrollments_locked()
+            record = dict(registry.get(normalized_worker_id, {}))
+            if not record:
+                raise KeyError(normalized_worker_id)
+            self._assert_actor_matches(
+                normalized_user_id,
+                str(record.get("owner_user_id", "")),
+                "revoke this worker token",
+            )
+            record["revoked_at_unix"] = time()
+            record["status"] = "revoked"
+            registry[normalized_worker_id] = record
+            if normalized_worker_id in self.coordinator.workers:
+                self.coordinator.update_worker(normalized_worker_id, online=False)
+            self._persist_locked()
+            return self._worker_enrollment_public_locked(record)
+
     def register_worker(
         self,
         payload: dict[str, object],
         actor_user_id: Optional[str] = None,
     ) -> dict[str, object]:
-        owner_user_id = str(payload["owner_user_id"])
-        self._assert_actor_matches(actor_user_id, owner_user_id, "register a worker")
+        worker_id = str(payload["worker_id"]).strip()
+        worker_session = payload.get("_worker_session")
+        worker_session = dict(worker_session) if isinstance(worker_session, dict) else {}
+        owner_user_id = str(payload.get("owner_user_id") or worker_session.get("user_id") or actor_user_id or "").strip()
+        if not owner_user_id:
+            raise ValueError("owner_user_id is required.")
+        if actor_user_id:
+            self._assert_actor_matches(actor_user_id, owner_user_id, "register a worker")
+        if worker_session.get("worker_id") and str(worker_session.get("worker_id")) != worker_id:
+            raise AuthenticationError("Worker token does not match this worker.")
+        worker_name = str(payload.get("worker_name", "")).strip()
+        machine_name = str(payload.get("machine_name", "")).strip()
+        platform = str(payload.get("platform", "")).strip()
+        server_url = str(payload.get("server_url", DEFAULT_PUBLIC_SERVER_URL)).strip() or DEFAULT_PUBLIC_SERVER_URL
+        installed_models = set(str(item) for item in payload.get("installed_models", []))
+        benchmark_tokens_per_second = {
+            str(key): float(value)
+            for key, value in dict(payload.get("benchmark_tokens_per_second", {})).items()
+        }
         worker = WorkerNode(
-            worker_id=str(payload["worker_id"]),
+            worker_id=worker_id,
             owner_user_id=owner_user_id,
-            gpu_name=str(payload["gpu_name"]),
-            vram_gb=float(payload["vram_gb"]),
-            installed_models=set(payload["installed_models"]),
-            benchmark_tokens_per_second={
-                str(key): float(value)
-                for key, value in dict(payload["benchmark_tokens_per_second"]).items()
-            },
+            gpu_name=str(payload.get("gpu_name", "")).strip() or "Unknown GPU",
+            vram_gb=float(payload.get("vram_gb", 0.0)),
+            installed_models=installed_models,
+            benchmark_tokens_per_second=benchmark_tokens_per_second,
             system_ram_gb=float(payload.get("system_ram_gb", 0.0)),
             reliability_score=float(payload.get("reliability_score", 1.0)),
             public_pool=bool(payload.get("public_pool", True)),
@@ -146,11 +326,103 @@ class NetworkService:
             max_concurrent_jobs=int(payload.get("max_concurrent_jobs", 1)),
             runtime=str(payload.get("runtime", "ollama")),
             allows_cloud_fallback=bool(payload.get("allows_cloud_fallback", False)),
+            worker_name=worker_name or machine_name or worker_id,
+            machine_name=machine_name,
+            platform=platform,
+            server_url=server_url,
+            enrollment_status="active",
+            enrollment_created_at_unix=0.0,
+            enrollment_registered_at_unix=time(),
         )
         with self._lock:
+            enrollment = self._worker_enrollments_locked().get(worker_id)
+            if enrollment:
+                self._assert_actor_matches(
+                    owner_user_id,
+                    str(enrollment.get("owner_user_id", "")),
+                    "register this worker",
+                )
+                if str(enrollment.get("status", "pending")) == "revoked":
+                    raise AuthenticationError("That worker enrollment has been revoked.")
+                enrollment = dict(enrollment)
+                enrollment["worker_name"] = worker.worker_name
+                enrollment["machine_name"] = machine_name
+                enrollment["platform"] = platform
+                enrollment["gpu_name"] = worker.gpu_name
+                enrollment["vram_gb"] = worker.vram_gb
+                enrollment["system_ram_gb"] = worker.system_ram_gb
+                enrollment["installed_models"] = sorted(installed_models)
+                enrollment["benchmark_tokens_per_second"] = dict(benchmark_tokens_per_second)
+                enrollment["status"] = "active"
+                enrollment["registered_at_unix"] = time()
+                enrollment["last_seen_at_unix"] = time()
+                enrollment["server_url"] = server_url
+                worker.enrollment_created_at_unix = float(enrollment.get("created_at_unix", 0.0))
+                worker.enrollment_registered_at_unix = float(enrollment["registered_at_unix"])
+                if worker_session.get("token_id"):
+                    enrollment["token_id"] = str(worker_session.get("token_id"))
+                self._worker_enrollments_locked()[worker_id] = enrollment
             self.coordinator.register_worker(worker)
+            snapshot = self.coordinator.worker_snapshot(worker.worker_id)
+            if enrollment:
+                snapshot["enrollment"] = self._worker_enrollment_public_locked(dict(enrollment))
             self._persist_locked()
-            return self.coordinator.worker_snapshot(worker.worker_id)
+            return snapshot
+
+    def heartbeat_worker(
+        self,
+        payload: dict[str, object],
+        actor_user_id: Optional[str] = None,
+    ) -> dict[str, object]:
+        worker_id = str(payload["worker_id"]).strip()
+        worker_session = payload.get("_worker_session")
+        worker_session = dict(worker_session) if isinstance(worker_session, dict) else {}
+        with self._lock:
+            if worker_id not in self.coordinator.workers:
+                raise KeyError(worker_id)
+            worker = self.coordinator.workers[worker_id]
+            if actor_user_id:
+                self._assert_actor_matches(actor_user_id, worker.owner_user_id, "send heartbeat for this worker")
+            if worker_session.get("worker_id") and str(worker_session.get("worker_id")) != worker_id:
+                raise AuthenticationError("Worker token does not match this worker.")
+            worker.online = True
+            worker.last_heartbeat_unix = time()
+            worker.machine_name = str(payload.get("machine_name", worker.machine_name)).strip() or worker.machine_name
+            worker.platform = str(payload.get("platform", worker.platform)).strip() or worker.platform
+            if payload.get("worker_name") is not None:
+                worker.worker_name = str(payload.get("worker_name", worker.worker_name)).strip() or worker.worker_name
+            if payload.get("gpu_name") is not None:
+                worker.gpu_name = str(payload.get("gpu_name", worker.gpu_name)).strip() or worker.gpu_name
+            if payload.get("vram_gb") is not None:
+                worker.vram_gb = float(payload.get("vram_gb", worker.vram_gb))
+            if payload.get("system_ram_gb") is not None:
+                worker.system_ram_gb = float(payload.get("system_ram_gb", worker.system_ram_gb))
+            if payload.get("installed_models") is not None:
+                worker.installed_models = set(str(item) for item in payload.get("installed_models", []))
+            if payload.get("benchmark_tokens_per_second") is not None:
+                worker.benchmark_tokens_per_second = {
+                    str(key): float(value)
+                    for key, value in dict(payload.get("benchmark_tokens_per_second", {})).items()
+                }
+            enrollment = self._worker_enrollments_locked().get(worker_id)
+            if enrollment:
+                enrollment = dict(enrollment)
+                enrollment["status"] = "active"
+                enrollment["last_seen_at_unix"] = time()
+                enrollment["machine_name"] = worker.machine_name
+                enrollment["platform"] = worker.platform
+                enrollment["worker_name"] = worker.worker_name
+                enrollment["gpu_name"] = worker.gpu_name
+                enrollment["vram_gb"] = worker.vram_gb
+                enrollment["system_ram_gb"] = worker.system_ram_gb
+                enrollment["installed_models"] = sorted(worker.installed_models)
+                enrollment["benchmark_tokens_per_second"] = dict(worker.benchmark_tokens_per_second)
+                self._worker_enrollments_locked()[worker_id] = enrollment
+            self._persist_locked()
+            result = self.coordinator.worker_snapshot(worker_id)
+            if enrollment:
+                result["enrollment"] = self._worker_enrollment_public_locked(dict(enrollment))
+            return result
 
     def submit_job(
         self,
@@ -465,7 +737,7 @@ class NetworkService:
             job_counts: dict[str, int] = {}
             for worker in self.coordinator.workers.values():
                 worker_counts[worker.owner_user_id] = worker_counts.get(worker.owner_user_id, 0) + 1
-                if worker.online:
+                if worker.online and worker.is_recently_seen():
                     online_worker_counts[worker.owner_user_id] = online_worker_counts.get(worker.owner_user_id, 0) + 1
             for record in self.coordinator.jobs.values():
                 requester_user_id = record.request.requester_user_id
@@ -796,28 +1068,63 @@ class NetworkService:
         if not token_id or not secret:
             raise AuthenticationError("A valid worker token is required.")
         with self._lock:
-            record = dict(self._worker_tokens_locked().get(token_id, {}))
-            if not record:
-                raise AuthenticationError("That worker token is not recognized.")
-            if float(record.get("revoked_at_unix", 0.0)) > 0:
-                raise AuthenticationError("That worker token has been revoked.")
-            expected_hash = str(record.get("secret_hash", ""))
-            if not expected_hash or not hmac.compare_digest(
-                expected_hash,
-                self._hash_worker_token_secret(secret),
-            ):
-                raise AuthenticationError("That worker token is invalid.")
-            user_id = str(record.get("user_id", "")).strip()
-            if not user_id or not self.coordinator.ledger.has_user(user_id):
-                raise AuthenticationError("That worker token is no longer bound to a valid user.")
-            record["last_used_unix"] = time()
-            self._worker_tokens_locked()[token_id] = record
-            self._persist_locked()
-            return {
-                "token_id": token_id,
-                "user_id": user_id,
-                "label": str(record.get("label", "")),
-            }
+            token_hash = self._hash_worker_token_secret(secret)
+            generic_record_key = None
+            generic_record = {}
+            for key, record in self._worker_tokens_locked().items():
+                if str(record.get("token_id", "")) != token_id:
+                    continue
+                generic_record_key = key
+                generic_record = dict(record)
+                break
+            if generic_record:
+                if float(generic_record.get("revoked_at_unix", 0.0)) > 0:
+                    raise AuthenticationError("That worker token has been revoked.")
+                expected_hash = str(generic_record.get("secret_hash", ""))
+                if not expected_hash or not hmac.compare_digest(expected_hash, token_hash):
+                    raise AuthenticationError("That worker token is invalid.")
+                user_id = str(generic_record.get("user_id", "")).strip()
+                if not user_id or not self.coordinator.ledger.has_user(user_id):
+                    raise AuthenticationError("That worker token is no longer bound to a valid user.")
+                generic_record["last_used_unix"] = time()
+                self._worker_tokens_locked()[str(generic_record_key)] = generic_record
+                self._persist_locked()
+                return {
+                    "token_id": token_id,
+                    "user_id": user_id,
+                    "label": str(generic_record.get("label", "")),
+                    "worker_id": str(generic_record.get("worker_id", "")),
+                    "worker_name": str(generic_record.get("worker_name", "")),
+                    "server_url": str(generic_record.get("server_url", "")),
+                    "status": str(generic_record.get("status", "")),
+                }
+
+            for worker_id, record in self._worker_enrollments_locked().items():
+                candidate = dict(record)
+                if str(candidate.get("token_id", "")) != token_id:
+                    continue
+                if float(candidate.get("revoked_at_unix", 0.0)) > 0:
+                    raise AuthenticationError("That worker token has been revoked.")
+                expected_hash = str(candidate.get("secret_hash", ""))
+                if not expected_hash or not hmac.compare_digest(expected_hash, token_hash):
+                    raise AuthenticationError("That worker token is invalid.")
+                user_id = str(candidate.get("owner_user_id", "")).strip()
+                if not user_id or not self.coordinator.ledger.has_user(user_id):
+                    raise AuthenticationError("That worker token is no longer bound to a valid user.")
+                candidate["last_used_unix"] = time()
+                candidate["last_seen_at_unix"] = time()
+                self._worker_enrollments_locked()[worker_id] = candidate
+                self._persist_locked()
+                return {
+                    "token_id": token_id,
+                    "user_id": user_id,
+                    "label": str(candidate.get("worker_name", "")),
+                    "worker_id": str(candidate.get("worker_id", worker_id)),
+                    "worker_name": str(candidate.get("worker_name", "")),
+                    "server_url": str(candidate.get("server_url", DEFAULT_PUBLIC_SERVER_URL)),
+                    "status": str(candidate.get("status", "pending")),
+                }
+            raise AuthenticationError("That worker token is not recognized.")
 
     def get_identity_context(self, actor_user_id: Optional[str] = None) -> dict[str, object]:
         with self._lock:
@@ -1321,6 +1628,13 @@ class NetworkService:
             self._meta["conversations"] = threads
         return threads
 
+    def _worker_enrollments_locked(self) -> dict[str, dict[str, object]]:
+        enrollments = self._meta.setdefault("worker_enrollments", {})
+        if not isinstance(enrollments, dict):
+            enrollments = {}
+            self._meta["worker_enrollments"] = enrollments
+        return enrollments
+
     def _worker_tokens_locked(self) -> dict[str, dict[str, object]]:
         tokens = self._meta.setdefault("worker_tokens", {})
         if not isinstance(tokens, dict):
@@ -1342,6 +1656,50 @@ class NetworkService:
             "last_used_unix": float(record.get("last_used_unix", 0.0)),
             "revoked_at_unix": float(record.get("revoked_at_unix", 0.0)),
             "is_revoked": float(record.get("revoked_at_unix", 0.0)) > 0,
+            "worker_id": str(record.get("worker_id", "")),
+            "worker_name": str(record.get("worker_name", "")),
+            "server_url": str(record.get("server_url", "")),
+            "status": str(record.get("status", "")),
+            "registered_at_unix": float(record.get("registered_at_unix", 0.0)),
+            "last_seen_at_unix": float(record.get("last_seen_at_unix", 0.0)),
+            "machine_name": str(record.get("machine_name", "")),
+            "platform": str(record.get("platform", "")),
+        }
+
+    @staticmethod
+    def _worker_enrollment_public_locked(record: dict[str, object]) -> dict[str, object]:
+        public = NetworkService._worker_token_public_locked(record)
+        public.update(
+            {
+                "worker_name": str(record.get("worker_name", "")),
+                "server_url": str(record.get("server_url", "")),
+                "status": str(record.get("status", "pending")),
+                "created_at_unix": float(record.get("created_at_unix", 0.0)),
+                "registered_at_unix": float(record.get("registered_at_unix", 0.0)),
+                "last_seen_at_unix": float(record.get("last_seen_at_unix", 0.0)),
+            }
+        )
+        return public
+
+    def _raw_worker_token_from_record_locked(self, record: dict[str, object]) -> str:
+        token_id = str(record.get("token_id", "")).strip()
+        secret_hash = str(record.get("secret_hash", "")).strip()
+        if not token_id:
+            return ""
+        if raw_token := str(record.get("worker_token", "")).strip():
+            return raw_token
+        # The raw secret is not reconstructable once only the hash is stored.
+        return ""
+
+    def _worker_config_payload_locked(self, record: dict[str, object], worker_token: str) -> dict[str, object]:
+        return {
+            "server_url": str(record.get("server_url", DEFAULT_PUBLIC_SERVER_URL)) or DEFAULT_PUBLIC_SERVER_URL,
+            "worker_id": str(record.get("worker_id", "")),
+            "worker_token": worker_token,
+            "owner_user_id": str(record.get("owner_user_id", "")),
+            "worker_name": str(record.get("worker_name", "")),
+            "auto_detect_models": True,
+            "auto_detect_hardware": True,
         }
 
     def _prepare_conversation_prompt_locked(

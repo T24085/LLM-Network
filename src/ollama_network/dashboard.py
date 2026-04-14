@@ -127,6 +127,16 @@ HTML = """<!doctype html>
     .worker-info-card strong{display:block}
     .worker-info-card span{display:block;margin-top:4px;color:var(--muted);font-size:.82rem;line-height:1.45}
     .worker-note{padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.76);border:1px dashed rgba(10,143,131,.22);color:var(--muted);line-height:1.45}
+    .worker-list{display:grid;gap:10px;margin-top:14px}
+    .worker-list-item{display:grid;gap:10px;padding:14px 16px;border:1px solid var(--line);border-radius:18px;background:#fff;box-shadow:0 8px 20px rgba(23,33,38,.04)}
+    .worker-list-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+    .worker-list-title{display:grid;gap:4px}
+    .worker-list-title strong{font-size:1rem}
+    .worker-list-meta{display:flex;flex-wrap:wrap;gap:8px}
+    .worker-list-foot{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:.84rem}
+    .worker-list-actions{display:flex;flex-wrap:wrap;gap:8px}
+    .worker-config-code{white-space:pre-wrap;word-break:break-word;font-family:Consolas,Monaco,ui-monospace,monospace;background:#0f1720;color:#eaf4f4;padding:12px;border-radius:12px;line-height:1.5}
+    .worker-config-card{display:grid;gap:12px}
     .section-label{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
     .section-label h3{margin:0}
     .elastic-tabs{position:relative;display:inline-flex;align-items:center;padding:4px;background:#fff;border-radius:999px;box-shadow:0 10px 26px rgba(23,33,38,.08);border:1px solid rgba(23,33,38,.08);overflow:hidden}
@@ -413,49 +423,69 @@ HTML = """<!doctype html>
             </div>
 
             <div id="tab-panel-worker" class="tab-panel hidden" hidden role="tabpanel" aria-labelledby="tab-worker">
-            <h3 style="margin:0">Operate a worker</h3>
-            <div id="worker-detection-summary" class="chips"></div>
-            <div class="two">
-              <label>Worker ID<input id="worker-id" readonly></label>
-              <label>Owner user ID<input id="worker-owner" readonly></label>
-              <label>GPU name<input id="worker-gpu" readonly></label>
-              <label>Dedicated VRAM GB<input id="worker-vram" readonly></label>
-              <label>Host RAM GB<input id="worker-system-ram" readonly></label>
-              <label>Models to advertise<input id="worker-models"></label>
-              <label>Estimated throughput<input id="worker-throughput" readonly></label>
-              <label>Poll interval seconds<input id="worker-poll-interval" type="number" min="0.5" step="0.5" value="2"></label>
-            </div>
-            <div id="worker-context-note" class="worker-note">These values are auto-detected on the API server host. To register a different PC, copy the launcher snippet below and run it on that PC so it detects its own hardware locally.</div>
-            <div class="worker-launcher-card">
-              <div class="worker-launcher-head">
-                <div>
-                  <h3>Worker launcher for this PC</h3>
-                  <div class="subtle">Run this on the worker machine, not in the browser. It auto-detects that PC's GPU, RAM, and local Ollama models.</div>
+            <h3 style="margin:0">Workers</h3>
+            <div class="worker-hero-panel">
+              <div class="worker-hero-top">
+                <div class="worker-hero-title">
+                  <div class="subtle">Production onboarding</div>
+                  <strong>Enroll a remote PC in one click</strong>
+                  <span class="subtle">The coordinator defaults to https://llm-network.websitesolutions.shop. Create an enrollment, download llm-network-worker.json, then run the worker launcher on the target machine.</span>
                 </div>
-                <button id="copy-worker-launcher" class="button secondary">Copy launcher</button>
+                <div class="actions">
+                  <button id="add-worker" class="button primary">Add Worker</button>
+                  <button id="refresh-workers" class="button secondary">Refresh workers</button>
+                </div>
               </div>
-              <textarea id="worker-launcher-command" class="worker-launcher-command" readonly spellcheck="false"></textarea>
+              <div id="worker-enrollment-summary" class="chips"></div>
+              <div class="worker-note">The downloaded config bundles the worker id, token, and production coordinator URL. The worker saves a local copy in <code>.runtime/worker.local.json</code> after its first launch.</div>
             </div>
-            <div id="worker-excluded-models" class="job-meta-strip subtle hidden"></div>
-            <div class="subtle">Detected local models are prefilled here. Remove any model you do not want this worker to advertise to the network.</div>
-            <div id="admin-override-wrap" class="hidden">
-              <label class="checkline" style="text-transform:none;letter-spacing:0;color:var(--text);font-size:.94rem;font-weight:600">
-                <input id="worker-admin-override" type="checkbox">
-                <span>
-                  Allow this admin worker to claim any queued prompt, including my own.
-                  <div class="subtle">Use this when you want to inspect how prompts resolve for users or preview your own prompts through the same worker path.</div>
-                </span>
-              </label>
-            </div>
-            <div class="subtle">Standard workers only pick up jobs from other users. If you queue your own prompt and your worker has the same owner id, it will stay queued unless admin self-serve is enabled.</div>
-            <div class="actions">
-              <button id="start-worker" class="button primary">Start worker</button>
-              <button id="stop-worker" class="button secondary">Stop worker</button>
-              <button id="run-worker-once" class="button secondary">Run one cycle now</button>
-              <button id="open-worker-drawer" class="button secondary">Open worker panel</button>
-            </div>
-            <div id="worker-status" class="status"></div>
-            <div id="worker-queue-status" class="job-meta-strip subtle hidden"></div>
+            <div id="worker-enrollment-list" class="worker-list"></div>
+            <details style="margin-top:14px">
+              <summary>Advanced local worker tools</summary>
+              <div style="height:12px"></div>
+              <div id="worker-detection-summary" class="chips"></div>
+              <div class="two">
+                <label>Worker ID<input id="worker-id" readonly></label>
+                <label>Owner user ID<input id="worker-owner" readonly></label>
+                <label>GPU name<input id="worker-gpu" readonly></label>
+                <label>Dedicated VRAM GB<input id="worker-vram" readonly></label>
+                <label>Host RAM GB<input id="worker-system-ram" readonly></label>
+                <label>Models to advertise<input id="worker-models"></label>
+                <label>Estimated throughput<input id="worker-throughput" readonly></label>
+                <label>Poll interval seconds<input id="worker-poll-interval" type="number" min="0.5" step="0.5" value="2"></label>
+              </div>
+              <div id="worker-context-note" class="worker-note">These values are auto-detected on the API server host. Use the Add Worker flow to create a remote config for another PC.</div>
+              <div class="worker-launcher-card">
+                <div class="worker-launcher-head">
+                  <div>
+                    <h3>Worker launcher for this PC</h3>
+                    <div class="subtle">Run this on the worker machine, not in the browser. It auto-detects that PC's GPU, RAM, and local Ollama models.</div>
+                  </div>
+                  <button id="copy-worker-launcher" class="button secondary">Copy launcher</button>
+                </div>
+                <textarea id="worker-launcher-command" class="worker-launcher-command" readonly spellcheck="false"></textarea>
+              </div>
+              <div id="worker-excluded-models" class="job-meta-strip subtle hidden"></div>
+              <div class="subtle">Detected local models are prefilled here. Remove any model you do not want this worker to advertise to the network.</div>
+              <div id="admin-override-wrap" class="hidden">
+                <label class="checkline" style="text-transform:none;letter-spacing:0;color:var(--text);font-size:.94rem;font-weight:600">
+                  <input id="worker-admin-override" type="checkbox">
+                  <span>
+                    Allow this admin worker to claim any queued prompt, including my own.
+                    <div class="subtle">Use this when you want to inspect how prompts resolve for users or preview your own prompts through the same worker path.</div>
+                  </span>
+                </label>
+              </div>
+              <div class="subtle">Standard workers only pick up jobs from other users. If you queue your own prompt and your worker has the same owner id, it will stay queued unless admin self-serve is enabled.</div>
+              <div class="actions">
+                <button id="start-worker" class="button primary">Start worker</button>
+                <button id="stop-worker" class="button secondary">Stop worker</button>
+                <button id="run-worker-once" class="button secondary">Run one cycle now</button>
+                <button id="open-worker-drawer" class="button secondary">Open worker panel</button>
+              </div>
+              <div id="worker-status" class="status"></div>
+              <div id="worker-queue-status" class="job-meta-strip subtle hidden"></div>
+            </details>
             </div>
             </div>
           </section>
@@ -496,16 +526,17 @@ HTML = """<!doctype html>
     import { GoogleAuthProvider, getAuth, onAuthStateChanged, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-auth.js";
 
     const FIREBASE_CONFIG = __FIREBASE_CONFIG__;
+    const DEFAULT_SERVER_URL = "https://llm-network.websitesolutions.shop";
     const authReady = Boolean(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId);
     let auth = null;
     let provider = null;
 
-    const state = { authUser: null, session: null, lastJobId: "", trackedJob: null, pollHandle: null, activeDrawer: "", activeWorkspace: "network", activeAdminJobTab: "all", activeConversationId: "", conversationCache: {}, workerStats: null, networkSnapshot: null, currentWorker: null, currentWorkerLoop: null };
+    const state = { authUser: null, session: null, lastJobId: "", trackedJob: null, pollHandle: null, activeDrawer: "", activeWorkspace: "network", activeAdminJobTab: "all", activeConversationId: "", conversationCache: {}, workerStats: null, networkSnapshot: null, currentWorker: null, currentWorkerLoop: null, workerEnrollments: [], workerDrawerMode: "enroll", selectedWorkerEnrollmentId: "", pendingWorkerEnrollment: null };
     const el = (id) => document.getElementById(id);
     const DRAWER_PANELS = {
       network: { eyebrow: "Network", title: "Live Network Map", render: () => networkMapMarkup(state.networkSnapshot) },
       job: { eyebrow: "Jobs", title: "Tracked Job", render: () => `${el("job-meta-summary").classList.contains("hidden") ? "" : `<div class="job-meta-strip subtle">${escapeHtml(el("job-meta-summary").textContent)}</div>`}${el("job-artifacts").classList.contains("hidden") ? "" : `<div class="artifact-list">${el("job-artifacts").innerHTML}</div>`}${el("job-raw-output").classList.contains("hidden") ? "" : `<details open><summary>Raw model output</summary><div style="height:10px"></div><pre>${escapeHtml(el("job-answer").textContent)}</pre></details>`}<pre>${escapeHtml(el("job-json").textContent)}</pre>` },
-      worker: { eyebrow: "Workers", title: "Local Worker Loop", render: () => renderWorkerActivity({ worker: currentWorkerSnapshot(), local_loop: currentWorkerLoop(), summary: state.workerStats?.summary || {} }) },
+      worker: { eyebrow: "Workers", title: "Worker Enrollment", render: () => renderWorkerDrawer() },
       "worker-stats": { eyebrow: "Workers", title: "Worker Stats", render: () => workerStatsMarkup(state.workerStats) },
     };
 
@@ -556,6 +587,7 @@ HTML = """<!doctype html>
     function parseCsv(text) { return String(text || "").split(",").map((part) => part.trim()).filter(Boolean); }
     function parseThroughput(text) { return parseCsv(text).reduce((acc, entry) => { const [model, value] = entry.split("="); if (model && value) acc[model.trim()] = Number(value.trim()); return acc; }, {}); }
     function chip(label, kind = "") { const node = document.createElement("span"); node.className = `chip ${kind}`.trim(); node.textContent = label; return node; }
+    function chipMarkup(label, kind = "") { return `<span class="${["chip", kind].filter(Boolean).join(" ")}">${escapeHtml(label)}</span>`; }
     function escapeHtml(value) { return String(value || "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); }
     function formatTimestamp(unix) {
       const numeric = Number(unix || 0);
@@ -1016,23 +1048,125 @@ HTML = """<!doctype html>
       return state.networkSnapshot?.local_workers?.[workerId] || state.currentWorkerLoop || null;
     }
     function workerLauncherCommand() {
-      const serverUrl = window.location.origin.endsWith("/")
-        ? window.location.origin.slice(0, -1)
-        : window.location.origin;
-      const workerId = el("worker-id").value.trim() || "worker-your-node-01";
-      const ownerUserId = el("worker-owner").value.trim() || "usr_your_id_here";
       return [
-        `set "OLLAMA_NETWORK_SERVER_URL=${serverUrl}"`,
-        `set "OLLAMA_NETWORK_OWNER_USER_ID=${ownerUserId}"`,
-        `set "OLLAMA_NETWORK_WORKER_ID=${workerId}"`,
-        `set "OLLAMA_NETWORK_WORKER_TOKEN=YOUR_WORKER_TOKEN"`,
-        "start_worker_daemon.bat",
+        "py -3 -m ollama_network.worker_daemon --config llm-network-worker.json",
       ].join("\\r\\n");
     }
     function refreshWorkerLauncherCommand() {
       const node = el("worker-launcher-command");
       if (!node) return;
       node.value = workerLauncherCommand();
+    }
+    function workerEnrollmentConfigText(payload) {
+      const config = payload?.config || payload;
+      return JSON.stringify(config || {}, null, 2);
+    }
+    function renderWorkerEnrollmentDrawer() {
+      const enrollment = state.pendingWorkerEnrollment;
+      const workerName = enrollment?.worker_name || "";
+      const workerId = enrollment?.worker_id || "";
+      const workerToken = enrollment?.worker_token || "";
+      const configText = workerEnrollmentConfigText(enrollment);
+      return `
+        <div class="worker-config-card">
+          <div class="subtle">Create an enrollment record, download the config file, then run the worker daemon from the folder that contains <code>llm-network-worker.json</code>.</div>
+          <div class="two">
+            <label>Worker nickname<input id="new-worker-name" value="${escapeHtml(workerName)}" placeholder="Home PC"></label>
+            <label>Coordinator URL<input value="${DEFAULT_SERVER_URL}" readonly></label>
+          </div>
+          <div class="actions">
+            <button id="create-worker-enrollment" class="button primary">Create enrollment</button>
+            <button id="download-worker-config" class="button secondary ${workerId ? "" : "hidden"}">Download config</button>
+          </div>
+          <div id="worker-enrollment-status" class="status">${workerId ? "Enrollment created. Download the config and run the worker launcher on the target PC." : "Enter a worker nickname to generate the enrollment."}</div>
+          <details ${workerId ? "open" : ""}>
+            <summary>Config preview</summary>
+            <div style="height:10px"></div>
+            <pre class="worker-config-code">${escapeHtml(configText)}</pre>
+          </details>
+          <div class="worker-note">If the worker PC does not have Ollama installed, the launcher will stop with a clean message instead of a traceback.</div>
+          <div class="worker-note">Worker token: <code>${escapeHtml(workerToken || "Generated after enrollment")}</code></div>
+        </div>
+      `;
+    }
+    function renderWorkerEnrollmentItem(enrollment) {
+      const worker = enrollment.worker || null;
+      const status = String(enrollment.status || worker?.enrollment_status || "pending");
+      const lastSeen = enrollment.last_seen_at_unix || worker?.last_heartbeat_unix || 0;
+      const models = (worker?.installed_models || enrollment.installed_models || []).slice(0, 6);
+      const machineName = enrollment.machine_name || worker?.machine_name || "Unknown machine";
+      const subtitle = worker ? `Registered ${formatTimestamp(enrollment.registered_at_unix || worker.enrollment_registered_at_unix || 0)}` : "Waiting for the worker to launch.";
+      const bannerTone = status === "revoked" ? { key: "offline" } : worker?.online ? { key: "ready" } : status === "pending" ? { key: "waiting" } : { key: "offline" };
+      const bannerText = status === "revoked" ? "Revoked" : worker?.online ? "Online" : status === "pending" ? "Pending" : "Offline";
+      return `
+        <div class="worker-list-item">
+          <div class="worker-list-top">
+            <div class="worker-list-title">
+              <strong>${escapeHtml(enrollment.worker_name || enrollment.worker_id || "Untitled worker")}</strong>
+              <span class="subtle">${escapeHtml(enrollment.worker_id || "")} | ${escapeHtml(machineName)}</span>
+            </div>
+            <span class="job-status-banner ${networkToneClass(bannerTone)}">${escapeHtml(bannerText)}</span>
+          </div>
+          <div class="worker-list-meta">
+            ${chipMarkup(`Server ${DEFAULT_SERVER_URL}`)}
+            ${chipMarkup(lastSeen ? `Last seen ${formatTimestamp(lastSeen)}` : "No heartbeat yet")}
+            ${chipMarkup(worker?.gpu_name || enrollment.gpu_name || "GPU not reported")}
+            ${chipMarkup(worker?.platform || enrollment.platform || "platform pending")}
+          </div>
+          <div class="subtle">${escapeHtml(subtitle)}</div>
+          <div class="worker-list-foot">
+            <div class="chips">${models.length ? models.map((model) => chipMarkup(model)).join("") : chipMarkup("No models reported yet", "warn")}</div>
+            <div class="worker-list-actions">
+              <button class="button secondary" data-worker-details="${escapeHtml(enrollment.worker_id || "")}">View details</button>
+              <button class="button secondary" data-worker-config-download="${escapeHtml(enrollment.worker_id || "")}">Download config</button>
+              <button class="button secondary" data-worker-token-rotate="${escapeHtml(enrollment.worker_id || "")}">Rotate token</button>
+              <button class="button secondary" data-worker-token-revoke="${escapeHtml(enrollment.worker_id || "")}">Revoke token</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    function renderWorkerEnrollmentList() {
+      const nodes = state.workerEnrollments || [];
+      if (!nodes.length) {
+        return `<div class="worker-list-item"><div class="worker-list-title"><strong>No workers yet</strong><span class="subtle">Create your first enrollment with Add Worker.</span></div></div>`;
+      }
+      return nodes.map((enrollment) => renderWorkerEnrollmentItem(enrollment)).join("");
+    }
+    function renderWorkerDrawer() {
+      if (state.workerDrawerMode === "details" && state.selectedWorkerEnrollmentId) {
+        const enrollment = (state.workerEnrollments || []).find((item) => item.worker_id === state.selectedWorkerEnrollmentId);
+        if (!enrollment) {
+          return `<div class="worker-note">That worker no longer exists.</div>`;
+        }
+        const worker = enrollment.worker || state.networkSnapshot?.workers?.[enrollment.worker_id] || null;
+        return `
+          <div class="worker-config-card">
+            <div class="worker-note">This drawer is for enrollment management. Use the buttons below to rotate or revoke the token, or download a fresh config file.</div>
+            <div class="worker-list-item">
+              <div class="worker-list-top">
+            <div class="worker-list-title">
+              <strong>${escapeHtml(enrollment.worker_name || enrollment.worker_id || "")}</strong>
+              <span class="subtle">${escapeHtml(enrollment.worker_id || "")}</span>
+            </div>
+            <span class="job-status-banner ${networkToneClass(worker?.online ? { key: "ready" } : { key: "offline" })}">${escapeHtml(worker?.online ? "Online" : "Offline")}</span>
+          </div>
+          <div class="worker-list-meta">
+                ${chipMarkup(`Server ${DEFAULT_SERVER_URL}`)}
+                ${chipMarkup(enrollment.machine_name || worker?.machine_name || "Machine pending")}
+                ${chipMarkup(enrollment.platform || worker?.platform || "Platform pending")}
+          </div>
+              <div class="worker-list-actions">
+                <button class="button secondary" id="drawer-worker-download">Download config</button>
+                <button class="button secondary" id="drawer-worker-rotate">Rotate token</button>
+                <button class="button secondary" id="drawer-worker-revoke">Revoke token</button>
+              </div>
+            </div>
+            <pre class="worker-config-code">${escapeHtml(workerEnrollmentConfigText(enrollment))}</pre>
+          </div>
+        `;
+      }
+      return renderWorkerEnrollmentDrawer();
     }
     function networkWorkerState(worker, loop) {
       const activeJobs = Number(worker?.active_jobs || 0);
@@ -1422,6 +1556,17 @@ HTML = """<!doctype html>
       if (state.activeDrawer === "worker-stats") renderDrawer();
     }
     function openDrawer(name) { state.activeDrawer = name; renderDrawer(); if (name === "worker-stats") refreshWorkerStats().catch((error) => setStatus("worker-status", error.message, "error")); }
+    function openWorkerEnrollmentDrawer() {
+      state.workerDrawerMode = "enroll";
+      state.selectedWorkerEnrollmentId = "";
+      state.pendingWorkerEnrollment = null;
+      openDrawer("worker");
+    }
+    function openWorkerDetailsDrawer(workerId) {
+      state.workerDrawerMode = "details";
+      state.selectedWorkerEnrollmentId = workerId;
+      openDrawer("worker");
+    }
     function closeDrawer() { state.activeDrawer = ""; renderDrawer(); }
     function renderSessionPill() {
       const pill = el("session-pill");
@@ -1534,6 +1679,35 @@ HTML = """<!doctype html>
       await refreshWorkerStats();
     }
 
+    async function refreshWorkerEnrollments() {
+      if (!state.session) {
+        state.workerEnrollments = [];
+        const listNode = el("worker-enrollment-list");
+        if (listNode) listNode.innerHTML = "";
+        const summaryNode = el("worker-enrollment-summary");
+        if (summaryNode) summaryNode.innerHTML = "";
+        return;
+      }
+      const payload = await api("/workers/enrollments");
+      state.workerEnrollments = payload.worker_enrollments || [];
+      const listNode = el("worker-enrollment-list");
+      if (listNode) listNode.innerHTML = renderWorkerEnrollmentList();
+      const summaryNode = el("worker-enrollment-summary");
+      if (summaryNode) {
+        summaryNode.innerHTML = "";
+        const total = state.workerEnrollments.length;
+        const online = state.workerEnrollments.filter((item) => item.worker?.online).length;
+        const pending = state.workerEnrollments.filter((item) => String(item.status || "").toLowerCase() === "pending").length;
+        const revoked = state.workerEnrollments.filter((item) => String(item.status || "").toLowerCase() === "revoked").length;
+        summaryNode.appendChild(chip(`${total} worker${total === 1 ? "" : "s"}`));
+        summaryNode.appendChild(chip(`${online} online`));
+        summaryNode.appendChild(chip(`${pending} pending`));
+        if (revoked) summaryNode.appendChild(chip(`${revoked} revoked`, "warn"));
+      }
+      if (state.activeDrawer === "worker") renderDrawer();
+      return payload;
+    }
+
     async function refreshNetwork() {
       const payload = await api("/network");
       state.networkSnapshot = payload;
@@ -1555,6 +1729,7 @@ HTML = """<!doctype html>
         });
       }
       if (state.activeDrawer === "worker") renderDrawer();
+      await refreshWorkerEnrollments();
       await refreshWorkerStats();
       return payload;
     }
@@ -1769,6 +1944,62 @@ HTML = """<!doctype html>
       if (state.session?.is_admin) await refreshAdminOverview();
     }
 
+    async function downloadWorkerConfigFile(workerId) {
+      const response = await apiBlob(`/workers/${encodeURIComponent(workerId)}/config-download`);
+      const url = URL.createObjectURL(response.blob);
+      const anchor = document.createElement("a");
+      const filenameMatch = /filename=\"?([^\";]+)\"?/.exec(response.disposition || "");
+      anchor.href = url;
+      anchor.download = filenameMatch?.[1] || "llm-network-worker.json";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+      return anchor.download;
+    }
+
+    async function createWorkerEnrollment() {
+      const workerName = el("new-worker-name")?.value?.trim() || "";
+      const payload = await api("/workers/create-enrollment", {
+        method: "POST",
+        body: JSON.stringify({
+          worker_name: workerName,
+          server_url: DEFAULT_SERVER_URL,
+        }),
+      });
+      state.pendingWorkerEnrollment = payload;
+      state.workerDrawerMode = "enroll";
+      openDrawer("worker");
+      await refreshWorkerEnrollments();
+      await downloadWorkerConfigFile(payload.worker_id);
+      setStatus("worker-status", `Created enrollment for ${payload.worker_name || payload.worker_id}. The config download has started.`, "ok");
+    }
+
+    async function rotateWorkerEnrollmentToken(workerId) {
+      const payload = await api(`/workers/${encodeURIComponent(workerId)}/token/rotate`, {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+      if (state.pendingWorkerEnrollment?.worker_id === workerId) {
+        state.pendingWorkerEnrollment = payload;
+      }
+      await refreshWorkerEnrollments();
+      await downloadWorkerConfigFile(workerId);
+      setStatus("worker-status", `Rotated the token for ${workerId}. Download the updated config.`, "ok");
+    }
+
+    async function revokeWorkerEnrollmentToken(workerId) {
+      const payload = await api(`/workers/${encodeURIComponent(workerId)}/token/revoke`, {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+      if (state.pendingWorkerEnrollment?.worker_id === workerId) {
+        state.pendingWorkerEnrollment = payload;
+      }
+      await refreshWorkerEnrollments();
+      setStatus("worker-status", `Revoked the token for ${workerId}.`, "ok");
+    }
+
     async function adjustCredits() {
       const userId = el("admin-credit-user").value;
       const payload = await api(`/admin/users/${encodeURIComponent(userId)}/credits`, {
@@ -1865,6 +2096,8 @@ HTML = """<!doctype html>
       el("refresh-all").addEventListener("click", () => Promise.all([refreshNetwork(), refreshTrackedJob(), refreshPromptHistory(), refreshAdminOverview()]).catch(showGlobalError));
       el("refresh-user").addEventListener("click", () => refreshUser().catch(showGlobalError));
       el("load-models").addEventListener("click", () => Promise.all([refreshModels(), refreshWorkerContext()]).catch(showGlobalError));
+      el("refresh-workers").addEventListener("click", () => refreshWorkerEnrollments().catch((error) => setStatus("worker-status", error.message, "error")));
+      el("add-worker").addEventListener("click", () => openWorkerEnrollmentDrawer());
       el("submit-job").addEventListener("click", () => submitJob().catch((error) => setStatus("job-status", error.message, "error")));
       el("refresh-job").addEventListener("click", () => refreshTrackedJob().catch((error) => setStatus("job-status", error.message, "error")));
       el("restart-failed-job").addEventListener("click", () => {
@@ -1886,12 +2119,46 @@ HTML = """<!doctype html>
         await navigator.clipboard.writeText(command);
         setStatus("worker-status", "Copied the worker launcher for this PC.", "ok");
       });
+      el("worker-enrollment-list").addEventListener("click", (event) => {
+        const target = event.target.closest("button");
+        if (!target) return;
+        const workerId = target.dataset.workerDetails || target.dataset.workerConfigDownload || target.dataset.workerTokenRotate || target.dataset.workerTokenRevoke;
+        if (!workerId) return;
+        if (target.dataset.workerDetails) {
+          openWorkerDetailsDrawer(workerId);
+        } else if (target.dataset.workerConfigDownload) {
+          downloadWorkerConfigFile(workerId).catch((error) => setStatus("worker-status", error.message, "error"));
+        } else if (target.dataset.workerTokenRotate) {
+          rotateWorkerEnrollmentToken(workerId).catch((error) => setStatus("worker-status", error.message, "error"));
+        } else if (target.dataset.workerTokenRevoke) {
+          revokeWorkerEnrollmentToken(workerId).catch((error) => setStatus("worker-status", error.message, "error"));
+        }
+      });
+      el("drawer-body").addEventListener("click", (event) => {
+        const target = event.target.closest("button");
+        if (!target) return;
+        if (target.id === "create-worker-enrollment") {
+          createWorkerEnrollment().catch((error) => setStatus("worker-status", error.message, "error"));
+        } else if (target.id === "download-worker-config") {
+          const workerId = state.pendingWorkerEnrollment?.worker_id;
+          if (workerId) downloadWorkerConfigFile(workerId).catch((error) => setStatus("worker-status", error.message, "error"));
+        } else if (target.id === "drawer-worker-download") {
+          const workerId = state.selectedWorkerEnrollmentId;
+          if (workerId) downloadWorkerConfigFile(workerId).catch((error) => setStatus("worker-status", error.message, "error"));
+        } else if (target.id === "drawer-worker-rotate") {
+          const workerId = state.selectedWorkerEnrollmentId;
+          if (workerId) rotateWorkerEnrollmentToken(workerId).catch((error) => setStatus("worker-status", error.message, "error"));
+        } else if (target.id === "drawer-worker-revoke") {
+          const workerId = state.selectedWorkerEnrollmentId;
+          if (workerId) revokeWorkerEnrollmentToken(workerId).catch((error) => setStatus("worker-status", error.message, "error"));
+        }
+      });
       el("admin-refresh").addEventListener("click", () => refreshAdminOverview().catch((error) => setStatus("admin-status", error.message, "error")));
       el("admin-adjust-credits").addEventListener("click", () => adjustCredits().catch((error) => setStatus("admin-status", error.message, "error")));
       document.querySelectorAll("[data-admin-job-tab]").forEach((node) => node.addEventListener("click", () => { setAdminJobTab(node.dataset.adminJobTab); refreshAdminOverview().catch((error) => setStatus("admin-status", error.message, "error")); }));
       el("open-network-drawer").addEventListener("click", () => openDrawer("network"));
       el("open-job-drawer").addEventListener("click", () => openDrawer("job"));
-      el("open-worker-drawer").addEventListener("click", () => openDrawer("worker"));
+      el("open-worker-drawer").addEventListener("click", () => openWorkerEnrollmentDrawer());
       document.querySelectorAll("[data-workspace-tab]").forEach((node) => node.addEventListener("click", () => setWorkspaceTab(node.dataset.workspaceTab)));
       el("drawer-close").addEventListener("click", () => closeDrawer());
       el("drawer-backdrop").addEventListener("click", () => closeDrawer());
@@ -1940,9 +2207,9 @@ HTML = """<!doctype html>
 
     function resetSignedOutState() {
       stopPolling();
-      state.session = null; state.lastJobId = ""; state.trackedJob = null; state.activeConversationId = ""; state.conversationCache = {}; state.networkSnapshot = null; state.currentWorker = null; state.currentWorkerLoop = null;
+      state.session = null; state.lastJobId = ""; state.trackedJob = null; state.activeConversationId = ""; state.conversationCache = {}; state.networkSnapshot = null; state.currentWorker = null; state.currentWorkerLoop = null; state.workerEnrollments = []; state.pendingWorkerEnrollment = null; state.workerDrawerMode = "enroll"; state.selectedWorkerEnrollmentId = "";
       ["user-id","user-balance","job-user-id","worker-id","worker-owner","worker-gpu","worker-vram","worker-system-ram","worker-models","worker-throughput"].forEach((id) => { const node = el(id); if (node) node.value = ""; });
-      closeDrawer(); setRailVisible(false); toggleDashboard(false); setAdminVisible(false); setWorkspaceTab("network"); renderSessionPill(); renderTrackedJob({}); renderPromptHistory({ conversations: [], archived_conversations: [] }); renderConversationList({ conversations: [] }); renderConversationDetail({ messages: [] }); renderWorkerQueueState(null); writeJson("network-json", {}); writeJson("local-worker-json", {}); setStatus("auth-status", "Waiting for sign-in.", "ok");
+      closeDrawer(); setRailVisible(false); toggleDashboard(false); setAdminVisible(false); setWorkspaceTab("network"); renderSessionPill(); renderTrackedJob({}); renderPromptHistory({ conversations: [], archived_conversations: [] }); renderConversationList({ conversations: [] }); renderConversationDetail({ messages: [] }); renderWorkerQueueState(null); writeJson("network-json", {}); writeJson("local-worker-json", {}); const enrollmentList = el("worker-enrollment-list"); if (enrollmentList) enrollmentList.innerHTML = ""; const enrollmentSummary = el("worker-enrollment-summary"); if (enrollmentSummary) enrollmentSummary.innerHTML = ""; setStatus("auth-status", "Waiting for sign-in.", "ok");
     }
 
     bind();
