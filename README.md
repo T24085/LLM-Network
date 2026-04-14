@@ -127,6 +127,15 @@ then register itself against the production coordinator at `https://llm-network.
 If a remote PC still has an older worker install, run `repair_worker_install_v0_1_1.bat` first so the old package
 and launcher aliases are removed before reinstalling the tagged `v0.1.1` release from GitHub.
 
+One-click same-machine quickstart:
+
+```bat
+quickstart_demo_v0_1_1.bat
+```
+
+That launcher starts the local server, waits for `/health`, then starts the worker daemon with
+`llm-network-worker.json` or `.runtime/worker.local.json` if present.
+
 Start a worker on the current PC for local testing:
 
 ```bat

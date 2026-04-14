@@ -1,6 +1,2 @@
 @echo off
-setlocal
-
-cd /d "%~dp0"
-call "%~dp0start_network_server.bat" %*
-
+call "%~dp0quickstart_demo_v0_1_1.bat" %*
