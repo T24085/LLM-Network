@@ -22,21 +22,13 @@ if not defined PYTHON_CMD (
   exit /b 1
 )
 
-set "SERVER_URL=%OLLAMA_NETWORK_SERVER_URL%"
-if not defined SERVER_URL set "SERVER_URL=https://llm-network.websitesolutions.shop"
-
-set "WORKER_ID=%OLLAMA_NETWORK_WORKER_ID%"
-if not defined WORKER_ID set "WORKER_ID=worker-%COMPUTERNAME%"
-
 echo.
-echo Starting worker launcher on this PC.
-echo Worker ID: %WORKER_ID%
-echo Server URL: %SERVER_URL%
-echo The launcher will auto-detect this PC's GPU, RAM, and local Ollama models.
-echo On first run it will save the worker settings to .runtime\worker.local.json.
+echo Starting worker daemon on this PC.
+echo The daemon will read llm-network-worker.json or .runtime\worker.local.json if present.
+echo It will auto-detect this PC's GPU, RAM, and local Ollama models.
 echo.
 
-start "LLM Network Worker" cmd /k "cd /d ""%CD%"" && set PYTHONPATH=src && %PYTHON_CMD% -m ollama_network.worker_bootstrap --server-url ""%SERVER_URL%"" --worker-id ""%WORKER_ID%"""
+start "LLM Network Worker" cmd /k "cd /d ""%CD%"" && set PYTHONPATH=src && %PYTHON_CMD% -m ollama_network.worker_daemon"
 exit /b 0
 
 :help
@@ -46,16 +38,15 @@ echo Usage:
 echo   %~nx0
 echo.
 echo What it does:
-echo   1. Starts a worker launcher on this machine.
-echo   2. Auto-detects local GPU, host RAM, and Ollama models.
-echo   3. Saves the worker profile locally after the first run.
+echo   1. Starts a worker daemon on this machine.
+echo   2. Reads llm-network-worker.json or .runtime\worker.local.json automatically.
+echo   3. Auto-detects local GPU, host RAM, and Ollama models.
 echo   4. Registers the worker with the coordinator and starts polling for jobs.
 echo.
 echo Environment variables:
-echo   OLLAMA_NETWORK_SERVER_URL    Coordinator URL. Defaults to https://llm-network.websitesolutions.shop
-echo   OLLAMA_NETWORK_WORKER_ID     Worker identifier. Defaults to worker-%%COMPUTERNAME%%
-echo   OLLAMA_NETWORK_OWNER_USER_ID Owner network user id. Saved in .runtime\worker.local.json after setup.
-echo   OLLAMA_NETWORK_WORKER_TOKEN  Long-lived worker token. Saved in .runtime\worker.local.json after setup.
+echo   OLLAMA_NETWORK_WORKER_CONFIG  Optional explicit path to a worker config JSON file.
+echo   OLLAMA_NETWORK_SERVER_URL      Optional coordinator URL override.
+echo   OLLAMA_NETWORK_WORKER_TOKEN    Optional long-lived worker token override.
 echo.
-echo The launcher prompts only on first run when the local worker profile has not been saved yet.
+echo If no config file is found, the daemon will tell you to download one from the dashboard.
 exit /b 0

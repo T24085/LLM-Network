@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from math import ceil
+from time import time
 from typing import Optional
 
 
@@ -54,6 +55,16 @@ class ModelDefinition:
         billed_units = max(1, ceil((max(prompt_tokens, 0) + max(output_tokens, 0)) / 1000))
         return max(1, ceil(billed_units * self.credit_multiplier))
 
+    def estimated_system_ram_gb(self) -> float:
+        """
+        Return a conservative host RAM floor for this model.
+
+        Ollama can spill into shared memory or CPU RAM when VRAM is thin, so we
+        keep a small safety margin above the catalog VRAM minimum instead of
+        treating the raw catalog floor as exact.
+        """
+        return round(max(self.min_vram_gb + 1.0, self.min_vram_gb * 1.1), 1)
+
 
 @dataclass
 class WorkerNode:
@@ -63,24 +74,44 @@ class WorkerNode:
     vram_gb: float
     installed_models: set[str]
     benchmark_tokens_per_second: dict[str, float]
+    system_ram_gb: float = 0.0
     reliability_score: float = 1.0
     public_pool: bool = True
     online: bool = True
     max_concurrent_jobs: int = 1
     runtime: str = "ollama"
     allows_cloud_fallback: bool = False
+    worker_name: str = ""
+    machine_name: str = ""
+    platform: str = ""
+    server_url: str = ""
+    enrollment_status: str = "pending"
+    enrollment_created_at_unix: float = 0.0
+    enrollment_registered_at_unix: float = 0.0
     active_jobs: int = 0
     last_heartbeat_unix: Optional[float] = None
 
+    def is_recently_seen(self, stale_after_seconds: float = 120.0) -> bool:
+        if self.last_heartbeat_unix is None:
+            return self.online
+        return (time() - self.last_heartbeat_unix) <= stale_after_seconds
+
+    def effective_host_ram_gb(self) -> float:
+        return self.system_ram_gb if self.system_ram_gb > 0.0 else self.vram_gb
+
     def supports_model(self, model: ModelDefinition) -> bool:
+        required_system_ram_gb = model.estimated_system_ram_gb()
+        available_host_ram_gb = self.effective_host_ram_gb()
         return (
             self.online
+            and self.is_recently_seen()
             and self.public_pool
             and self.runtime == "ollama"
             and not self.allows_cloud_fallback
             and model.tag in self.installed_models
             and self.benchmark_tokens_per_second.get(model.tag, 0.0) > 0.0
             and self.active_jobs < self.max_concurrent_jobs
+            and available_host_ram_gb >= required_system_ram_gb
         )
 
 
