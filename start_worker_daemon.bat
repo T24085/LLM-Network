@@ -48,5 +48,7 @@ echo   OLLAMA_NETWORK_WORKER_CONFIG  Optional explicit path to a worker config J
 echo   OLLAMA_NETWORK_SERVER_URL      Optional coordinator URL override.
 echo   OLLAMA_NETWORK_WORKER_TOKEN    Optional long-lived worker token override.
 echo.
+echo If an older worker install is still on this PC, run uninstall_worker.bat first or use repair_worker_install.bat.
+echo.
 echo If no config file is found, the daemon will tell you to download one from the dashboard.
 exit /b 0

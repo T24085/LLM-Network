@@ -21,7 +21,7 @@ HTML = """<!doctype html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>LLM Network Dashboard</title>
+  <title>LLM Network Control Room</title>
   <style>
     :root{--bg:#efe8db;--panel:#fcf9f4;--line:rgba(23,33,38,.12);--text:#172126;--muted:#5d6b73;--teal:#0a8f83;--deep:#0d5e5a;--signal:#f26a3d;--ink:#181e2b}
     *{box-sizing:border-box} body{margin:0;padding:16px;font-family:Segoe UI,Aptos,sans-serif;background:var(--bg);color:var(--text)}
@@ -239,7 +239,7 @@ HTML = """<!doctype html>
           <img src="__LOGO_DATA_URL__" alt="LLM Network logo" class="hero-logo">
           <div class="hero-copy">
             <div style="text-transform:uppercase;letter-spacing:.18em;font-size:12px;opacity:.8">LLM Network</div>
-            <h1 style="margin:0;font-size:clamp(2rem,3vw,3.2rem)">LLM Network Dashboard</h1>
+            <h1 style="margin:0;font-size:clamp(2rem,3vw,3.2rem)">LLM Network Control Room</h1>
             <p style="margin:0;max-width:64ch">Sign in to access a shared local inference network: submit prompts, monitor credits, review job output, and route work to approved workers on your own hardware. Admins can also let a local worker claim the full queue, including their own requests.</p>
           </div>
         </a>

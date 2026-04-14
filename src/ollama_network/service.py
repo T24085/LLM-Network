@@ -319,7 +319,7 @@ class NetworkService:
             vram_gb=float(payload.get("vram_gb", 0.0)),
             installed_models=installed_models,
             benchmark_tokens_per_second=benchmark_tokens_per_second,
-            system_ram_gb=float(payload.get("system_ram_gb", 0.0)),
+            system_ram_gb=float(payload.get("system_ram_gb", 0.0) or 16.0),
             reliability_score=float(payload.get("reliability_score", 1.0)),
             public_pool=bool(payload.get("public_pool", True)),
             online=bool(payload.get("online", True)),
