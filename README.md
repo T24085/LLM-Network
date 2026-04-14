@@ -124,6 +124,9 @@ Add a worker from the dashboard:
 The worker launcher will read the downloaded config, auto-detect the local GPU, host RAM, and Ollama models,
 then register itself against the production coordinator at `https://llm-network.websitesolutions.shop`.
 
+If a remote PC still has an older worker install, run `repair_worker_install.bat` first so the old package and
+launcher aliases are removed before reinstalling the current version from GitHub.
+
 Start a worker on the current PC for local testing:
 
 ```bat

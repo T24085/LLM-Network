@@ -202,6 +202,11 @@ class WorkerDaemon:
         except error.HTTPError as http_error:
             detail = http_error.read().decode("utf-8")
             message = f"API request failed: {http_error.code} {detail}"
+            if http_error.code == 403 and "1010" in detail:
+                message = (
+                    f"API request failed: {http_error.code} {detail}. "
+                    "The coordinator appears to be blocking this worker's request upstream, often via Cloudflare."
+                )
             if http_error.code in {400, 401, 403}:
                 raise WorkerBootstrapError(message) from http_error
             raise RuntimeError(message) from http_error
