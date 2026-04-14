@@ -4,6 +4,9 @@ setlocal
 cd /d "%~dp0"
 
 set "APP_VERSION=0.1.1"
+set "RELEASE_ZIP_URL=https://github.com/T24085/LLM-Network/archive/refs/tags/v%APP_VERSION%.zip"
+set "RELEASE_ZIP_NAME=LLM-Network-v%APP_VERSION%.zip"
+set "RELEASE_ZIP_PATH=%TEMP%\%RELEASE_ZIP_NAME%"
 set "PYTHON_CMD="
 if exist ".venv\Scripts\python.exe" set "PYTHON_CMD=""%CD%\.venv\Scripts\python.exe"""
 if not defined PYTHON_CMD (
@@ -26,7 +29,12 @@ echo.
 echo Reinstalling LLM Network v%APP_VERSION% from GitHub.
 echo.
 
-%PYTHON_CMD% -m pip install --upgrade --force-reinstall https://github.com/T24085/LLM-Network/archive/refs/heads/main.zip
+echo Downloading %RELEASE_ZIP_NAME%.
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-WebRequest -Uri '%RELEASE_ZIP_URL%' -OutFile '%RELEASE_ZIP_PATH%'"
+if errorlevel 1 exit /b 1
+
+echo Installing from %RELEASE_ZIP_PATH%.
+%PYTHON_CMD% -m pip install --upgrade --force-reinstall "%RELEASE_ZIP_PATH%"
 if errorlevel 1 exit /b 1
 
 for /f "usebackq delims=" %%V in (`%PYTHON_CMD% -c "import importlib.metadata as m; print(m.version('ollama-network'))"`) do set "INSTALLED_VERSION=%%V"
