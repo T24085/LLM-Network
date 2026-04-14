@@ -1,2 +1,2 @@
 @echo off
-call "%~dp0quickstart_demo_v0_1_1.bat" %*
+call "%~dp0start_worker_daemon.bat" %*

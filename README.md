@@ -130,7 +130,7 @@ and launcher aliases are removed before reinstalling the tagged `v0.1.1` release
 One-click same-machine quickstart:
 
 ```bat
-quickstart_demo_v0_1_1.bat
+start_worker_daemon.bat
 ```
 
 That launcher starts the local server, waits for `/health`, then starts the worker daemon with
@@ -139,7 +139,7 @@ That launcher starts the local server, waits for `/health`, then starts the work
 Start a worker on the current PC for local testing:
 
 ```bat
-start_worker_daemon.bat
+start_llm_network_worker_v0_1_1.bat
 ```
 
 Versioned Windows launcher:
@@ -149,6 +149,8 @@ start_llm_network_worker_v0_1_1.bat
 ```
 
 Use that launcher when you want the file name itself to show the worker build version.
+
+If you want the combined same-machine quickstart, use `start_worker_daemon.bat` instead.
 
 The launcher now reads `llm-network-worker.json` or `.runtime/worker.local.json` automatically instead of prompting
 for the server URL, owner user id, or worker token. Use the manual CLI flags only when you are debugging a custom setup.
