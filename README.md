@@ -133,6 +133,14 @@ Start a worker on the current PC for local testing:
 start_worker_daemon.bat
 ```
 
+Versioned Windows launcher:
+
+```bat
+start_llm_network_worker_v0_1_1.bat
+```
+
+Use that launcher when you want the file name itself to show the worker build version.
+
 The launcher now reads `llm-network-worker.json` or `.runtime/worker.local.json` automatically instead of prompting
 for the server URL, owner user id, or worker token. Use the manual CLI flags only when you are debugging a custom setup.
 
