@@ -10,7 +10,7 @@ LLM Network lets one machine run the coordinator and dashboard while other machi
 - Lets users sign in with Google and keep a stable network identity
 - Supports shared balances, conversations, and history across machines
 - Allows one account to both use the network and contribute worker capacity
-- Supports remote worker daemons with long-lived worker tokens
+- Supports remote worker enrollment with downloadable config files and long-lived worker tokens
 - Includes a one-command Linux installer for joining the network from GitHub
 
 ## Current Capabilities
@@ -19,7 +19,7 @@ LLM Network lets one machine run the coordinator and dashboard while other machi
 - Credit reservation, settlement, refunds, and worker earnings
 - Live network map on the landing page and dashboard
 - Same-machine worker loop for testing
-- Remote worker daemon support for Linux devices such as a Jetson or laptop
+- Remote worker enrollment support for Linux devices such as a Jetson or laptop
 - Optional Firestore-backed shared state for multi-machine persistence
 
 ## Repository Layout
@@ -30,7 +30,7 @@ LLM Network lets one machine run the coordinator and dashboard while other machi
 - `start_network_server.bat` Windows launcher for the coordinator
 - `start_dashboard.bat` Windows launcher for the dashboard
 - `start_tunnel.bat` Windows launcher for a public Cloudflare quick tunnel
-- `start_worker_daemon.bat` Windows launcher for a local worker daemon with auto-detected hardware and cached setup
+- `start_worker_daemon.bat` Windows launcher for a local worker daemon with auto-detected hardware
 
 ## Requirements
 
@@ -60,14 +60,14 @@ pip install -e .[dev]
 Client install:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/T24085/LLM-Network/main/scripts/bootstrap_linux.sh | \
+curl -fsSL https://raw.githubusercontent.com/T24085/X-Ring-Classic/main/scripts/bootstrap_linux.sh | \
   bash -s -- --server-url http://YOUR_SERVER_HOST:8000
 ```
 
 Enable worker mode from the same installer:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/T24085/LLM-Network/main/scripts/bootstrap_linux.sh | \
+curl -fsSL https://raw.githubusercontent.com/T24085/X-Ring-Classic/main/scripts/bootstrap_linux.sh | \
   bash -s -- \
     --server-url http://YOUR_SERVER_HOST:8000 \
     --enable-worker \
@@ -113,18 +113,25 @@ This opens a Cloudflare quick tunnel to `http://localhost:8000` and prints a pub
 If you plan to sign in with Google through that URL, add the generated tunnel hostname to Firebase
 Authentication authorized domains before testing from the other machine.
 
-Start a worker on the current PC:
+Add a worker from the dashboard:
+
+1. Sign in to the dashboard
+2. Click `Add Worker`
+3. Enter a worker nickname
+4. Download `llm-network-worker.json`
+5. Move the file next to `start_worker_daemon.bat` on the worker PC and run it
+
+The worker launcher will read the downloaded config, auto-detect the local GPU, host RAM, and Ollama models,
+then register itself against the production coordinator at `https://llm-network.websitesolutions.shop`.
+
+Start a worker on the current PC for local testing:
 
 ```bat
 start_worker_daemon.bat
 ```
 
-The first launch prompts for the owner user id and long-lived worker token, then auto-detects the local GPU,
-system RAM, and installed Ollama models on the machine where it runs. The launcher saves that setup to
-`.runtime/worker.local.json`, so later launches are basically a single double-click.
-
-Use this on the worker PC itself, not on the coordinator host, when you want each worker to advertise its
-own hardware.
+The launcher now reads `llm-network-worker.json` or `.runtime/worker.local.json` automatically instead of prompting
+for the server URL, owner user id, or worker token. Use the manual CLI flags only when you are debugging a custom setup.
 
 ### Manual Server Startup
 
@@ -217,11 +224,14 @@ python -m ollama_network.cli --server-url http://localhost:8000 submit-job --req
 
 Remote workers should authenticate with long-lived worker tokens, not Firebase browser tokens.
 
-For workers on different networks, WireGuard is the recommended transport. Put the coordinator host
-and the worker host on the same WireGuard network, then use the coordinator's WireGuard IP or DNS name
-as the worker `--server-url` / coordinator URL.
+The dashboard-enrollment path is the preferred setup:
 
-Issue a worker token on the coordinator host:
+1. Dashboard creates a worker enrollment
+2. The server returns a download for `llm-network-worker.json`
+3. The worker launcher imports it and stores `.runtime/worker.local.json`
+4. The worker heartbeats automatically on future launches
+
+Issue a worker token on the coordinator host for manual or debugging use:
 
 ```bash
 python -m ollama_network.cli issue-worker-token --user-id usr_your_id_here --label jetson-nano-home
@@ -248,14 +258,6 @@ python -m ollama_network.worker_daemon \
   --worker-token YOUR_WORKER_TOKEN
 ```
 
-WireGuard example workflow:
-
-1. Install WireGuard on the coordinator PC and each worker PC.
-2. Put both machines on the same WireGuard tunnel.
-3. Make sure the coordinator server listens on `0.0.0.0:8000` or on the WireGuard interface.
-4. Use the coordinator's WireGuard IP in the worker launcher or `OLLAMA_NETWORK_SERVER_URL`.
-5. Run the downloaded worker launcher on the remote PC.
-
 ## Worker Model Selection
 
 Workers detect local Ollama models and can choose which of those models to advertise to the network.
@@ -277,7 +279,7 @@ For a real internet-facing deployment:
 - Put the coordinator behind HTTPS
 - Use a real hostname
 - Add that hostname to Firebase authorized domains
-- Prefer WireGuard, a reverse proxy, or a tunnel instead of exposing raw port `8000`
+- Prefer a reverse proxy or tunnel instead of exposing raw port `8000`
 - Keep Firebase secrets and service-account credentials out of the repository
 
 ## Testing
