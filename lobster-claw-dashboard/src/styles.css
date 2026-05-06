@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body { @apply bg-ocean; }
+.lobster-panel { @apply rounded-2xl border border-brass/40 bg-slate-900/60 backdrop-blur; }
+.lobster-frame { @apply brass-border shadow-[0_0_18px_rgba(42,216,202,0.18)] ; }
+.lobster-glow { @apply shadow-[0_0_20px_rgba(42,216,202,0.35)]; }
+.brass-border { @apply border border-brass/50; }
+.ocean-card { @apply bg-slate-950/65 border border-slate-700; }
+.danger-alert { @apply border border-claw/50 bg-claw/10 text-red-200; }
+.token-glow { @apply text-tube drop-shadow-[0_0_8px_rgba(42,216,202,0.6)]; }
+.graph-frame { @apply rounded-xl border border-dashed border-brass/40 p-2; }
+.top-dashboard-frame { @apply lobster-glow; }
+.mascot-widget::before { content: ''; @apply mb-2 block h-8 rounded bg-claw/25; }

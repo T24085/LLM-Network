@@ -1,0 +1,1 @@
+export default function StatCard({label,value}:{label:string;value:string|number}){return <div className="ocean-card lobster-panel p-4"><p className="text-xs text-slate-300">{label}</p><p className="token-glow mt-2 text-2xl font-semibold">{value}</p></div>}

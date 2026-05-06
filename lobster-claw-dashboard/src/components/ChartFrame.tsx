@@ -1,0 +1,2 @@
+import { ReactNode } from 'react';
+export default function ChartFrame({title,children}:{title:string;children:ReactNode}){return <section className="lobster-panel p-3"><div className="mb-2 flex items-center justify-between"><h3 className="text-sm font-semibold text-brass">{title}</h3><div className="h-5 w-16 rounded bg-tube/20"/></div><div className="graph-frame min-h-56">{children}</div></section>}
