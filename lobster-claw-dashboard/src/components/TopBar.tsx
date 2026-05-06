@@ -1,0 +1,3 @@
+import { dashboardStatus } from '../data/mockDashboardData';
+import StatusBadge from './StatusBadge';
+export default function TopBar(){return <header className="lobster-frame lobster-panel mb-4 flex flex-wrap items-center justify-between gap-3 p-4"><div><h1 className="text-2xl font-bold text-brass">Lobster Claw Dashboard</h1><p className="text-sm text-slate-300">Project: {dashboardStatus.project}</p></div><div className="flex flex-wrap items-center gap-2 text-sm"><StatusBadge label={`OpenClaw ${dashboardStatus.openClaw}`} tone="ok"/><StatusBadge label={dashboardStatus.localServer} tone="warn"/><StatusBadge label={dashboardStatus.currentModel}/><button className="rounded-md border border-claw px-3 py-2 text-claw">Emergency Stop Agents</button></div></header>}
