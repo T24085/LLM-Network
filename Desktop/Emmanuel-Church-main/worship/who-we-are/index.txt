@@ -1,0 +1,1066 @@
+1:"$Sreact.fragment"
+2:I[3020,["/Emmanuel-Church/_next/static/chunks/15cvxq4vipp-h.js","/Emmanuel-Church/_next/static/chunks/0d3shmwh5_nmn.js"],"SiteHeader"]
+3:I[99873,["/Emmanuel-Church/_next/static/chunks/15cvxq4vipp-h.js","/Emmanuel-Church/_next/static/chunks/0d3shmwh5_nmn.js"],"MotionShell"]
+4:I[39756,["/Emmanuel-Church/_next/static/chunks/15cvxq4vipp-h.js","/Emmanuel-Church/_next/static/chunks/0d3shmwh5_nmn.js"],"default"]
+5:I[37457,["/Emmanuel-Church/_next/static/chunks/15cvxq4vipp-h.js","/Emmanuel-Church/_next/static/chunks/0d3shmwh5_nmn.js"],"default"]
+6:I[22016,["/Emmanuel-Church/_next/static/chunks/15cvxq4vipp-h.js","/Emmanuel-Church/_next/static/chunks/0d3shmwh5_nmn.js","/Emmanuel-Church/_next/static/chunks/0~u8zv.i_7l4_.js"],""]
+12:I[68027,["/Emmanuel-Church/_next/static/chunks/15cvxq4vipp-h.js","/Emmanuel-Church/_next/static/chunks/0d3shmwh5_nmn.js"],"default",1]
+:HL["/Emmanuel-Church/_next/static/chunks/07burngi72vxt.css","style"]
+:HL["/Emmanuel-Church/_next/static/media/01e4147cff8141ee-s.p.10ked.7w885.g.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/Emmanuel-Church/_next/static/media/a343f882a40d2cc9-s.p.0kho-wj7-y-w1.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+0:{"P":null,"c":["","worship","who-we-are",""],"q":"","i":false,"f":[[["",{"children":["worship",{"children":["who-we-are",{"children":["__PAGE__",{}]}]}]},"$undefined","$undefined",16],[["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/Emmanuel-Church/_next/static/chunks/07burngi72vxt.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","script","script-0",{"src":"/Emmanuel-Church/_next/static/chunks/15cvxq4vipp-h.js","async":true,"nonce":"$undefined"}],["$","script","script-1",{"src":"/Emmanuel-Church/_next/static/chunks/0d3shmwh5_nmn.js","async":true,"nonce":"$undefined"}]],["$","html",null,{"lang":"en","className":"cormorant_garamond_bf70fa19-module__xO-q1a__variable manrope_77fd26b1-module__mg_vgq__variable","children":["$","body",null,{"children":[["$","div",null,{"className":"page-backdrop"}],["$","$L2",null,{}],["$","main",null,{"children":["$","$L3",null,{"children":["$","$L4",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L5",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":404}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]}]}],["$","footer",null,{"className":"site-footer","children":["$","div",null,{"className":"site-shell site-footer__inner","children":[["$","div",null,{"className":"site-footer__brand","children":[["$","p",null,{"className":"eyebrow","children":"Emmanuel Church"}],["$","h2",null,{"children":"Rooted in the gospel. Present in Abilene."}],["$","p",null,{"children":["1300 N. Vine Street, Abilene, KS 67410",["$","br",null,{}],"(785) 263-3342"]}]]}],["$","div",null,{"className":"site-footer__columns","children":[["$","div",null,{"children":[["$","h3",null,{"children":"Explore"}],["$","div",null,{"className":"site-footer__links","children":[["$","$L6","/resources/church-calendar",{"href":"/resources/church-calendar","className":"site-footer__link","children":["Church Calendar",["$","svg",null,{"viewBox":"0 0 24 24","className":"icon icon--xs","aria-hidden":"true","children":["$","path",null,{"d":"M5 12h13m0 0-5.5-5.5M18 12l-5.5 5.5"}]}]]}],["$","$L6","/resources/online-giving",{"href":"/resources/online-giving","className":"site-footer__link","children":["Online Giving",["$","svg",null,{"viewBox":"0 0 24 24","className":"icon icon--xs","aria-hidden":"true","children":["$","path",null,{"d":"M5 12h13m0 0-5.5-5.5M18 12l-5.5 5.5"}]}]]}],["$","$L6","/resources/live-stream",{"href":"/resources/live-stream","className":"site-footer__link","children":["LIVE STREAM",["$","svg",null,{"viewBox":"0 0 24 24","className":"icon icon--xs","aria-hidden":"true","children":["$","path",null,{"d":"M5 12h13m0 0-5.5-5.5M18 12l-5.5 5.5"}]}]]}],["$","$L6","/resources/sermons",{"href":"/resources/sermons","className":"site-footer__link","children":["Sermons",["$","svg",null,{"viewBox":"0 0 24 24","className":"icon icon--xs","aria-hidden":"true","children":["$","path",null,{"d":"M5 12h13m0 0-5.5-5.5M18 12l-5.5 5.5"}]}]]}],["$","$L6","/resources/weekly-sermon-study-guides",{"href":"/resources/weekly-sermon-study-guides","className":"site-footer__link","children":["Weekly Sermon Study Guides",["$","svg",null,{"viewBox":"0 0 24 24","className":"icon icon--xs","aria-hidden":"true","children":["$","path",null,{"d":"M5 12h13m0 0-5.5-5.5M18 12l-5.5 5.5"}]}]]}]]}]]}],["$","div",null,{"children":[["$","h3",null,{"children":"Contact"}],["$","div",null,{"className":"site-footer__links","children":[["$","a",null,{"className":"site-footer__link","href":"tel:7852633342","children":["$L7","$L8"]}],"$L9","$La"]}]]}],"$Lb","$Lc"]}]]}]}]]}]}]]}],{"children":["$Ld",{"children":["$Le",{"children":["$Lf",{},null,false,null]},null,false,"$@10"]},null,false,"$@10"]},null,false,null],"$L11",false]],"m":"$undefined","G":["$12",["$L13"]],"S":true,"h":null,"s":"$undefined","l":"$undefined","p":"$undefined","d":"$undefined","b":"FUJhyKFMlJnRjG8nPp1Fa"}
+15:I[97367,["/Emmanuel-Church/_next/static/chunks/15cvxq4vipp-h.js","/Emmanuel-Church/_next/static/chunks/0d3shmwh5_nmn.js"],"OutletBoundary"]
+16:"$Sreact.suspense"
+19:I[97367,["/Emmanuel-Church/_next/static/chunks/15cvxq4vipp-h.js","/Emmanuel-Church/_next/static/chunks/0d3shmwh5_nmn.js"],"ViewportBoundary"]
+1b:I[97367,["/Emmanuel-Church/_next/static/chunks/15cvxq4vipp-h.js","/Emmanuel-Church/_next/static/chunks/0d3shmwh5_nmn.js"],"MetadataBoundary"]
+7:["$","svg",null,{"viewBox":"0 0 24 24","className":"icon icon--xs","aria-hidden":"true","children":["$","path",null,{"d":"M8 5.5c.4 3 1.7 5.8 4 8s5 3.6 8 4l-1.7 3.2c-.4.8-1.3 1.2-2.2.9C9.7 19.3 4.7 14.3 2.4 6.9c-.3-.9.1-1.8.9-2.2L6.5 3z"}]}]
+8:["$","span",null,{"children":"(785) 263-3342"}]
+9:["$","a",null,{"className":"site-footer__link","href":"mailto:mriegel@ecabilene.org","children":[["$","svg",null,{"viewBox":"0 0 24 24","className":"icon icon--xs","aria-hidden":"true","children":[["$","rect",null,{"x":"4","y":"6","width":"16","height":"12","rx":"2"}],["$","path",null,{"d":"m5 7 7 6 7-6"}]]}],["$","span",null,{"children":"Primary staff email"}]]}]
+a:["$","a",null,{"className":"site-footer__link","href":"https://www.google.com/maps/place/Emmanuel+Church/@38.9200234,-97.232936,15z/data=!4m5!3m4!1s0x87bcf07e5686bfb7:0x285057d82a83c28f!8m2!3d38.9287299!4d-97.2237321","target":"_blank","rel":"noreferrer","children":[["$","svg",null,{"viewBox":"0 0 24 24","className":"icon icon--xs","aria-hidden":"true","children":[["$","path",null,{"d":"M12 21s6-5.3 6-11a6 6 0 1 0-12 0c0 5.7 6 11 6 11z"}],["$","circle",null,{"cx":"12","cy":"10","r":"2.5"}]]}],["$","span",null,{"children":"Locate us"}]]}]
+b:["$","div",null,{"children":[["$","h3",null,{"children":"External"}],["$","div",null,{"className":"site-footer__links","children":[["$","a","https://www.facebook.com/ecabilene/",{"className":"site-footer__link","href":"https://www.facebook.com/ecabilene/","target":"_blank","rel":"noreferrer","children":[["$","span",null,{"children":"Facebook"}],["$","svg",null,{"viewBox":"0 0 24 24","className":"icon icon--xs","aria-hidden":"true","children":["$","path",null,{"d":"M5 12h13m0 0-5.5-5.5M18 12l-5.5 5.5"}]}]]}],["$","a","https://emmanuelchurchabilene.online.church/",{"className":"site-footer__link","href":"https://emmanuelchurchabilene.online.church/","target":"_blank","rel":"noreferrer","children":[["$","span",null,{"children":"Online Church Platform"}],["$","svg",null,{"viewBox":"0 0 24 24","className":"icon icon--xs","aria-hidden":"true","children":["$","path",null,{"d":"M5 12h13m0 0-5.5-5.5M18 12l-5.5 5.5"}]}]]}],["$","a","https://www.fellowshiponegiving.com/App/Giving/ecabilene",{"className":"site-footer__link","href":"https://www.fellowshiponegiving.com/App/Giving/ecabilene","target":"_blank","rel":"noreferrer","children":[["$","span",null,{"children":"Online Giving"}],["$","svg",null,{"viewBox":"0 0 24 24","className":"icon icon--xs","aria-hidden":"true","children":["$","path",null,{"d":"M5 12h13m0 0-5.5-5.5M18 12l-5.5 5.5"}]}]]}],["$","a","https://emmanuel.fellowshiponego.com/calendar/calendar_public/embeded/45cbaa3ef777e9a92378912fec818fa8#month",{"className":"site-footer__link","href":"https://emmanuel.fellowshiponego.com/calendar/calendar_public/embeded/45cbaa3ef777e9a92378912fec818fa8#month","target":"_blank","rel":"noreferrer","children":[["$","span",null,{"children":"Public Calendar"}],["$","svg",null,{"viewBox":"0 0 24 24","className":"icon icon--xs","aria-hidden":"true","children":["$","path",null,{"d":"M5 12h13m0 0-5.5-5.5M18 12l-5.5 5.5"}]}]]}]]}]]}]
+c:["$","div",null,{"children":[["$","h3",null,{"children":"Emails"}],["$","div",null,{"className":"site-footer__links","children":[["$","a","mriegel@ecabilene.org",{"className":"site-footer__link","href":"mailto:mriegel@ecabilene.org","children":[["$","svg",null,{"viewBox":"0 0 24 24","className":"icon icon--xs","aria-hidden":"true","children":[["$","rect",null,{"x":"4","y":"6","width":"16","height":"12","rx":"2"}],["$","path",null,{"d":"m5 7 7 6 7-6"}]]}],["$","span",null,{"children":"mriegel@ecabilene.org"}]]}],["$","a","lediger@ecabilene.org",{"className":"site-footer__link","href":"mailto:lediger@ecabilene.org","children":[["$","svg",null,{"viewBox":"0 0 24 24","className":"icon icon--xs","aria-hidden":"true","children":[["$","rect",null,{"x":"4","y":"6","width":"16","height":"12","rx":"2"}],["$","path",null,{"d":"m5 7 7 6 7-6"}]]}],["$","span",null,{"children":"lediger@ecabilene.org"}]]}],["$","a","shawnammons@infaith.org",{"className":"site-footer__link","href":"mailto:shawnammons@infaith.org","children":[["$","svg",null,{"viewBox":"0 0 24 24","className":"icon icon--xs","aria-hidden":"true","children":[["$","rect",null,{"x":"4","y":"6","width":"16","height":"12","rx":"2"}],["$","path",null,{"d":"m5 7 7 6 7-6"}]]}],["$","span",null,{"children":"shawnammons@infaith.org"}]]}],["$","a","rbishop@ecabilene.org",{"className":"site-footer__link","href":"mailto:rbishop@ecabilene.org","children":[["$","svg",null,{"viewBox":"0 0 24 24","className":"icon icon--xs","aria-hidden":"true","children":[["$","rect",null,{"x":"4","y":"6","width":"16","height":"12","rx":"2"}],["$","path",null,{"d":"m5 7 7 6 7-6"}]]}],["$","span",null,{"children":"rbishop@ecabilene.org"}]]}],["$","a","prothfuss@ecabilene.org",{"className":"site-footer__link","href":"mailto:prothfuss@ecabilene.org","children":[["$","svg",null,{"viewBox":"0 0 24 24","className":"icon icon--xs","aria-hidden":"true","children":[["$","rect",null,{"x":"4","y":"6","width":"16","height":"12","rx":"2"}],["$","path",null,{"d":"m5 7 7 6 7-6"}]]}],["$","span",null,{"children":"prothfuss@ecabilene.org"}]]}],["$","a","swaldrop@ecabilene.org",{"className":"site-footer__link","href":"mailto:swaldrop@ecabilene.org","children":[["$","svg",null,{"viewBox":"0 0 24 24","className":"icon icon--xs","aria-hidden":"true","children":[["$","rect",null,{"x":"4","y":"6","width":"16","height":"12","rx":"2"}],["$","path",null,{"d":"m5 7 7 6 7-6"}]]}],["$","span",null,{"children":"swaldrop@ecabilene.org"}]]}],["$","a","preschool@ecabilene.org",{"className":"site-footer__link","href":"mailto:preschool@ecabilene.org","children":[["$","svg",null,{"viewBox":"0 0 24 24","className":"icon icon--xs","aria-hidden":"true","children":[["$","rect",null,{"x":"4","y":"6","width":"16","height":"12","rx":"2"}],["$","path",null,{"d":"m5 7 7 6 7-6"}]]}],["$","span",null,{"children":"preschool@ecabilene.org"}]]}]]}]]}]
+d:["$","$1","c",{"children":[null,["$","$L4",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L5",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}]
+e:["$","$1","c",{"children":[null,["$","$L4",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L5",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}]
+f:["$","$1","c",{"children":["$L14",[["$","script","script-0",{"src":"/Emmanuel-Church/_next/static/chunks/0~u8zv.i_7l4_.js","async":true,"nonce":"$undefined"}]],["$","$L15",null,{"children":["$","$16",null,{"name":"Next.MetadataOutlet","children":"$@17"}]}]]}]
+18:[]
+10:"$W18"
+11:["$","$1","h",{"children":[null,["$","$L19",null,{"children":"$L1a"}],["$","div",null,{"hidden":true,"children":["$","$L1b",null,{"children":["$","$16",null,{"name":"Next.Metadata","children":"$L1c"}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}]
+13:["$","link","0",{"rel":"stylesheet","href":"/Emmanuel-Church/_next/static/chunks/07burngi72vxt.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]
+1a:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+17:null
+1c:[["$","title","0",{"children":"Emmanuel Church"}],["$","meta","1",{"name":"description","content":"A bright editorial website for Emmanuel Church in Abilene, Kansas, centered on worship, ministries, staff, events, sermons, and giving."}]]
+1d:I[5500,["/Emmanuel-Church/_next/static/chunks/15cvxq4vipp-h.js","/Emmanuel-Church/_next/static/chunks/0d3shmwh5_nmn.js","/Emmanuel-Church/_next/static/chunks/0~u8zv.i_7l4_.js"],"Image"]
+14:[["$","section",null,{"className":"page-hero page-hero--media-full","children":["$","div",null,{"className":"site-shell page-hero__inner page-hero__inner--media page-hero__inner--media-full","children":[["$","div",null,{"className":"page-hero__layout page-hero__layout--media-full page-hero__layout--worship","children":[["$","div",null,{"className":"page-hero__content page-hero__content--media-full","children":[["$","p",null,{"className":"eyebrow","children":"Worship"}],["$","h1",null,{"children":"Who We Are."}],["$","p",null,{"children":"At Emmanuel Church, we aim to extend God's grace, teach His Word, and live under the illumination of His truth."}]]}],["$","div",null,{"className":"page-hero__media page-hero__media--full","children":["$","div",null,{"className":"page-hero__media-frame","children":["$","$L1d",null,{"src":"/Emmanuel-Church/images/hero-cross-logo.png","alt":"A sunrise cross artwork for Emmanuel Church","fill":true,"priority":true,"sizes":"(max-width: 1080px) 100vw, 100vw","className":"page-hero__media-image page-hero__media-image--worship"}]}]}]]}],["$","div",null,{"className":"page-hero__actions page-hero__actions--full","children":[["$","$L6",null,{"href":"/our-staff","target":"$undefined","rel":"$undefined","className":"section-heading__action page-hero__action","children":[["$","span",null,{"children":"Meet the staff"}],["$","svg",null,{"viewBox":"0 0 24 24","className":"icon icon--sm","aria-hidden":"true","children":["$","path",null,{"d":"M5 12h13m0 0-5.5-5.5M18 12l-5.5 5.5"}]}]]}],null]}]]}]}],["$","section",null,{"id":"$undefined","className":"section-shell section-shell--tight who-we-are-mission","children":["$","div",null,{"className":"site-shell","children":["$","div",null,{"className":"who-we-are-mission__panel surface-card","children":[["$","div",null,{"className":"who-we-are-mission__copy","children":[["$","p",null,{"className":"eyebrow eyebrow--small","children":"Mission"}],["$","h2",null,{"children":"Love, Grace, Worship, Truth."}],["$","p",null,{"className":"who-we-are-mission__lede","children":"These themes run through the church's doctrinal teaching and ministry language."}],["$","p",null,{"children":"Emmanuel Church says its mission is to see people transformed and families strengthened through the love, grace, worship, and truth of Jesus Christ."}]]}],["$","figure",null,{"className":"who-we-are-mission__graphic surface-card","children":["$","div",null,{"className":"who-we-are-mission__media","children":["$","$L1d",null,{"src":"/Emmanuel-Church/who-we-are/mission-graphic.jpg","alt":"Love, grace, worship, and truth graphic for Emmanuel Church","fill":true,"sizes":"(max-width: 1080px) 100vw, 34vw","className":"cover-image"}]}]}]]}]}]}],["$","section",null,{"id":"$undefined","className":"section-shell","children":["$","div",null,{"className":"site-shell","children":[["$","div",null,{"className":"section-heading","children":[["$","div",null,{"className":"section-heading__copy","children":[["$","p",null,{"className":"eyebrow","children":"Identity"}],["$","h2",null,{"children":"Truth, Worship, and Family in one picture"}],["$","p",null,{"className":"section-heading__description","children":"These images hold the page together visually: doctrine in the logo, discipleship in the classroom, and worship in the gathered church."}]]}],null]}],["$","div",null,{"className":"who-we-are-showcase","children":[["$","figure",null,{"className":"who-we-are-showcase__feature surface-card","children":[["$","div",null,{"className":"who-we-are-showcase__media who-we-are-showcase__media--feature","children":["$","$L1d",null,{"src":"/Emmanuel-Church/who-we-are/truth.png","alt":"Truth logo for Emmanuel Church","fill":true,"sizes":"(max-width: 1080px) 100vw, 42vw","className":"cover-image","priority":true}]}],["$","figcaption",null,{"children":[["$","span",null,{"className":"eyebrow eyebrow--small","children":"Truth"}],["$","strong",null,{"children":"Scripture gives the whole church its center."}],["$","p",null,{"children":"What Emmanuel teaches on paper should show up in worship, study, and family life."}]]}]]}],["$","div",null,{"className":"who-we-are-showcase__grid","children":[["$","figure",null,{"className":"who-we-are-showcase__tile surface-card","children":[["$","div",null,{"className":"who-we-are-showcase__media","children":"$L1e"}],"$L1f"]}],"$L20","$L21","$L22"]}]]}]]}]}],"$L23","$L24"]
+25:I[44407,["/Emmanuel-Church/_next/static/chunks/15cvxq4vipp-h.js","/Emmanuel-Church/_next/static/chunks/0d3shmwh5_nmn.js","/Emmanuel-Church/_next/static/chunks/0~u8zv.i_7l4_.js"],"ValueFlipCard"]
+1e:["$","$L1d",null,{"src":{"src":"/Emmanuel-Church/_next/static/media/4d08689b-f470-40e1-87e6-796b5977e046.0hh7y6t29atr1.jpg","width":400,"height":400,"blurWidth":8,"blurHeight":8,"blurDataURL":"data:image/jpeg;base64,/9j/4AAQSkZJRgABAgAAAQABAAD/wAARCAAIAAgDAREAAhEBAxEB/9sAQwAKBwcIBwYKCAgICwoKCw4YEA4NDQ4dFRYRGCMfJSQiHyIhJis3LyYpNCkhIjBBMTQ5Oz4+PiUuRElDPEg3PT47/9sAQwEKCwsODQ4cEBAcOygiKDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDL1i6kllha2u9k0ZPmpu+Uenbnr+lcOHlyX03Mo4aMIcu5/9k="},"alt":"A child reading in a classroom chair","fill":true,"sizes":"(max-width: 1080px) 50vw, 22vw","className":"cover-image"}]
+1f:["$","figcaption",null,{"children":[["$","span",null,{"className":"eyebrow eyebrow--small","children":"Children"}],["$","strong",null,{"children":"Discipleship starts young."}]]}]
+20:["$","figure",null,{"className":"who-we-are-showcase__tile surface-card","children":[["$","div",null,{"className":"who-we-are-showcase__media","children":["$","$L1d",null,{"src":{"src":"/Emmanuel-Church/_next/static/media/96f1f8f7-05f7-497e-9979-d244d6a342b3.0rvxb8pr_.11..jpg","width":400,"height":400,"blurWidth":8,"blurHeight":8,"blurDataURL":"data:image/jpeg;base64,/9j/4AAQSkZJRgABAgAAAQABAAD/wAARCAAIAAgDAREAAhEBAxEB/9sAQwAKBwcIBwYKCAgICwoKCw4YEA4NDQ4dFRYRGCMfJSQiHyIhJis3LyYpNCkhIjBBMTQ5Oz4+PiUuRElDPEg3PT47/9sAQwEKCwsODQ4cEBAcOygiKDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDljqN7q9rEt3d+clqHlR3JZl4BIPqM1ko3NFKz2P/Z"},"alt":"Families gathered together in the church","fill":true,"sizes":"(max-width: 1080px) 50vw, 22vw","className":"cover-image"}]}],["$","figcaption",null,{"children":[["$","span",null,{"className":"eyebrow eyebrow--small","children":"Family"}],["$","strong",null,{"children":"Faith is carried together."}]]}]]}]
+21:["$","figure",null,{"className":"who-we-are-showcase__tile surface-card","children":[["$","div",null,{"className":"who-we-are-showcase__media","children":["$","$L1d",null,{"src":{"src":"/Emmanuel-Church/_next/static/media/929c30f1-6dab-45a3-aef8-021bb46432f3.138aq_7zovp-b.jpg","width":400,"height":400,"blurWidth":8,"blurHeight":8,"blurDataURL":"data:image/jpeg;base64,/9j/4AAQSkZJRgABAgAAAQABAAD/wAALCAAIAAgBAREA/9sAQwAKBwcIBwYKCAgICwoKCw4YEA4NDQ4dFRYRGCMfJSQiHyIhJis3LyYpNCkhIjBBMTQ5Oz4+PiUuRElDPEg3PT47/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oACAEBAAA/AOLSNJNVSOxicyOuRCQSc9gf0r//2Q=="},"alt":"A worshiper raising a hand during service","fill":true,"sizes":"(max-width: 1080px) 50vw, 22vw","className":"cover-image"}]}],["$","figcaption",null,{"children":[["$","span",null,{"className":"eyebrow eyebrow--small","children":"Worship"}],["$","strong",null,{"children":"We gather to respond to God."}]]}]]}]
+22:["$","figure",null,{"className":"who-we-are-showcase__tile surface-card","children":[["$","div",null,{"className":"who-we-are-showcase__media","children":["$","$L1d",null,{"src":{"src":"/Emmanuel-Church/_next/static/media/d38f9698-c5e5-424a-ba1b-b554f9cf9009.15og.ojl4~0w6.jpg","width":400,"height":400,"blurWidth":8,"blurHeight":8,"blurDataURL":"data:image/jpeg;base64,/9j/4AAQSkZJRgABAgAAAQABAAD/wAARCAAIAAgDAREAAhEBAxEB/9sAQwAKBwcIBwYKCAgICwoKCw4YEA4NDQ4dFRYRGCMfJSQiHyIhJis3LyYpNCkhIjBBMTQ5Oz4+PiUuRElDPEg3PT47/9sAQwEKCwsODQ4cEBAcOygiKDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDU1VLo2y6dHI90nO8Ko3HJzj8vWudtqyk9jRU+WTa2aX/BP//Z"},"alt":"Girls working through a Bible lesson at a table","fill":true,"sizes":"(max-width: 1080px) 50vw, 22vw","className":"cover-image"}]}],["$","figcaption",null,{"children":[["$","span",null,{"className":"eyebrow eyebrow--small","children":"Study"}],["$","strong",null,{"children":"Learning and worship stay connected."}]]}]]}]
+23:["$","section",null,{"id":"$undefined","className":"section-shell","children":["$","div",null,{"className":"site-shell","children":[["$","div",null,{"className":"section-heading","children":[["$","div",null,{"className":"section-heading__copy","children":[["$","p",null,{"className":"eyebrow","children":"Core values"}],["$","h2",null,{"children":"The Pillars Behind the Ministry."}],null]}],null]}],["$","div",null,{"className":"content-grid","children":[["$","$L25",null,{"title":"Love","summary":"Love shapes the posture of the church and the way we serve one another.","backTitle":"Love transforms people and families","backBody":"Love is the foundation of our Mission and the Core Value from which all other Core Values and ministries grow. Love originates with God and is expressed through His people. It is the covering for every motivation and action that we take, make, or create. If we are without God's love, we have little ability to make a difference in the lives of people or families. Others will identify us as Christ followers because of love. God first loved us and because of His love, we can love others.","references":"(1 John 4:7-12, 1 Corinthians 13, Matthew 22:36-40)","frontImage":"/images/who-we-are/love.png","frontImageAlt":"Love watercolor card"}],["$","$L25",null,{"title":"Grace","summary":"Grace is God's undeserved gift, made clear in Jesus Christ.","backTitle":"Grace transforms people and families","backBody":"At Emmanuel Church, we desire to be a people who extend the grace of God to others. Grace is getting something we don’t deserve and is perfectly illustrated in God’s gift of Jesus Christ. Jesus’ death and resurrection are supreme examples of grace. In His death Jesus paid a price for our sins that we simply could not pay. Only the blood of Jesus, given as an offering of grace, can erase our sins. We don’t deserve this precious gift, but He freely offers it to all people. In His resurrection Jesus has overcome death and through grace has paved the way for us to live eternally with Him. We truly are saved through faith because of God’s grace.","references":"(John 1:16-17; Ephesians 2:1-10; Romans 3:23-25; Romans 5:17)","frontImage":"/images/who-we-are/grace.png","frontImageAlt":"Grace watercolor card"}],["$","$L25",null,{"title":"Worship","summary":"Worship is our response of praise, prayer, generosity, and surrender.","backTitle":"Worship transforms people and families","backBody":"At Emmanuel Church, we desire to be a people who live a lifestyle of Worship. Worship is our outward and inward expression of thanksgiving and praise to the One who created us. Worship includes corporate and private singing, prayer, giving, and submission to God in all areas of our lives. It is first and foremost a response to who God is and a response to what He’s done for us. Worship is to be a lifestyle that fills our journey with Christ, and not merely a corporate activity. When we worship we put Jesus first and seek to be led by the Holy Spirit as we purposely seek to be in His amazing presence.","references":"(Leviticus 26:1; 1 Samuel 12:21; Exodus 34:14; Psalm 29:2; Psalm 81:9; Psalm 99:9; Matthew 4:10; John 4:24)","frontImage":"/images/who-we-are/worship.png","frontImageAlt":"Worship watercolor card"}],["$","$L25",null,{"title":"Truth","summary":"God's truth is revealed by the Holy Spirit and lived out with confidence.","backTitle":"Truth is illuminated by the Holy Spirit","backBody":"At Emmanuel Church, we desire to be a people who are led by the Holy Spirit as He illuminates God’s Truth. The Holy Spirit transforms people and families. The Holy Spirit’s role is to illuminate God’s Truth and to empower us to share the good news of Jesus Christ with others. God’s Word represents absolute truth, is without error, inspired by the Holy Spirit through men, and is our guide for daily living. It is the Holy Spirit that woos us through Prevenient Grace to accept Jesus Christ as Lord and Savior. In saying “yes” to Jesus we experience His Saving Grace. Our God exists as God the Father, Jesus the Son, and the Holy Spirit, all working on our behalf as Christ followers. God’s Sanctifying Grace is at work in each of us as we are being made more and more like Christ. As we embrace the Spirit-filled life, evidence is found in our display of the Fruit of the Spirit. God has sent His Holy Spirit as a rich deposit in each believer to guide us and teach us until the return of His Son, Jesus Christ.","references":"(John 14:26; Matthew 3:11; Matthew 28:19; John 15:26; Acts 1:8; Romans 14:16-18; Titus 3:4-6; 2 Peter 1:20-21; Galatians 5:22-23)","frontImage":"/images/who-we-are/truth.png","frontImageAlt":"Truth watercolor card"}]]}]]}]}]
+26:Tef26,<article id="text-3790980" class="site-section subpalette1 text editable full-text  last" data-id="3790980" data-category="text">
+
+  <div class="bg-helper">
+    <div class="bg-opacity" style="opacity: 0.0"></div>
+</div>
+  
+
+  
+
+  <div class="content-wrapper clearfix">
+
+      <div class="group group-0">
+      
+  <div class="text-content text-1 editable" data-id="16040687" data-category="text"><div><p style="text-align: left; font-size: 1.1111em;"><i><span class="clovercustom" style="font-size: 1.5em;">Emmanuel
+Church, Inc.</span></i><span class="clovercustom" style="font-size: 1.5em;"> embraces the following statements concerning the truth. The
+Bible is our all-sufficient rule for faith and practice.&nbsp; This Statement of Fundamental Truths is
+intended simply as a basis of fellowship among us (i.e., that we all speak the
+same thing; I Corinthians 1:10; Acts 2:42).&nbsp;
+No claim is made that it contains all biblical truth, only that it
+covers our need as to these fundamental doctrines.&nbsp; We do not presume to say the phraseology
+employed in this Statement of Fundamental Truths is inspired or that it is the
+final work on Bible truth.&nbsp; However, we
+are persuaded it is proper and consistent with the Holy Scriptures to “set
+forth in order a declaration of those things which are most surely believed
+among us” (Luke 1:1).</span></p><p style="text-align: left; font-size: 1.1111em;"><b><br></b></p><p style="text-align: left; font-size: 1.1111em;"><b>Abortion</b></p><p style="text-align: left; font-size: 1.1111em;">We believe
+that human life begins at conception and that the unborn child in a mothers
+womb is a living human being. Abortion constitutes the unjustified, unexcused
+taking of unborn human life. Abortion is murder. We reject teachings that the
+abortions of pregnancies is an acceptable and godly practice. (Deuteronomy
+18:9; Ecclesiastes 5:18; Psalms 139:13; Jeremiah 1:5; Exodus 21:22; Hebrews
+13:8)</p><p style="text-align: left; font-size: 1.1111em;"><br></p><p style="text-align: left; font-size: 1.1111em;"><b>Alcohol</b><br></p><div style="text-align: left; font-size: 1.1111em;">The Scriptures speak often of the destructive power of alcohol. Noah's drunkenness brought shame to his family (Gen. 9:20-27). Lot's drunkenness resulted in an incestuous relationship with his two daughters (Gen. 19:30-38). An inebriated Xerxes sought to humiliate Queen Vashti publicly (Est. 1:9-22). The consumption of alcohol impairs judgement, inflames passions, and invites violence (Lev. 10:8-11; Prov. 20:1, 23:29-35, 31:4,5).<br></div><p style="font-size: 1.1111em;"><br></p><p style="text-align: left; font-size: 1.1111em;"><b>Angels and Demons</b></p><p style="text-align: left; font-size: 1.1111em;">God
+created the angels to be His servants and messengers (Nehemiah 9:6; Psalm
+148:2; Hebrews 1:14).&nbsp; Satan is a fallen
+angel who led a group of angels in rebellion against God (Isaiah 14:12-17;
+Ezekiel 28:12-15). He is the great enemy of God and man, and the demons are his
+servants in evil. He and his demons will be eternally punished in the lake of
+fire (Matthew 25:41; Revelation 20:10).</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Anointing
+Oil is Administered for Healing</h2><p style="text-align: left; font-size: 1.1111em;">The anointing
+oil is administered for both physical and spiritual restoration with the laying
+on of hands when required (Mark 16:18; James 5:14).&nbsp; If sins have been committed against Christ or
+His Body they are to be confessed. </p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Assurance
+of Salvation</h2><p style="text-align: left; font-size: 1.1111em;">Assurance
+means that you, a believer in Jesus Christ, have confidence that you are in the
+family of God and therefore have eternal life. Assurance looks at our eternal
+salvation from man’s viewpoint. The central passage is 1 John 5:13. Each clear
+verse about eternal salvation, such as John 3:16, stresses the basis for
+assurance because God keeps His Word.</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Baptism&nbsp; </h2><p style="text-align: left; font-size: 1.1111em;">We believe
+the New Testament teaches at least three baptisms. First, there is the baptism
+whereby the repentant sinner, upon trusting Jesus Christ as his Savior, is
+baptized by the Holy Spirit into the Body of Christ (I Corinthians 12:13).&nbsp; Secondly, there is water baptism by immersion
+for believers only.&nbsp; This we believe to
+be an ordinance of the church, whereby the believer experiences the reality of
+co-crucifixion and co-resurrection with the Lord Jesus Christ (Matthew
+28:19-20; Romans 6:3-6).&nbsp; Thirdly, there
+is the filling or baptism in the Holy Spirit by the Lord Jesus Christ, which
+may occur at or subsequent to conversion.&nbsp;
+We believe that speaking in tongues may be evidence of this filling for some, but that the Fruit of the Spirit is more practical evidence as it applies to the Christian journey.&nbsp;
+Further, we believe that by the believer’s continued submission to the
+Holy Spirit, his very weakness is transformed into strength to witness for
+Jesus Christ in power, and to live according to the will of God (Acts 1:5-6;
+10:46; 11:28; 19:6). </p><p style="text-align: left; font-size: 1.1111em;"><b><br></b></p><p style="text-align: left; font-size: 1.1111em;"><b>Baptism
+- Ordinance</b></p><p style="text-align: left; font-size: 1.1111em;">Baptism by
+immersion shall be observed as commanded in the Scriptures by all who have
+repented of their sins and have believed on the Lord Jesus Christ to the saving
+of their souls and who give clear evidence of their salvation (Matthew 28:19;
+Acts 2:38; Romans 6:3-5; Colossians 2:12).&nbsp;
+Those who have become partakers of Christ by faith in His shed blood are
+commanded to be water baptized (by immersion) into Christ.&nbsp; In this act of faith we participate in
+Christ’s burial and resurrection and receive a circumcision of the heart
+(Genesis 17:1-4; John 3:1-6; Romans 2:28-29; I Peter 3:18-22; I John 5:8).</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Blessed
+Hope</h2><p style="text-align: left; font-size: 1.1111em;">The
+resurrection of those who have fallen asleep in Christ and their translation
+together with those who are alive and remain unto the coming of the Lord is the
+imminent and the blessed hope of the church (I Thessalonians 4:16-17; Romans
+8:23; Titus 2:13; I Corinthians 15:51). </p><p style="text-align: left; font-size: 1.1111em;"><b><br></b></p><p style="text-align: left; font-size: 1.1111em;"><b>Carnality</b></p><p style="text-align: left; font-size: 1.1111em;">Carnality
+comes from the word for flesh, sarkikos, and by extension often refers to man
+living apart from God’s power and Word, whether a believer or unbeliever. When
+one lives by his own power, he is living by his human fallen nature, which
+works through the flesh or body. The believer who lives by his human nature
+instead of by the Holy Spirit is said to be carnal. The central passage is 1
+Corinthians 3:1-3 where believers are living like unbelievers and are called
+carnal. Galatians 5:16-21 states the conflict between the flesh and the Holy
+Spirit, and gives some works of the flesh that are sins. Carnality is opposite
+to spirituality. Confession of sin to God restores the believer to walking in
+the light, to fellowship (1 John 1), and to walking by the Holy Spirit (Galatians
+5). </p><p style="text-align: left; font-size: 1.1111em;"><b><br></b></p><p style="text-align: left; font-size: 1.1111em;"><b>Christian Service</b></p><p style="text-align: left; font-size: 1.1111em;">Christian
+service is serving God and believers through the power of the Holy Spirit,
+mainly in the area of one’s spiritual gift, through godly love, when abiding in
+Christ, and to God’s glory. This is the application and expression of the
+Christian life (John 15:1-5; 1 Peter 4:10-11; 1 Corinthians 12:4-7; 1
+Corinthians 10:31).</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Confirmation</h2><p style="text-align: left; font-size: 1.1111em;">Confirmation
+is administered by the laying on of hands of the presbytery to confirm the
+believer in the faith and service of Christ.&nbsp;
+This is done after the believer has been instructed and established in
+the doctrines of Christ (John 7:17; II John 9; Acts 8:17; 14:21-23; 15:32, 41;
+19:6, Galatians 2:9, I Timothy 5:24). </p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Creation</h2><ul style="text-align: left; font-size: 1.1111em;"><li><b>Of
+the World:</b>&nbsp; God spoke into existence
+the world and all things that it contains, for His own pleasure, and the
+enjoyment of His creatures (Revelation 4:11; I Timothy 6:17).</li></ul><ul style="text-align: left; font-size: 1.1111em;"><li><b>Of
+Man:</b> God created man in His image according to Genesis 1:26 as a triune
+being consisting of spirit, soul (which is made of the mind, will, and
+emotions), and a body. </li></ul><ul style="text-align: left; font-size: 1.1111em;"><li><b>Death</b></li></ul><p style="text-align: left; font-size: 1.1111em;">As a result
+of original sin, all mankind is subject to the death of the body.&nbsp; The soul does not die with the body, but
+immediately after death enters into a conscious state of happiness or misery
+according to the character here possessed either by rejection or acceptance of
+the Savior (Romans 5:12; Ecclesiastes 12:7; Philippians 1:23). </p><p style="text-align: left; font-size: 1.1111em;"><b><br></b></p><p style="text-align: left; font-size: 1.1111em;"><b>Dedication
+of Children</b></p><p style="text-align: left; font-size: 1.1111em;">The
+dedication of children is the presentation of a child to God, and therefore
+establishes a covenant between God and parents.&nbsp;
+God promises blessing and protection to the child whose parents are
+faithful to rear him/her in the services of the Lord.&nbsp; Such a child is made holy and is part of the
+covenant family of God by the faith of his parents until he/she reaches the age
+of accountability, whereupon he/she becomes responsible as an individual before
+God and is commanded to repent (Psalms 34:11; Isaiah 54:13; Matthew 19:14; Mark
+10:13-16; Luke 18:15-16; I Corinthians 7:14).</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Deliverance</h2><p style="text-align: left; font-size: 1.1111em;">The need
+for deliverance is manifested by an inability to be free from bondage: e.g.
+mental (emotional), physical, or spiritual normally associated with demon
+activity.&nbsp; It is God’s desire to bring
+deliverance to His people (Job 5:19; Psalms 91:3; II Timothy 4:18; Hebrews
+2:15; II Peter 2:9).&nbsp; We have been
+granted the authority in the name of Jesus to bring deliverance to others (Mark
+16:17; John 14:12; I Corinthians 12:8-11).&nbsp;
+We must understand that our warfare is with the forces of evil (Ephesians
+6:12), our weapon is the Word of God, our authority and power are from Jesus
+Himself (Mark 16:17; Acts 1:8) and that the battlefield is in the spiritual
+realms (Ephesians 6: 10-18; II Corinthians 10:3-5; Romans 8:9; Galatians
+5:22-23).</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Divine
+Healing</h2><p style="text-align: left; font-size: 1.1111em;">Deliverance
+from sickness is provided for in the atonement and is the privilege of all
+believers.&nbsp; The ministration of the
+laying on of hands accompanied with the anointing of oil for the healing of the
+sick shall be granted as request is made and the need may require (Isaiah
+53:4-5; Matthew 8:16-17; Mark 16:17-18; James 5:14-15). </p><p style="text-align: left; font-size: 1.1111em;"><b><br></b></p><p style="text-align: left; font-size: 1.1111em;"><b>Dress
+Code</b></p><p style="text-align: left; font-size: 1.1111em;">The
+obedience of a child of God is not measured by what clothing we wear but by our
+walk in the Spirit. A believer is to dress modestly with the Christian simplicity
+that becomes holiness, not to indulge of pride in dress or behavior (Proverbs
+29:23; 1 Timothy 2:8-10; James 4:6; 1 Peter 3:3-4; 1 John 2:15-17; Galatians
+5:16). </p><p style="text-align: left; font-size: 1.1111em;"><b><br></b></p><p style="text-align: left; font-size: 1.1111em;"><b>Economics</b></p><p style="text-align: left; font-size: 1.1111em;">Biblical
+economics is a free enterprise system with the ownership of private property,
+the right to accumulate wealth, and proper taxation (Leviticus 27:30-33;
+Proverbs 3:9; Proverbs 6:6-11; Proverbs 10:5; Proverbs 10:11, 26; Proverbs
+13:22; Proverbs 22:22; Proverbs 24:30-34; Ecclesiastes 5:18-20; Matthew
+22:17-22.)</p><p style="text-align: left; font-size: 1.1111em;"><b><br></b></p><p style="text-align: left; font-size: 1.1111em;"><b>Education </b></p><p style="text-align: left; font-size: 1.1111em;">As
+Christians, one of our responsibilities is to make sure that our children and
+we are educated in the godliest manner possible.&nbsp; God has entrusted us with children and He
+will require an accounting of what we did with them (2 Chr. 17:9; Psalm 78:1; 2
+Tim. 3:16‐17; Rom. 1:20; Eph. 6:4; John 1:17).</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Eternal
+Covenant</h2><p style="text-align: left; font-size: 1.1111em;">The Eternal Covenant leads to the Covenant of
+Grace.&nbsp; Whereas the Eternal Covenant was
+made between the Father and the Son, the Covenant of Grace is made between God
+and man.&nbsp; This latter covenant is where
+God promises eternal salvation to man based upon Jesus’ sacrifice on the
+cross.&nbsp; The manifestation of that
+covenant occurs in our world in a sequence of additional covenants that God
+made with individuals: Adam (Gen. 2:15‐17),</p><p style="text-align: left; font-size: 1.1111em;">Noah (Gen. 9:12-16), Abraham (Gen. 17), the Israelites
+at Mount Sinai (Exodus 34:28), and believers in the New Covenant (Jer.
+31:31-37).</p><p style="text-align: left; font-size: 1.1111em;"><o:p>&nbsp;</o:p></p><h2 style="text-align: left; font-size: 1.1111em;">Evangelism</h2><p style="text-align: left; font-size: 1.1111em;">Evangelism, the communication of the gospel message,
+includes a warning, an explanation,</p><p style="text-align: left; font-size: 1.1111em;">and a call.&nbsp;
+Evangelism includes warning people about sin and the consequences of sin
+(John 16:8; Acts 24:25; Revelation 20:11-15).&nbsp;
+It includes an explanation of God’s remedy for sin—the gospel (Acts
+8:29-35; Romans 3:21-26; 2 Corinthians 5:21), and it includes the clear call to
+repent (to turn from sin and to turn toward God) and believe the gospel, by
+faith (Mark 1:15; Luke 13:1‐5; Acts 17:29-31; Romans 1:17; Romans 10:9-13).</p><p style="text-align: left; font-size: 1.1111em;"><o:p>&nbsp;</o:p></p><h2 style="text-align: left; font-size: 1.1111em;">Fasting</h2><p style="text-align: left; font-size: 1.1111em;">Believers
+may fast as long as our motive and attitude is right before God: humility,
+recognition and expression of our dependence and need for God in our lives,
+intercessory prayer for others and ourselves, and focusing ourselves on God’s
+will and our ministry for Him. </p><p style="text-align: left; font-size: 1.1111em;">To
+show genuine humility, repentance, confession of sin, and need of the Lord (1
+Samuel 7:6; Jeremiah 36:9; Ezra 10:6; Nehemiah 9:1-2; Joel 2:12; Daniel 9:2-20;
+10:2-3). </p><p style="text-align: left; font-size: 1.1111em;">To
+pray for others, especially those ill (Psalm 35:13; 2 Samuel 12:15-23).</p><p style="text-align: left; font-size: 1.1111em;">To
+pray for guidance and safety (Esther 4:3, 16; Ezra 8:21-31).</p><p style="text-align: left; font-size: 1.1111em;">At the
+hour of one’s death (Judges 20:26; 1 Samuel 31:13; 2 Samuel 1:12; 3:35).</p><p style="text-align: left; font-size: 1.1111em;">To
+concentrate on service for the Lord (Acts 13:1-4; 14:23).</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Family</h2><p style="text-align: left; font-size: 1.1111em;">The
+family is the first and most important classroom and training ground for
+society. The family provides the security, the heritage, and the perpetuation
+of morality without which no society can survive (Genesis 4:1-2; Ephesians
+6:1-4).</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Fellowship
+with God</h2><p style="text-align: left; font-size: 1.1111em;">Fellowship
+with God emphasizes the friendship relationship with God the Father and the
+Son. Sin breaks the fellowship; confession of sin restores the fellowship. When
+in fellowship with God, believers partner with God in service and enjoy a close
+friendship. The central passages are 1 John 1 and John 13. Since one is no
+longer walking in darkness (sin), the Holy Spirit also leads and controls the
+believer as Galatians 5 teaches. John 15:1-9 uses the term “abide” which also
+refers to fellowship with Jesus Christ. </p><p style="text-align: left; font-size: 1.1111em;"><b><br></b></p><p style="text-align: left; font-size: 1.1111em;"><b>Final Judgment and Eternal State</b></p><p style="text-align: left; font-size: 1.1111em;">We believe
+that at death the spirits and souls of those who have trusted in the Lord Jesus
+Christ pass immediately into His presence and there remain in conscious bliss
+until the resurrection of the glorified body, when Jesus Christ comes for His
+own.&nbsp; Whereupon soul and body reunited
+shall be with Him forever in glory; but the spirits and souls of the unbelieving
+remain after death conscious of condemnation and in misery until the final
+judgment of the Great White Throne when soul and body reunited shall be cast
+into the lake of fire, not to be annihilated but to be punished with
+everlasting destruction from the presence of the Lord and from the glory of His
+power (Luke 16:19-26; 23:42; II Corinthians 5:8; Philippians 1:23; II
+Thessalonians 1:7-8; Jude 6, 7; Revelation 20:11-15).&nbsp; </p><p style="text-align: left; font-size: 1.1111em;">There will
+be a final judgment in which the wicked dead will be raised and judged
+according to their works.&nbsp; Whosoever is
+not found written in the Book of Life, together with the devil and his angels,
+the beast and the false prophet, will be consigned to everlasting punishment in
+the lake which burns with fire and brimstone, which is the second death
+(Matthew 25:46; Mark 9:43-48; Revelation 19:20; 20:11-15; 21:8).</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Five-Fold
+Ministry</h2><p style="text-align: left; font-size: 1.1111em;">The church
+is to be taught and led by the apostles, prophets, evangelists, pastors, and
+teachers for the purpose of every believer seeing and exercising his/her
+priestly and kingly ministry as outlined in I Peter 2:5,9 and Revelation
+16.&nbsp; The five-fold ministry is to teach
+and train its people to do the work of the ministry with maturity and unity in
+mind.&nbsp; Working with these ministries will
+be elders, deacons, and the gifted men and women of the church (Romans 12:3-8;
+I Corinthians 12:12; Ephesians 4:11-13; I Timothy 3:2-12; Titus 2:1-15).</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Gifts
+of the Spirit</h2><p style="text-align: left; font-size: 1.1111em;">The nine
+gifts of the Spirit set forth in I Corinthians 12 should be and must be
+operative in the church to enjoy the fullness of God.&nbsp; These gifts are imparted by the sovereignty
+of the Holy Spirit and only work or are operated by this one and the self-same
+Spirit (I Corinthians 12:11). </p><p style="text-align: left; font-size: 1.1111em;"><b><br></b></p><p style="text-align: left; font-size: 1.1111em;"><b>Giving</b></p><p style="text-align: left; font-size: 1.1111em;">Biblical
+giving is the giving of self and wealth to God and His work, and doing so
+voluntarily and out of love for God and His work.</p><p style="text-align: left; font-size: 1.1111em;">Central
+passages of Scripture for giving: Matthew 6:3-4; 1 Corinthians 16:1-3; 2
+Corinthians 8-9; Galatians 6:6-8; Philippians 4:10-19, 1 Timothy 5:8, 17-18; 3
+John 5-8.</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Godly
+Love or Christian Love</h2><p style="text-align: left; font-size: 1.1111em;">This
+is God's kind of love in us for others, especially for believers. John 3:16 and
+Romans 5:8 demonstrate that God’s love is sacrificial. Since this is true,
+godly love—Christian love—is also sacrificial. The Holy Spirit produces it in a
+believer who is controlled by the Holy Spirit (Galatians 5:22-23; Romans 5:5).
+Christian love is not dependent on the person who is loved. It depends on the
+source. Godly love pleases God (2 John 5-6). The basic idea in godly love is
+sacrifice for others—thinking of others first and doing for them that which is
+in accordance with God’s will and God’s good, and that which is needed.
+Furthermore, it includes responsibility, which is being accountable to God, to
+doctrinal principles, and to one's level of spiritual growth; protection of
+others by way of verbal protection (what we say), mental protection (our
+thoughts), and physical protection; self control which relates to sacrifice,
+responsibility, and protection; and thankfulness. First Corinthians 13:4-7
+personifies love by saying what it is and does, and what it is not and does not
+do. Godly love contrasts with friendship love which is for certain people.</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Help
+of the Poor</h2><p style="text-align: left; font-size: 1.1111em;">We believe that it is the
+intent of our Lord and Savior Jesus Christ to feed the hungry (Matthew
+25:34-40; Isaiah 58:7-8); to care for the poor (Matthew 19:21; Psalm 112:9; II
+Corinthians 9:6-9); and to care for the widows and orphans (James 1:27).&nbsp; We further believe that such ministry should
+be toward His name to both saints and unbelievers (Hebrews 6:10). </p><p><br></p><h2 style="text-align: left; font-size: 1.1111em;">Infallible
+Word of God</h2><p style="text-align: left; font-size: 1.1111em;">We believe
+that the Holy Scriptures, both Old and New Testaments, were written by holy men
+inspired by the Holy Spirit and are God’s revealed word to man.&nbsp; They are the sufficient, infallible rule and
+guide to salvation and all Christian worship and service (II Peter 1:20-21; II
+Timothy 3:15-17; I Thessalonians 2:13).&nbsp;
+The Bible is the inspired Word of God, equally in all parts and in the
+whole; it is totally inerrant in the original manuscripts.&nbsp; It is the supreme revelation from God and of
+God, superior to conscience and reason, though not contrary to them; and it is
+therefore our infallible rule in all manners.&nbsp;
+All the Scriptures center about the Lord Jesus Christ and hence, no
+portion is properly read nor understood until it leads to Him.</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Jesus
+Christ, the Son of God and the Son of Man</h2><p style="text-align: left; font-size: 1.1111em;">Jesus was
+born miraculously of the Virgin Mary (Matthew 1: 23; Luke 1:31, 35).</p><p style="text-align: left; font-size: 1.1111em;">He lived a
+sinless life (Hebrews 7:26; I Peter 2:22). </p><p style="text-align: left; font-size: 1.1111em;">He came
+into the world to save men from the guilt and condemnation of sin (John 3:16),
+offering His blood as atonement (I Corinthians 15:3; II Corinthians 5:21) and
+making it available to all who exercise faith in Him.&nbsp; </p><p style="text-align: left; font-size: 1.1111em;">He
+resurrected from the dead (Matthew 28:6; Luke 24:39; I Corinthians 15:4).&nbsp; </p><p style="text-align: left; font-size: 1.1111em;">He is
+exalted to the right hand of God (Acts 1:9, 11; 2:33; Philippians 2:9-11;
+Hebrews 1-3).&nbsp; </p><p style="text-align: left; font-size: 1.1111em;">His
+divinity is proved from His titles, His attributes, and His works (John 1:14;
+Luke 1:26-35; Acts 4:12; Acts 16:31).&nbsp; </p><p style="text-align: left; font-size: 1.1111em;">He is
+presently seated at the right hand of God the Father, interceding for His
+redeemed.&nbsp; </p><p style="text-align: left; font-size: 1.1111em;">We also
+acknowledge Jesus Christ as Lord over all things in Heaven, and in Earth, and
+under the Earth (John 1:12-14; I Timothy 3:16; Acts 7:37-38; Philippians
+2:9-10; Hebrews 7:25). </p><p style="text-align: left; font-size: 1.1111em;"><b><br></b></p><p style="text-align: left; font-size: 1.1111em;"><b>Justification</b></p><p style="text-align: left; font-size: 1.1111em;">Justification is the legal act whereby God declares
+the sinner to be innocent of his or her sins.&nbsp;
+It is not that the sinner is now sinless, but that he/she is
+"declared" sinless.&nbsp; This
+declaration of righteousness means the person is justified before God.&nbsp; This justification is based on the shed blood
+of Jesus, "...having now been justified by His blood..." (Rom. 5:9)
+where Jesus was crucified, died, buried, and rose again (1 Cor. 15:1-4).&nbsp; God imputed (reckoned to our account) the
+righteousness of Christ at the same time our sins were imputed to Christ when
+He was on the cross.&nbsp; That is why it says
+in 1 Pet. 2:24, "And He Himself bore our sins in His body on the cross,
+that we might die to sin and live to righteousness; for by His wounds you were
+healed."&nbsp; Also, 2 Cor. 5:21 says,
+"He made Him who knew no sin to be sin on our behalf, that we might become
+the righteousness of God in Him."&nbsp;
+Additionally, we are justified by faith (Rom. 5:1) apart from works of
+the Law (Rom. 3:28).</p><p style="text-align: left; font-size: 1.1111em;"><o:p>&nbsp;</o:p></p><p style="text-align: left; font-size: 1.1111em;"><b>Kingdom
+Citizenship</b></p><p style="text-align: left; font-size: 1.1111em;">Sovereign
+God rules all creation, but He favors those that are in faith relationship with
+Him.&nbsp; He puts them in His kingdom by grace through faith (1 Chronicles
+29:11; Psalms 2: Jeremiah 50:17-20; Daniel 4:17, 25, 32: Haggai 2:21-22; Luke
+8:22-36).&nbsp; </p><p style="text-align: left; font-size: 1.1111em;">All
+believers are citizens of God’s kingdom and commanded to be patriotic toward
+His Kingdom (Philippians 1:27; 3:20).</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Laying
+on of Hands</h2><p style="text-align: left; font-size: 1.1111em;"> We adhere to a simple belief that power or
+anointing of any other necessary quality can be transmitted from one person touching
+another.&nbsp; The Levitical priesthood first
+practiced this (Numbers 8:10-11, 27:22-23).&nbsp;
+Jesus practiced it as a blessing, (Mark 10:13-16) and He, as well as
+others, used it for healing (Mark 5:22-23; 16:18; Acts 14:3; 19:11-12; 28:8;
+Luke 4:40), conferring office (Acts 8:16-18), receiving anointing (I Timothy
+4:14) and for ordination (I Timothy 4:14).</p><p style="text-align: left; font-size: 1.1111em;">We believe
+in the doctrine of the laying on of hands for:</p><ol start="1" type="1" style="text-align: left; font-size: 1.1111em;">
+ <li>The confirming of believers to commitment and
+     ministry in the local church.</li>
+ <li>The confirming of one’s call by God to special
+     ministry in the local church (Acts 13:1-3).</li>
+ <li>The imparting of spiritual gifts (I Timothy 4:14;
+     II Timothy 1:6).</li>
+ <li>The experiencing of the baptism of the Holy
+     Spirit (Acts 8:17-18).</li>
+ <li>The ministry of healing of the sick through the
+     Lord Jesus Christ (Mark 16:16).</li>
+ <li>The blessing and dedicating of children to the
+     Lord (Mark 10:16).</li>
+</ol><p style="text-align: left; font-size: 1.1111em;">We further
+believe that, in obedience to the Holy Scriptures, we should lay hands on no
+man suddenly, but that the laying on of hands confirms a ministry, which is
+already observable and has been proven (I Timothy 5:22). </p><p style="text-align: left; font-size: 1.1111em;"><b><br></b></p><p style="text-align: left; font-size: 1.1111em;"><b>Law and
+the Gospel</b></p><p style="text-align: left; font-size: 1.1111em;">The Law is
+the do’s and don’ts of moral behavior.&nbsp;
+God gave the Law so that people would have a guide to live by and a
+standard by which they might recognize God’s purity and their sinfulness.&nbsp; There are 613 commandments in the Old
+Testament.&nbsp; They oversee moral, judicial,
+and religious behavior.</p><p style="text-align: left; font-size: 1.1111em;">The Law is
+a reflection of the character of God, because the Law comes forth from the very
+heart of God.&nbsp; Since it is not possible
+for us to keep the Law and therefore earn our position with God, we then need
+the holiness of God given to us -­‐-­‐ because there simply isn’t any way for
+us to attain to the standard of God.&nbsp;
+Therefore, "...The law was put in charge to lead us to Christ that
+we might be justified by faith," (Gal. 3:24).</p><p style="text-align: left; font-size: 1.1111em;"><b><br></b></p><p style="text-align: left; font-size: 1.1111em;"><b>Liberty
+or Freedom</b></p><p style="text-align: left; font-size: 1.1111em;">Liberty
+or freedom includes privacy and personal responsibility, and is the direct
+application of God’s sovereignty and human volition. The Bible teaches both
+spiritual freedom and human freedom (John 8:31-36). God created man in His
+image and man therefore received moral freedom and volition, with the result
+that he was created to live in freedom—to live with free choice or freedom
+(Genesis 1:26-31). The exercise of freedom requires free people to grant
+freedom and privacy to others. Personal responsibility, therefore, goes hand in
+hand with freedom. Tyranny and slavery often occurred due to the sin nature of
+man, but God willed for human freedom to predominate. For example, when an
+Israelite was enslaved, "Every Israelite (man or woman) who had become a
+slave might not only be redeemed at any time by his relatives but, if this did
+not take place, was bound to receive his freedom without payment in the seventh
+year, with a present of cattle and fruits (Exodus 21:2; Deuteronomy 15:12–15).
+Indeed all slaves of Hebrew descent, with their children, obtained freedom
+without ransom in the Jubilee year (Leviticus 25:39–41)." (The New Unger’s
+Bible Dictionary, 1988. 444) The very fact of volition and authority argue for
+human freedom. The Law of Moses outlines human freedom for Israel, God’s priest
+nation (Exodus 20:1-17; Psalm 146:7; 119:45; Isaiah 61:1; 1 Peter 2:16).</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Lord’s
+Supper</h2><p style="text-align: left; font-size: 1.1111em;">The Lord’s
+Supper is a memorial of the covenant made with God through the blood of
+Christ.&nbsp; It is a continuation of the
+Passover Feast, which God commanded His covenant people to observe.&nbsp; Those who have made covenant with God through
+the blood of Christ and have been water baptized are instructed to
+participate.&nbsp; The church participates in
+the Lord’s Supper as a body or family, with each covenant partner in fellowship
+adding to the blessedness of the experience (Exodus 11, 12; Mark 14:24; Luke
+22:19-20; I Corinthians 10:16; 11:23-26). </p><p style="text-align: left; font-size: 1.1111em;"><b><br></b></p><p style="text-align: left; font-size: 1.1111em;"><b>Marriage</b></p><p style="text-align: left; font-size: 1.1111em;">God created
+marriage (Gen. 2:22).&nbsp; It is a covenant
+made between a man and a woman that makes them one (Gen 2:24).&nbsp; The marriage covenant requires the married
+parties to be faithful, loving, and helpful to each other as long as they both
+shall live (Mark 10:3-10). Christians are not to marry unbelievers (2 Cor.
+6:14-18).&nbsp; Those whom God has directed to
+be joined together shall, after counseling with the pastor concerning what God
+requires of them, be joined in Christian marriage (Malachi 2:13-16; Matthew
+5:32; 19:5-6,9; Romans 7:2-3; I Corinthians 7:10-11, 15; II Corinthians 6:14;
+Ephesians 5:22-23).</p><p style="text-align: left; font-size: 1.1111em;">This church
+observes the wedding ceremony as holy and unto God.&nbsp; It is a religious ceremony and cannot be
+conducted in this church without pastoral consideration.&nbsp; Any couple wishing to conduct their wedding
+ceremony in this church must first submit to pastoral counseling that is
+approved by this church.&nbsp; The couple must
+also live a lifestyle that is consistent with this church’s doctrinal views.</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Millennial
+Reign of Christ</h2><p style="text-align: left; font-size: 1.1111em;">The second
+coming of Christ includes the rapture of the saints, which is our blessed hope,
+and is followed by the visible return of Christ with His saints to reign on the
+earth for one thousand years (Zechariah 14:5; Matthew 24:27, 30; Revelation
+1:7; 19:11-14; 20:1-6).&nbsp; This millennial
+reign will bring the salvation of the national Israel (Ezekiel 37:21-22;
+Zephaniah 3:19-20; Romans 11:26-27) and the establishment of universal peace
+(Isaiah 11:6-7; Psalm 72:3-8; Micah 4:3-4). </p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Ministry
+and Distribution</h2><p style="text-align: left; font-size: 1.1111em;">The Bible
+relates that covenant partners of the Levitical order were to be paid from the
+tithes and offerings presented (Numbers 18:21-24; Deuteronomy 12:19; 18:1-2) by
+the people to the men/women of God at the church.&nbsp; The church believes that the Word of God sets
+forth that the sacerdotal functions to be performed by the Levites are:(a) The
+care of the sanctuary (Numbers 1:49-53; 18:2-4; I Chronicles 6:48; 23:27-32);
+(b) The ushers in the temple (I Chronicles 9:17-27, 26:12-19); (c) Treasurers
+(I Chronicles 26:26-28); (d) Singers (I Chronicles 9:33-34); (e) Instructors in
+the law (Leviticus 10:10; Ezekiel 44:24); (f) Assistants to the priests
+(Numbers 3:9; I Chronicles 23:28-32); (g) Secretaries (I Chronicles 2:55; II
+Chronicles 34:13); (h) Overseers of building and repairing the temple (I
+Chronicles 23:2-4; Ezra 3:8-9); (i) Inquirers of God (Exodus 28:30, Numbers
+27:21, Ezra 2:63, Nehemiah 7:65); (j) Ministers before the ark (I Chronicles
+16:4); (k) Musicians (I Chronicles 15:16, 16:42); (l) Protectors of the
+tabernacle (Numbers 1:53); (m) Ministers of God (Numbers 3:12, 39-49); (n)
+Prayers ( II Chronicles 30:27; I Chronicles 23:30); (o) Teachers (II Chronicles
+35:3, Nehemiah 8:9); (p) Praisers (II Chronicles 8:14); and (q) Providers of
+music for worship (II Chronicles 5:12; 7:6; 29:30; 30:15-27). </p><p style="text-align: left; font-size: 1.1111em;">Therefore
+all persons participating in the above functions of the Levites in the church
+shall be candidates for commissioning into the ministry and shall be eligible
+for receipt of the Levitical distribution from the church.&nbsp; The Lead Pastor with the counsel of the
+Church Board shall determine the amount of such distribution. </p><p style="text-align: left; font-size: 1.1111em;"><b><br></b></p><p style="text-align: left; font-size: 1.1111em;"><b>Missions</b><b> </b></p><p style="text-align: left; font-size: 1.1111em;">Missions
+are the whole task, endeavor, and program of the Church of Jesus Christ to
+reach out across geographical and/or cultural boundaries by sending
+missionaries to evangelize people who have never heard or who have little
+opportunity to hear the saving gospel.</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Music
+</h2><p style="text-align: left; font-size: 1.1111em;">Music
+and song are a product of, reflection of, and appreciation of God’s word,
+works, and person inside a believer. Biblical music honors God, teaches and
+recalls Bible doctrine, and encourages people. Biblical music expresses the
+thinking, free will, emotion, conscience, and self-consciousness, though it
+especially joins the learned doctrine in the soul and human spirit with the
+emotion of the soul and human spirit. In church assembly, the ministry of music
+prepares the congregation for the ministry of God’s Word (Psalm 30:4, Psalm
+57:9, Colossians 3:16, 1 Chronicles 15:16; 25:1, Exodus 15:1-18, 1 Samuel
+16:23, Acts 16:25, James 5:13).</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Nationalism</h2><p style="text-align: left; font-size: 1.1111em;">God
+planned that people would live in groups called nations. These nations would
+have similar culture including language, geography, and heritage. Each of these
+national distinctions provides for a balance of power among nations and
+protects against a monolithic power over many groups. We can look at Genesis 10
+and 11 for the beginnings of human government in the post-flood civilization
+(Genesis 10:32-11:9; Acts 17:26-27).</p><p style="text-align: left; font-size: 1.1111em;"><b><br></b></p><p style="text-align: left; font-size: 1.1111em;"><b>New Covenant</b></p><p style="text-align: left; font-size: 1.1111em;">This
+is the new covenant of the Messianic age where the law of God is written upon
+the hearts of men (Jer. 31:31,33); it was promised in Eden (Gen. 3:15); it was
+proclaimed to Abraham (Gen. 12:3), and it was fulfilled in Christ (Luke
+1:68-79).</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">New
+Heavens and New Earth</h2><p style="text-align: left; font-size: 1.1111em;">We,
+according to His promise, look for new heavens and a new earth wherein dwelleth
+righteousness” (II Peter 3:13; Revelation 21:22). </p><p style="text-align: left; font-size: 1.1111em;"><b><br></b></p><p style="text-align: left; font-size: 1.1111em;"><b>Of the
+World to Come</b></p><p style="text-align: left; font-size: 1.1111em;">We believe
+that the end of this age is rapidly approaching (I Peter 4:7).&nbsp; We believe in “That Blessed Hope” -the personal,
+imminent return of our Lord and Savior Jesus Christ (Acts 1:11; I Thessalonians
+4:13-18).&nbsp; We believe in the bodily
+resurrection of the just and of the unjust, the everlasting blessedness of the
+saved, and the everlasting punishment of the lost without Christ (Acts 24:15;
+Matthew 24:31-46; Revelation 22:11). </p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">One
+God</h2><p style="text-align: left; font-size: 1.1111em;">We believe
+that Scripture teaches there is one and only one true and living God, who is
+self-existent, and the eternal “I AM,” the creator of heaven and earth, and the
+redeemer of mankind.&nbsp; We believe that He
+has chosen to reveal Himself as Father, Son, and Holy Ghost, the same in
+essence, though distinct in personality (Deuteronomy 6:4; Isaiah 43:10-11;
+Matthew 28:18-19; Luke 3:22).&nbsp; These
+three are one God, having the same nature, attributes, and perfection and are
+worthy of the same homage and obedience (Mark 12:29; John 1:14; Acts 5:3, 4; II
+Corinthians 13:14; Revelation 1:4-6).&nbsp;
+The mode of His existence, however, is a subject far above the understanding
+of man.&nbsp; He is the fountain of all
+perfection and happiness.&nbsp; He is
+glorified by the whole of creation and is worthy to be loved and served by all
+intelligence.&nbsp; He, therefore, is the only
+proper object of worship (Jeremiah 10:10; Exodus 3:14; Psalms 90:2; Matthew
+28:19, 20; Job 11:7; Psalms 19:1, 2; 145:10; 150:6; Exodus 34:14). </p><p style="text-align: left; font-size: 1.1111em;"><o:p>&nbsp;</o:p></p><p style="text-align: left; font-size: 1.1111em;"><b>Ordinances
+of the Gospel&nbsp; </b></p><ul style="text-align: left; font-size: 1.1111em;"><li><b>Baptism
+in Water:</b> We believe water baptism is commanded of every believer, and a
+necessary requisite for going on to spiritual maturity.&nbsp; When done in faith, it is the means whereby
+those who have been justified by faith in the blood of Jesus Christ receive a
+circumcision of the heart, are made participants in the death and resurrection
+of Christ and thus are delivered from the dominion and rule of sin.&nbsp; The ordinance of baptism is a burial with
+Christ, to be observed, whenever physically possible as commanded in the
+Scriptures by all who have repented and truly believed in their heart on Christ
+as Savior and Lord.&nbsp; The method of
+baptism will be by immersion.&nbsp; They
+declare to the world that they have died with Jesus and that they have also
+been raised with Him to walk in newness of life. It is the circumcision of the
+heart by faith and through the working of the Spirit of God. Water baptism is
+the taking on of a great responsibility, because in it a person makes an
+everlasting commitment to God (Matthew 28:19-20; Acts 10:47-48; Colossians
+2:11-12).</li></ul><ul style="text-align: left; font-size: 1.1111em;"><li><b>The
+Lord’s Supper:</b>&nbsp; The Lord’s Supper,
+consisting of the elements, bread and the fruit of the vine, is the symbol
+expressing our sharing the divine nature of our Lord Jesus Christ, a memorial
+of His suffering and death, and a prophecy of His second coming.&nbsp; It is enjoined on all believers ‘until He
+comes’ (John 6:48, 51, 53-57; Luke 22:19-20; I Corinthians 2:11-12). </li></ul><ul style="text-align: left; font-size: 1.1111em;"><li><b>Ordination</b></li></ul><p style="text-align: left; font-size: 1.1111em;">The Bible
+relates that those who are chosen by God to a specific work should be
+recognized by appointment and ordination to the work (Mark 3:13-15; I
+Chronicles 9:22; II Chronicles 11:15; 23:18; I Corinthians 7:17; Titus 1:5; I
+Timothy 2:7).&nbsp; Thus are those to be set
+in order in their function as Levites for the ministry of the work and so those
+in the church might know and receive those who have a position in the work of
+the ministry.</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Primitive
+Man and His Fall</h2><p style="text-align: left; font-size: 1.1111em;">Our first
+parents, in their original state, were upright.&nbsp;
+They naturally preferred and desired to obey their creator, and had no
+preference or desire to transgress His will until they were influenced and
+inclined by Satan to disobey God’s commands.&nbsp;
+Previous to this, the only tendency of their nature was to do righteousness.&nbsp; In consequence of their first transgression,
+the state under which the posterity of Adam came into the world is so different
+from that of Adam that they have not that righteousness and purity which Adam had
+before the fall; they are not willing to obey God but are inclined to do
+evil.&nbsp; Hence, none, by virtue of any
+natural goodness and mere work of their own, can become the children of God
+(Genesis 1:26-31; 3: 1-7; Ecclesiastes 7:29; Psalms 51:5; John 6: 44; Romans
+5:12-21; I Corinthians 2:14). </p><p style="text-align: left; font-size: 1.1111em;"><b><br></b></p><p style="text-align: left; font-size: 1.1111em;"><b>Promise of the Father</b></p><p style="text-align: left; font-size: 1.1111em;">All
+believers are entitled to, and should ardently expect and earnestly seek the
+Promise of the Father, the baptism in the Holy Ghost and fire, according to the
+command of our Lord Jesus Christ.&nbsp; This
+was the normal experience in the early Christian church.&nbsp; With it come the endowment of power for life
+and service, and the bestowment of the gifts and their uses in the work of the
+ministry (Luke 24:49; Acts 1:4-5; I Corinthians 12:1-31).&nbsp; This wonderful experience is distinct from
+and subsequent to the experience of the new birth (Acts 2:38; 10:44-46;
+11:14-16; 15:7-8). </p><p style="text-align: left; font-size: 1.1111em;"><b><br></b></p><p style="text-align: left; font-size: 1.1111em;"><b>Repentance
+</b></p><p style="text-align: left; font-size: 1.1111em;">Repentance
+means to decide to turn from one’s sin; it is not a condition of salvation;
+faith in Christ as Savior is the only condition for salvation (John 3:16; Acts
+16:31; Ephesians 2:8-9).</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Responsibility
+of the Believer</h2><p style="text-align: left; font-size: 1.1111em;">We believe
+that it is essential that each believer lay a foundation of Biblical truth and
+experience upon which he/she builds his/her life.&nbsp; These foundation stones are: repentance from
+dead works, faith toward God, doctrine of baptisms, laying on of hands,
+resurrection of the dead, and eternal judgment, all of which are prerequisites
+to going on to perfection (spiritual maturity) (Hebrews 6:1-2).&nbsp; </p><p style="text-align: left; font-size: 1.1111em;">We believe
+each Christian is called and chosen in God to be a priest unto God to offer up
+the sacrifice of praise (the fruit of the lips), to give of their time,
+strength, and material possessions to the service of the Lord.&nbsp; All believers have been purchased with the
+blood of Jesus Christ and are no longer their own, but belong to the Father to
+be used for His glory; and as possessions of the Lord, must give themselves to
+serving Him, finding their place in the church, His body, and making themselves
+available by being present when the church comes together, that they might be
+able to minister their gifts and talents for the building up of the Body of
+Christ (John 15:16; Ephesians 1:4-5; I Corinthians 6:20; 12:18; Hebrews 13:15;
+I Peter 2:5,9).&nbsp; We believe that the
+whole purpose of man is to glorify God and to enjoy Him forever.&nbsp; Therefore, we believe in the act of praising
+and worshipping God with one’s total being as set forth in the Holy
+Scriptures.&nbsp; We also believe that
+praising God is a form of spiritual warfare (Psalms 149; 150; Mark 12:29-31;
+Ephesians 5:18-21). </p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Salvation
+of Man</h2><p style="text-align: left; font-size: 1.1111em;">Man’s only
+hope of redemption is through the shed blood of Jesus Christ, the only Son of
+God.&nbsp; Salvation is received through
+repentance toward God and faith toward the Lord Jesus Christ.&nbsp; By the washing of regeneration and renewing
+of the Holy Spirit, being justified by grace through faith, man becomes an heir
+of God according to the hope of eternal life.&nbsp;
+The inward evidence of salvation is direct witness of the Spirit and the
+outward evidence to all men of a life of righteousness and true holiness (Luke
+24:47; John 3:3; Romans 10:13-l5; Ephesians 2:8; Titus 2:11; 3:5-7; Romans
+8:16; Ephesians 4:24; Titus 2:12).</p><p style="text-align: left; font-size: 1.1111em;">Salvation
+is an inclusive word, which gathers into itself all the redemptive acts and
+processes, i.e., justification, redemption, deliverance, imputation,
+sanctification, glorification, etc.&nbsp; The
+Hebrew and Greek words for salvation imply the ideas of deliverance, safety,
+preservation, healing, and soundness.&nbsp;
+Salvation is by grace through faith, is a free gift, and wholly without
+human works (Romans 3:27-28, 4:1-8, 6:23, Ephesians 2:8).&nbsp; Salvation is in these three tenses: </p><ul style="text-align: left; font-size: 1.1111em;"><li>Condition
+of Salvation - The grace of God, which brings salvation, hath appeared to all
+men, through the preaching of repentance toward God and faith toward the Lord
+Jesus Christ; man is saved by the washing of regeneration and renewing of the
+Holy Ghost, and, being justified by grace through faith, he becomes an heir of
+God according to the hope of eternal life (Romans 10:13-15; Luke 24:47; Titus
+2:11; 3:5-7; Ephesians 2:8-9).</li></ul><ul style="text-align: left; font-size: 1.1111em;"><li>Evidences
+of Salvation - The inward evidence to the believer, of his salvation, is the
+direct witness of the Spirit (Romans 8:16).&nbsp;
+The outward evidence to all men is a life of unconditional love,
+righteousness, and true holiness, demonstrated by the fruit of the Spirit (John
+13:35; Galatians 5:22-23; Ephesians 4:24).&nbsp;
+</li></ul><ul style="text-align: left; font-size: 1.1111em;"><li>Final
+Result of Salvation - The spirit of the believer who dies in Christ immediately
+goes to be with the Lord (Ecclesiastes 12:7; Luke 23:42-43; II Corinthians
+5:8). </li></ul><h2 style="text-align: left; font-size: 1.1111em;">Sanctification</h2><p style="text-align: left; font-size: 1.1111em;">Sanctification
+is the process by which, according to the will of God, we become partakers of
+His holiness; that it is begun at regeneration; and that it is carried on in
+the hearts of believers by the presence and power of the Holy Spirit in the
+continual use of the appointed means, especially the Word of God,
+self-examination, self-denial, watchfulness, and prayer (I Thessalonians 4:3; I
+John 2:29; Romans 8:5; Philippians 2:12-13).&nbsp;
+Sanctification is an act of separation from that which is evil, and a
+dedication unto God (Romans 12:1-2; I Thessalonians 5:23; Hebrews 13:12).&nbsp; The Scriptures teach a life of “holiness
+without which no man shall see the Lord” (Hebrews 12:14).&nbsp; By the power of the Holy Ghost we are able to
+obey the command: “Be ye Holy, for I am Holy” (I Peter 1:15, 16).&nbsp; Sanctification is realized in the believer by
+recognizing his identification with Christ in His death and resurrection and by
+faith reckoning daily upon the fact of that union, and by offering every
+faculty continually to the dominion of the Holy Spirit (Romans 6: 1-11, 13; 8:
+1-2, 13; Galatians 2:20; Philippians 12:12-13; I Peter 15).</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em; font-family: &quot;Proxima Nova&quot;, &quot;Proxima Nova Regular&quot;, sans-serif; font-weight: 600;">Scientific
+Accuracies in the Bible</h2><p style="text-align: left; font-size: 1.1111em; font-family: &quot;Proxima Nova&quot;, &quot;Proxima Nova Regular&quot;, sans-serif; font-weight: 200;">Science is
+merely that branch of discovery that categorizes, discovers, and utilizes the
+knowledge woven into the fabric of the universe by a Sovereign, All Powerful,
+and Omniscient, Creator. Science is not the end of all things, but merely one
+of the means by which man may glorify God. This is because God is the creator
+of all that is. He has hidden the treasures of his ominous glory in the very
+universe in which we exist. The power in the atom, momentum, energy, mass,
+time, etc. are all creations of God and, therefore, under his authority. The
+more the Christian learns of these things, the more he can glorify God. Science
+must be subservient to Him, not the other way around. Science is not God's
+replacement. This is not to say that the Bible is vindicated by science;
+rather, it is science that is vindicated by the Bible (Genesis 7:11, 15:5, ,
+8:22, 28; Isaiah 40:22; Job 26:7-­‐8; 2 Samuel 22:16; Psalm 8:1,3,6,8, 102:25-­‐26;
+Ecclesiastes 1:6-­‐7).</p><div><br></div><div><h2 style="font-size: 1.1111em; text-align: left;">Sexual Sin and Sexuality</h2><p style="font-size: 1.1111em; text-align: left;">In regards to sexuality, we stand on time honored Orthodoxy/Biblical Truth which is rooted in 20 Centuries of Church history. We seek to interpret Scripture with Scripture and not allow culture to interpret Scripture. Scripture is authoritative and holds to Orthodoxy which does not allow us to view the topic of sexuality/gender through the lens of interpretation. We recognize that sexuality issues and gender issues can be singled out, yet we consider them to be sin among many sins and therefore we should consider all sin to impede our command to be holy because they interfere with God’s best intentions for us in our relationship with Him (Lev. 19:1-2). Binary Sexuality was established in Genesis 1:27 and is supported by science. Family is a byproduct of binary sexuality and our command to procreate (Gen. 9:7). Biblical Marriage is established between a man and a woman. We define love in the context of God’s love for us and view its definition through the lens of Scripture, not culture (1 John 4:7-9). As Christ followers we should strive for holiness in all areas of our lives and not just in the area of sexuality/gender nor should we affirm sin of any kind. Furthermore, it is our Christian obligation to love people and gently restore those who are caught up in sin in hopes of them moving towards repentance. (Gal. 6:1-3)</p><p style="font-size: 1.1111em; text-align: left;"><br></p></div><h2 style="text-align: left; font-size: 1.1111em; font-weight: 600;">Spirituality</h2><p style="text-align: left; font-size: 1.1111em;">The ministry of the Holy Spirit emphasizes
+function in our lives. One needs the Holy Spirit to live correctly.&nbsp; A believer is either spiritual or carnal.
+Personal sin takes one out of spirituality and into carnality. Confession of
+sin changes one from living by the flesh and puts one into living by the Holy
+Spirit. We continue on living by the Holy Spirit by faith. Spirituality is
+attained through a believer’s walk with the Spirit, by not grieving the Spirit
+, and by quenching not the Spirit (1 Thessalonians 5:19; Ephesians 4:30;
+Galatians 5:16-6:1, 1 John 1).</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">Spiritual
+Growth</h2><p style="text-align: left; font-size: 1.1111em;">Spiritual
+growth refers to the progressive advancement in the biblical faith. This
+depends on the ministry of the Holy Spirit, fellowship, learning God's Word,
+faith, testing, and application (Ephesians 4:12, 14, 15; 2 Peter 3:14-18, 1
+Peter 2.2, Hebrews 5:11-6:6).</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">The
+Church &amp; The Body of Christ</h2><p style="text-align: left; font-size: 1.1111em;">The
+Church is the Body of Christ, the habitation of God through the Spirit, with
+divine appointments for the fulfillment of her great commission. Each believer,
+born of the Spirit, is an integral part of the general church, which is written
+in heaven (Ephesians 1:22-23; 2:22, Hebrews 12:23). </p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">The
+Church and the Ministry</h2><p style="text-align: left; font-size: 1.1111em;">We believe
+that all who are united by the new birth to Jesus Christ are covenant partners
+of the Universal Church, the Body of Christ.&nbsp;
+We also believe that the local congregation of Christian believers is
+divinely instituted and is the chosen instrument of God for the furtherance of
+God’s work here on Earth.&nbsp; While
+appreciating the work of para church groups, we believe that the local church
+is God’s chosen vehicle for world evangelization and the nurture of
+Christians.&nbsp; We further believe in the
+spiritual unity of all believers and in working together with others who
+believe in salvation through the shed blood of Jesus Christ for the causes of
+evangelism, missions, and benevolence (Matthew 16:16-18; John 17:21; Ephesians
+1:20-23; 4:3-10; Colossians 3:14-15).&nbsp;
+The church is the Body of Christ, the habitation of God through the
+Spirit, with divine appointments for the fulfillment of her great commission and
+purpose.&nbsp; Each believer, born of the Spirit,
+is an integral part of the Church of the Firstborn, whose name is written in
+heaven in the Lamb’s Book of Life.&nbsp; As
+such, the Bible reveals that we are covenant partners one of another and the
+basis of our fellowship is in Christ in the power of the Spirit (Ephesians
+1:22; 2:19-22; Hebrews 12:23).&nbsp; A
+divinely called and scripturally ordained ministry has been provided by our
+Lord for the three-fold purpose of leading the church in: (1) Evangelization of
+the world, (2) Worship of God, and (3) Building a body of saints being
+perfected in the image of His Son (I Chronicles 16:29; Matthew 28:19-20; Mark
+16:15-20; Luke 14:23; John 4:23-24; Ephesians 4:11-16; Colossians 1:28).</p><h2 style="text-align: left; font-size: 1.1111em;"><br></h2><h2 style="text-align: left; font-size: 1.1111em;">The
+Holy Spirit</h2><p style="text-align: left; font-size: 1.1111em;">The
+Scriptures ascribe to the Holy Spirit the acts and attributes of an intelligent
+being.&nbsp; He guides, knows, moves, gives
+information, commands, forbids, sends forth, reproves, as the instrumental
+segment of the God Head in the liberal dispersion of spiritual gifts, and can
+be sinned against (John 16:13; I Corinthians 2:11; Genesis 1:2; Acts 10:19;
+13:2; 16:6; 13:4; John 16:8; Mark 3:29; Acts 7:51; Ephesians 4:30; I
+Corinthians 12).</p><p style="text-align: left; font-size: 1.1111em;">The works
+of God are ascribed to the Holy Spirit; creation; inspiration, giving of life,
+and sanctification (Job 33:4; II Peter 1:21; I Peter 3:18; I Corinthians 6:11).
+</p><p style="text-align: left; font-size: 1.1111em;"><b><br></b></p><p style="text-align: left; font-size: 1.1111em;"><b>Tithing,
+Offerings, and Alms</b></p><p style="text-align: left; font-size: 1.1111em;">Both the
+Old and New Testament Scriptures teach tithing as God’s financial plan for the
+support of His work.&nbsp; These are to be
+practiced continually by all believers and are outward expressions of the unity
+of the church, the Body of Christ, as it joins together in support of the work
+of the Lord (Malachi 3:8-10; I Corinthians 16:2; Genesis 28:22; Matthew 23:23;
+Deuteronomy 26; 14:28-29; 15:7-11; Numbers 18:8-11; Ezekiel 44; Proverbs 14:21;
+29:7; Luke 11:41; 12:33).</p><p><br></p><p style="text-align: left; font-size: 1.1111em;"><b>Total Dependance on God</b></p><p style="text-align: left; font-size: 1.1111em; font-weight: 600;"><span class="clovercustom" style="font-weight: 200;">Both We believe that the Gospel of the Kingdom is God's absolute answer to man's needs:&nbsp;</span></p><p style="text-align: left; font-size: 1.1111em; font-weight: 600;"><span class="clovercustom" style="font-weight: 200;"><span class="clovercustom" style="">&nbsp; &nbsp; &nbsp;</span><span class="clovercustom" style="font-style: italic;">Spiritually:</span> John 3:3,11; II Corinthians 5:17-21; Romans 10:9-10</span></p><p style="text-align: left; font-size: 1.1111em; font-weight: 600;"><span class="clovercustom" style="font-weight: 200;"><span class="clovercustom" style="font-style: italic;">&nbsp; &nbsp; &nbsp;Mentally:</span> II Timothy 1:7; Romans 12:2; Isaiah 26:3</span></p><p style="text-align: left; font-size: 1.1111em; font-weight: 600;"><span class="clovercustom" style="font-weight: 200;"><span class="clovercustom" style="font-style: italic;">&nbsp; &nbsp; &nbsp;Physically:</span> Isaiah 53:4-5; Matthew 8:17; I Peter 2:24</span></p><p style="text-align: left; font-size: 1.1111em; font-weight: 600;"><span class="clovercustom" style="font-weight: 200;"><span class="clovercustom" style="font-style: italic;">&nbsp; &nbsp; &nbsp;Financially:</span> 3 John 2; Malachi 3:10-11; Luke 6:38; II Corinthians 9:6-10; Deuteronomy 28:1-14</span></p><p style="text-align: left; font-size: 1.1111em; font-weight: 600;"><span class="clovercustom" style="font-weight: 200;"><span class="clovercustom" style="font-style: italic;">&nbsp; &nbsp; &nbsp;Socially:</span> Proverbs 3:4; I Samuel 2:26; Romans 14:18; II Corinthians 8:21</span></p><p style="text-align: left; font-size: 1.1111em; font-weight: 600;"><br></p><p style="text-align: left; font-size: 1.1111em;"><b>Volition</b></p><p style="text-align: left; font-size: 1.1111em;">God
+gave mankind volition, the right and ability to make choices, good and bad
+(Genesis 2:16-17; Isaiah 1:16-20; Luke 6:27; John 17:17; Acts 17:27, 30).</p><p style="text-align: left; font-size: 1.1111em;">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</p><p style="text-align: left; font-size: 1.1111em;"><o:p>&nbsp;</o:p></p></div></div>
+
+</div>
+
+</div>
+  
+
+</article>24:["$","section",null,{"id":"$undefined","className":"section-shell","children":["$","div",null,{"className":"site-shell","children":[["$","div",null,{"className":"section-heading","children":[["$","div",null,{"className":"section-heading__copy","children":[["$","p",null,{"className":"eyebrow","children":"Doctrine"}],["$","h2",null,{"children":"Doctrines of Emmanuel Church, Inc."}],["$","p",null,{"className":"section-heading__description","children":"A basis for fellowship, shared understanding, and faithful teaching."}]]}],null]}],["$","details",null,{"className":"doctrines-panel","children":[["$","summary",null,{"children":[["$","span",null,{"children":"Open the full statement"}],["$","span",null,{"className":"doctrines-panel__summary-hint","children":"Long-form doctrinal appendix"}]]}],["$","div",null,{"className":"doctrines-panel__content","children":["$","div",null,{"dangerouslySetInnerHTML":{"__html":"$26"}}]}]]}]]}]}]

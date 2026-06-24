@@ -1602,6 +1602,13 @@ select {
   font-size: clamp(1.6rem, 4vw, 2.6rem);
 }
 
+@media (max-width: 768px) {
+  .motion-ready .adult-discipleship-section {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .staff-grid {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -1905,12 +1912,46 @@ html.motion-ready .our-staff-page .staff-card {
   gap: 1.4rem;
 }
 
+.page-hero--media-full {
+  overflow: clip;
+}
+
+.page-hero__layout--media-full {
+  position: relative;
+  min-height: clamp(26rem, 52vw, 36rem);
+  overflow: clip;
+  border-radius: calc(var(--radius-xl) + 10px);
+  border: 1px solid rgba(24, 33, 43, 0.08);
+  box-shadow: var(--shadow);
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.page-hero__content--media-full {
+  position: relative;
+  z-index: 1;
+  align-self: end;
+  max-width: min(40rem, 100%);
+  padding: clamp(1.5rem, 3vw, 3rem);
+  background:
+    linear-gradient(90deg, rgba(245, 239, 230, 0.9), rgba(245, 239, 230, 0.42) 70%, transparent),
+    linear-gradient(180deg, rgba(24, 33, 43, 0.03), rgba(24, 33, 43, 0.05));
+  backdrop-filter: blur(6px);
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.28) inset;
+}
+
 .page-hero__content {
   max-width: 60rem;
 }
 
 .page-hero__media {
   width: 100%;
+}
+
+.page-hero__media--full {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
 }
 
 .page-hero__media-frame {
@@ -1940,6 +1981,38 @@ html.motion-ready .our-staff-page .staff-card {
   object-position: center top;
 }
 
+.page-hero__media--full .page-hero__media-frame {
+  position: absolute;
+  inset: 0;
+  min-height: 100%;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: none;
+}
+
+.page-hero__media--full .page-hero__media-frame::after {
+  background:
+    linear-gradient(100deg, rgba(245, 239, 230, 0.32) 0%, rgba(245, 239, 230, 0.12) 26%, transparent 62%),
+    linear-gradient(180deg, rgba(24, 33, 43, 0.02), rgba(24, 33, 43, 0.18));
+}
+
+.page-hero__media--full .page-hero__media-image {
+  object-position: center center;
+}
+
+.page-hero__media-image--connect {
+  object-position: right center;
+}
+
+.page-hero__layout--worship {
+  --worship-hero-mobile-height: clamp(18rem, 68vw, 24rem);
+}
+
+.page-hero__layout--worship .page-hero__media-image {
+  object-position: 72% center;
+}
+
 .page-hero h1 {
   font-size: clamp(2.7rem, 6vw, 5rem);
 }
@@ -1955,6 +2028,12 @@ html.motion-ready .our-staff-page .staff-card {
   max-width: 100%;
 }
 
+.page-hero__actions--full {
+  position: relative;
+  z-index: 1;
+  margin-top: 1rem;
+}
+
 .page-hero__action-detail {
   width: fit-content;
   max-width: 24rem;
@@ -1968,6 +2047,25 @@ html.motion-ready .our-staff-page .staff-card {
 .page-hero__countdown {
   display: grid;
   gap: 0.25rem;
+}
+
+.page-hero__countdown--compact {
+  gap: 0.1rem;
+}
+
+.page-hero__countdown--overlay {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 2;
+  width: min(15rem, calc(100% - 2rem));
+  padding: 0.85rem 0.95rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(24, 33, 43, 0.08);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 16px 36px rgba(40, 30, 18, 0.12);
+  pointer-events: none;
 }
 
 .page-hero__countdown--contact {
@@ -2009,6 +2107,25 @@ html.motion-ready .our-staff-page .staff-card {
   color: rgba(24, 33, 43, 0.64);
   font-size: 0.92rem;
   line-height: 1.5;
+}
+
+.page-hero__countdown-bar {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 0.55rem;
+  margin-top: 0.15rem;
+  border-radius: 999px;
+  background: rgba(24, 33, 43, 0.08);
+}
+
+.page-hero__countdown-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--gold-strong), var(--gold-dark));
+  box-shadow: 0 6px 16px rgba(199, 144, 68, 0.28);
+  transition: width 900ms linear;
 }
 
 .calendar-embed {
@@ -3135,6 +3252,13 @@ html.motion-ready .our-staff-page .staff-card {
     grid-template-columns: 3rem minmax(0, 1fr);
   }
 
+  .page-hero__countdown--overlay {
+    top: 0.75rem;
+    right: 0.75rem;
+    width: min(13.5rem, calc(100% - 1.5rem));
+    padding: 0.75rem 0.85rem;
+  }
+
   .page-hero__layout {
     grid-template-columns: 1fr;
     gap: 1rem;
@@ -3142,6 +3266,23 @@ html.motion-ready .our-staff-page .staff-card {
 
   .page-hero__media-frame {
     min-height: 18rem;
+  }
+
+  .page-hero__layout--media-full {
+    min-height: 30rem;
+  }
+
+  .page-hero__layout--worship {
+    min-height: var(--worship-hero-mobile-height);
+  }
+
+  .page-hero__layout--worship .page-hero__media-image {
+    object-position: 76% center;
+  }
+
+  .page-hero__content--media-full {
+    max-width: 100%;
+    padding: 1.35rem;
   }
 
   .card-grid__item,

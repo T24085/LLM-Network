@@ -1,0 +1,29 @@
+{
+  "name": "emmanuel",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "scrape:media-archive": "node scripts/scrape-media-archive.mjs",
+    "sync:export": "node scripts/sync-export.mjs",
+    "refresh:archive": "npm run scrape:media-archive && npm run build && npm run sync:export",
+    "start": "next start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "next": "^16.2.6",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.2",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^6.0.3"
+  }
+}

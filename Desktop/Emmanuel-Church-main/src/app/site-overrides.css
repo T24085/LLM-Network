@@ -1,0 +1,76 @@
+.hero {
+  --hero-frame-height: calc(100svh - 92px);
+  --hero-video-focus: center top;
+  min-height: var(--hero-frame-height);
+}
+
+.hero__video {
+  object-position: var(--hero-video-focus);
+}
+
+.section-shell--feature-rail {
+  padding-top: 1.5rem;
+}
+
+.section-shell--feature-rail .hero__card-row {
+  margin-top: 0;
+}
+
+.resource-card--linked {
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.resource-card--linked:hover,
+.resource-card--linked:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(27, 70, 80, 0.18);
+  box-shadow: 0 18px 40px rgba(40, 30, 18, 0.1);
+}
+
+.resource-card--linked:focus-visible {
+  outline: 3px solid rgba(199, 144, 68, 0.28);
+  outline-offset: 3px;
+}
+
+.resource-card__action--button {
+  width: fit-content;
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  background: rgba(27, 70, 80, 0.08);
+  border: 1px solid rgba(27, 70, 80, 0.14);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.resource-card--linked:hover .resource-card__action--button,
+.resource-card--linked:focus-visible .resource-card__action--button {
+  background: rgba(27, 70, 80, 0.12);
+  border-color: rgba(27, 70, 80, 0.2);
+  transform: translateY(-1px);
+}
+
+@media (min-width: 1440px) {
+  .hero {
+    --hero-frame-height: clamp(40rem, calc(88svh - 92px), 46rem);
+    --hero-video-focus: center 38%;
+  }
+}
+
+@media (min-width: 1800px) {
+  .hero {
+    --hero-frame-height: clamp(40rem, calc(84svh - 92px), 44rem);
+    --hero-video-focus: center 44%;
+  }
+}
